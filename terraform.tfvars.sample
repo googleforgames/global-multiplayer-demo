@@ -1,6 +1,19 @@
 project = "PROJECT_ID"
 
-region      = "us-central1"
+default_regions = {
+  "us-central1" : {
+    "vpc_subnet_name" : "global-game-subnet-us",
+    "vpc_subnet_cidr" : "10.1.0.0/16"
+  },
+  "europe-west3" : {
+    "vpc_subnet_name" : "global-game-subnet-eu",
+    "vpc_subnet_cidr" : "10.4.0.0/16",
+  },
+  "asia-east1" : {
+    "vpc_subnet_name" : "global-game-subnet-asia",
+    "vpc_subnet_cidr" : "10.8.0.0/16",
+  }
+}
 
 gcp_project_services = [
   "cloudbuild.googleapis.com",
@@ -8,22 +21,19 @@ gcp_project_services = [
   "artifactregistry.googleapis.com"
 ]
 
-vpc_name    = "cymbal-game-staging-vpc"
-
-subnet_name = "cymbal-game-subnet"
-subnet_cidr = "10.1.0.0/16"
+vpc_name = "global-game-vpc"
 
 spanner_gke_config = {
-    cluster_name      = "global-game-gke-spanner"
-    location          = "us-central1"
-    resource_labels   = {
-        environment = "staging"
-    }
+  cluster_name = "global-game-gke-spanner"
+  location     = "us-central1"
+  resource_labels = {
+    environment = "staging"
+  }
 }
 
 app_service_account_config = {
-    name     = "app-service-account"
-    description     = "Global Multiplayer Game service account"
+  name        = "app-service-account"
+  description = "Global Multiplayer Game service account"
 }
 
-k8s_service_account_id   = "k8s-service-account"
+k8s_service_account_id = "k8s-service-account"

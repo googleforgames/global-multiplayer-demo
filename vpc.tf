@@ -18,8 +18,9 @@ resource "google_compute_network" "vpc" {
 }
 
 resource "google_compute_subnetwork" "subnet" {
-  name          = var.subnet_name
-  ip_cidr_range = var.subnet_cidr
-  region        = var.region
+  for_each      = var.default_regions
+  name          = each.value.vpc_subnet_name
+  ip_cidr_range = each.value.vpc_subnet_cidr
+  region        = each.key
   network       = google_compute_network.vpc.id
 }
