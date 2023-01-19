@@ -17,7 +17,7 @@ cp terraform.tfvars.sample terraform.tfvars
 Create the GKE instance. This separate step is a requirement due to providers not being able to have a a resource dependency in Terraform. See the discussion in [this issue](https://github.com/hashicorp/terraform/issues/2430) for example.
 
 ```shell
-terraform apply -target=google_container_cluster.demo-game-gke
+terraform apply -target=google_container_cluster.game-demo-spanner-gke
 ```
 
 Provision the rest of the infrastructure.

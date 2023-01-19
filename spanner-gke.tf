@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-resource "google_container_cluster" "demo-game-gke" {
-  name     = var.gke_config.cluster_name
-  location = var.gke_config.location
+resource "google_container_cluster" "game-demo-spanner-gke" {
+  name     = var.spanner_gke_config.cluster_name
+  location = var.spanner_gke_config.location
 
   network    = google_compute_network.vpc.name
   subnetwork = google_compute_subnetwork.subnet.name
@@ -36,7 +36,7 @@ resource "google_container_cluster" "demo-game-gke" {
   private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = true
-    master_ipv4_cidr_block  = var.gke_master_cidr
+    master_ipv4_cidr_block  = var.spanner_gke_master_cidr
   }
 
   depends_on = [google_project_service.project]
@@ -48,26 +48,18 @@ resource "google_service_account" "app-service-account" {
   project      = var.project
 }
 
-resource "kubernetes_service_account" "k8s-service-account" {
-  metadata {
-    name      = var.k8s_service_account_id
-    namespace = "default"
-    annotations = {
-      "iam.gke.io/gcp-service-account" : "${google_service_account.app-service-account.email}"
-    }
-  }
-}
 
-data "google_iam_policy" "spanner-policy" {
-  binding {
-    role = "roles/iam.workloadIdentityUser"
-    members = [
-      "serviceAccount:${var.project}.svc.id.goog[default/${kubernetes_service_account.k8s-service-account.metadata[0].name}]"
-    ]
-  }
-}
+# DISABLED due to Cluster Private IP
+# data "google_iam_policy" "spanner-policy" {
+#   binding {
+#     role = "roles/iam.workloadIdentityUser"
+#     members = [
+#       "serviceAccount:${var.project}.svc.id.goog[default/${kubernetes_service_account.k8s-service-account.metadata[0].name}]"
+#     ]
+#   }
+# }
 
-resource "google_service_account_iam_policy" "app-service-account-iam" {
-  service_account_id = google_service_account.app-service-account.name
-  policy_data        = data.google_iam_policy.spanner-policy.policy_data
-}
+# resource "google_service_account_iam_policy" "app-service-account-iam" {
+#   service_account_id = google_service_account.app-service-account.name
+#   policy_data        = data.google_iam_policy.spanner-policy.policy_data
+# }

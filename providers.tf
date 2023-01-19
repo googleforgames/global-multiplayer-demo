@@ -18,15 +18,7 @@ provider "google" {
 
 data "google_client_config" "provider" {}
 
-data "google_container_cluster" "gke-provider" {
-  name     = var.gke_config.cluster_name
-  location = var.gke_config.location
-}
-
-provider "kubernetes" {
-  host  = "https://${data.google_container_cluster.gke-provider.endpoint}"
-  token = data.google_client_config.provider.access_token
-  cluster_ca_certificate = base64decode(
-    data.google_container_cluster.gke-provider.master_auth[0].cluster_ca_certificate,
-  )
+data "google_container_cluster" "spanner-gke-provider" {
+  name     = var.spanner_gke_config.cluster_name
+  location = var.spanner_gke_config.location
 }

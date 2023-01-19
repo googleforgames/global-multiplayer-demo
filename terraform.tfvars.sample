@@ -13,8 +13,8 @@ vpc_name    = "cymbal-game-staging-vpc"
 subnet_name = "cymbal-game-subnet"
 subnet_cidr = "10.1.0.0/16"
 
-gke_config = {
-    cluster_name      = "global-game-gke"
+spanner_gke_config = {
+    cluster_name      = "global-game-gke-spanner"
     location          = "us-central1"
     resource_labels   = {
         environment = "staging"
@@ -28,4 +28,4 @@ app_service_account_config = {
 
 k8s_service_account_id   = "k8s-service-account"
 
-gke_master_cidr = "10.192.1.0/28"
+spanner_gke_master_cidr = "10.192.1.0/28"

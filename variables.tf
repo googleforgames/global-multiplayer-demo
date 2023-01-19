@@ -49,14 +49,14 @@ variable "subnet_cidr" {
 
 ### GKE Variables ###
 
-variable "gke_config" {
+variable "spanner_gke_config" {
   type = object({
     cluster_name    = string
     location        = string
     resource_labels = map(string)
   })
 
-  description = "The configuration specifications for a GKE Autopilot cluster"
+  description = "Configuration specs for Spanner GKE Autopilot cluster"
 }
 
 variable "app_service_account_config" {
@@ -72,7 +72,7 @@ variable "k8s_service_account_id" {
   description = "The kubernetes service account that will impersonate the IAM service account to access Cloud Spanner. This account will be created."
 }
 
-variable "gke_master_cidr" {
+variable "spanner_gke_master_cidr" {
   type        = string
-  description = "GKE Master CIDR"
+  description = "Spanner GKE Master CIDR"
 }
