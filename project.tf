@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-resource "google_compute_network" "vpc" {
-  name                    = var.vpc_name
-  auto_create_subnetworks = false
+
+data "google_project" "project" {
 }
 
-resource "google_compute_subnetwork" "subnet" {
-  name          = var.subnet_name
-  ip_cidr_range = var.subnet_cidr
-  region        = var.region
-  network       = google_compute_network.vpc.id
+resource "google_project_service" "project" {
+  for_each = toset(var.gcp_project_services)
+  service  = each.value
+
+  disable_on_destroy = false
 }

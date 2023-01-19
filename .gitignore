@@ -15,5 +15,5 @@
 .*
 !.gitignore
 *.iml
-terraform.tfstate.*
+terraform.tfstate*
 *.tfvars

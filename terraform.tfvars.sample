@@ -2,9 +2,16 @@ project = "PROJECT_ID"
 
 region      = "us-central1"
 
+gcp_project_services = [
+  "cloudbuild.googleapis.com",
+  "container.googleapis.com",
+  "artifactregistry.googleapis.com"
+]
+
 vpc_name    = "cymbal-game-staging-vpc"
 
 subnet_name = "cymbal-game-subnet"
+subnet_cidr = "10.1.0.0/16"
 
 gke_config = {
     cluster_name      = "global-game-gke"
@@ -20,3 +27,5 @@ app_service_account_config = {
 }
 
 k8s_service_account_id   = "k8s-service-account"
+
+gke_master_cidr = "10.192.1.0/28"

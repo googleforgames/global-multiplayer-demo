@@ -24,12 +24,28 @@ resource "google_container_cluster" "demo-game-gke" {
 
   # Enabling Autopilot for this cluster
   enable_autopilot = true
+
+  master_authorized_networks_config {
+    cidr_blocks {
+      display_name = "VPC Network"
+      cidr_block   = var.subnet_cidr
+    }
+  }
+
+  # Private IP Config
+  private_cluster_config {
+    enable_private_nodes    = true
+    enable_private_endpoint = true
+    master_ipv4_cidr_block  = var.gke_master_cidr
+  }
+
+  depends_on = [google_project_service.project]
 }
 
 resource "google_service_account" "app-service-account" {
   account_id   = var.app_service_account_config.name
   display_name = var.app_service_account_config.description
-  project    = var.project
+  project      = var.project
 }
 
 resource "kubernetes_service_account" "k8s-service-account" {
