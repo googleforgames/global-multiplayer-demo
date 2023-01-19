@@ -71,8 +71,3 @@ variable "k8s_service_account_id" {
   type        = string
   description = "The kubernetes service account that will impersonate the IAM service account to access Cloud Spanner. This account will be created."
 }
-
-variable "spanner_gke_master_cidr" {
-  type        = string
-  description = "Spanner GKE Master CIDR"
-}

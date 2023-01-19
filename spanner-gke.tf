@@ -25,18 +25,11 @@ resource "google_container_cluster" "game-demo-spanner-gke" {
   # Enabling Autopilot for this cluster
   enable_autopilot = true
 
-  master_authorized_networks_config {
-    cidr_blocks {
-      display_name = "VPC Network"
-      cidr_block   = var.subnet_cidr
-    }
-  }
-
   # Private IP Config
   private_cluster_config {
     enable_private_nodes    = true
-    enable_private_endpoint = true
-    master_ipv4_cidr_block  = var.spanner_gke_master_cidr
+    enable_private_endpoint = false
+    # master_ipv4_cidr_block  = var.spanner_gke_master_cidr
   }
 
   depends_on = [google_project_service.project]
@@ -48,18 +41,39 @@ resource "google_service_account" "app-service-account" {
   project      = var.project
 }
 
+resource "kubernetes_service_account" "k8s-service-account" {
+  metadata {
+    name      = var.k8s_service_account_id
+    namespace = "default"
+    annotations = {
+      "iam.gke.io/gcp-service-account" : "${google_service_account.app-service-account.email}"
+    }
+  }
+}
 
-# DISABLED due to Cluster Private IP
-# data "google_iam_policy" "spanner-policy" {
-#   binding {
-#     role = "roles/iam.workloadIdentityUser"
-#     members = [
-#       "serviceAccount:${var.project}.svc.id.goog[default/${kubernetes_service_account.k8s-service-account.metadata[0].name}]"
-#     ]
-#   }
-# }
+resource "kubernetes_secret_v1" "k8s-service-account" {
+  metadata {
+    annotations = {
+      "kubernetes.io/service-account.name" = "k8s-service-account"
+    }
+    name = "k8s-service-account"
+  }
 
-# resource "google_service_account_iam_policy" "app-service-account-iam" {
-#   service_account_id = google_service_account.app-service-account.name
-#   policy_data        = data.google_iam_policy.spanner-policy.policy_data
-# }
+  type = "kubernetes.io/service-account-token"
+
+  depends_on = [kubernetes_service_account.k8s-service-account]
+}
+
+data "google_iam_policy" "spanner-policy" {
+  binding {
+    role = "roles/iam.workloadIdentityUser"
+    members = [
+      "serviceAccount:${var.project}.svc.id.goog[default/${kubernetes_service_account.k8s-service-account.metadata[0].name}]"
+    ]
+  }
+}
+
+resource "google_service_account_iam_policy" "app-service-account-iam" {
+  service_account_id = google_service_account.app-service-account.name
+  policy_data        = data.google_iam_policy.spanner-policy.policy_data
+}
