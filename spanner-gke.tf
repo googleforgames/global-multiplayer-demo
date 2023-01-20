@@ -100,9 +100,9 @@ resource "google_clouddeploy_target" "spanner" {
   }
 
   labels = {
-    my_first_label = "example-label-1"
+    my_first_label = "global-game-demo"
 
-    my_second_label = "example-label-2"
+    my_second_label = "spanner"
   }
 
   project          = var.project
@@ -124,9 +124,9 @@ resource "google_clouddeploy_delivery_pipeline" "spanner" {
   description = "Global Game: Spanner Deploy Pipeline"
 
   labels = {
-    my_first_label = "example-label-1"
+    my_first_label = "global-game-demo"
 
-    my_second_label = "example-label-2"
+    my_second_label = "spanner"
   }
 
   project          = var.project
