@@ -17,6 +17,7 @@ default_regions = {
 
 gcp_project_services = [
   "cloudbuild.googleapis.com",
+  "compute.googleapis.com",
   "container.googleapis.com",
   "artifactregistry.googleapis.com"
 ]
