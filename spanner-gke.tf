@@ -17,7 +17,7 @@ resource "google_container_cluster" "game-demo-spanner-gke" {
   location = var.spanner_gke_config.location
 
   network    = google_compute_network.vpc.name
-  subnetwork = google_compute_subnetwork.subnet["us-central1"].name
+  subnetwork = google_compute_subnetwork.subnet[var.spanner_gke_config.location].name
 
   # See issue: https://github.com/hashicorp/terraform-provider-google/issues/10782
   ip_allocation_policy {}
