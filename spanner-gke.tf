@@ -17,7 +17,7 @@ resource "google_container_cluster" "game-demo-spanner-gke" {
   location = var.spanner_gke_config.location
 
   network    = google_compute_network.vpc.name
-  subnetwork = google_compute_subnetwork.subnet.name
+  subnetwork = google_compute_subnetwork.subnet[var.spanner_gke_config.location].name
 
   # See issue: https://github.com/hashicorp/terraform-provider-google/issues/10782
   ip_allocation_policy {}
@@ -29,7 +29,6 @@ resource "google_container_cluster" "game-demo-spanner-gke" {
   private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = false
-    # master_ipv4_cidr_block  = var.spanner_gke_master_cidr
   }
 
   depends_on = [google_project_service.project]

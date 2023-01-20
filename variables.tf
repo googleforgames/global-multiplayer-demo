@@ -19,9 +19,9 @@ variable "project" {
   description = "GCP Project Name"
 }
 
-variable "region" {
-  type        = string
-  description = "GCP Project Region"
+variable "default_regions" {
+  description = "Default Regions & associated values"
+  type        = map(any)
 }
 
 variable "gcp_project_services" {
@@ -35,16 +35,6 @@ variable "gcp_project_services" {
 variable "vpc_name" {
   type        = string
   description = "VPC Name"
-}
-
-variable "subnet_name" {
-  type        = string
-  description = "Subnet Name"
-}
-
-variable "subnet_cidr" {
-  type        = string
-  description = "Subnet CIDR"
 }
 
 ### GKE Variables ###
