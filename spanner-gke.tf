@@ -76,3 +76,70 @@ resource "google_service_account_iam_policy" "app-service-account-iam" {
   service_account_id = google_service_account.app-service-account.name
   policy_data        = data.google_iam_policy.spanner-policy.policy_data
 }
+
+
+data "google_container_cluster" "game-demo-spanner-gke" {
+  name     = var.spanner_gke_config.cluster_name
+  location = var.spanner_gke_config.location
+}
+
+resource "google_clouddeploy_target" "spanner" {
+  location = var.spanner_gke_config.location
+  name     = "global-game-spanner-deploy-target"
+
+  annotations = {
+    my_first_annotation = "example-annotation-1"
+
+    my_second_annotation = "example-annotation-2"
+  }
+
+  description = "Global Game: Spanner Deploy Target"
+
+  gke {
+    cluster = data.google_container_cluster.game-demo-spanner-gke.id
+  }
+
+  labels = {
+    my_first_label = "example-label-1"
+
+    my_second_label = "example-label-2"
+  }
+
+  project          = var.project
+  require_approval = false
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_clouddeploy_delivery_pipeline" "spanner" {
+  location = var.spanner_gke_config.location
+  name     = "global-game-spanner-deploy-pipeline"
+
+  annotations = {
+    my_first_annotation = "example-annotation-1"
+
+    my_second_annotation = "example-annotation-2"
+  }
+
+  description = "Global Game: Spanner Deploy Pipeline"
+
+  labels = {
+    my_first_label = "example-label-1"
+
+    my_second_label = "example-label-2"
+  }
+
+  project          = var.project
+
+  serial_pipeline {
+    stages {
+      profiles  = ["example-profile-one", "example-profile-two"]
+      target_id = google_clouddeploy_target.spanner.target_id
+    }
+
+#    stages {
+#      profiles  = []
+#      target_id = "example-target-two"
+#    }
+  }
+}
