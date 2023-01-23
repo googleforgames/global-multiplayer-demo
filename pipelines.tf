@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+##### Spanner Pipelines #####
+
 resource "google_clouddeploy_target" "spanner" {
   location = var.spanner_gke_config.location
   name     = "global-game-spanner-deploy-target"
@@ -64,6 +66,68 @@ resource "google_clouddeploy_delivery_pipeline" "spanner" {
     stages {
       profiles  = ["spanner-profile-one"]
       target_id = google_clouddeploy_target.spanner.target_id
+    }
+  }
+}
+
+##### Agones Pipelines #####
+
+resource "google_clouddeploy_target" "agones" {
+  for_each = var.default_regions
+
+  location = each.key
+  name     = "global-game-agones-deploy-target-${each.key}"
+
+  annotations = {
+    my_first_annotation = "agones-annotation-1"
+
+    my_second_annotation = "agones-annotation-2"
+  }
+
+  description = "Global Game: Agones Deploy Target - ${each.key}"
+
+  gke {
+    cluster = data.google_container_cluster.game-demo-agones-gke[each.key].id
+  }
+
+  labels = {
+    my_first_label = "global-game-demo"
+
+    my_second_label = "agones"
+  }
+
+  project          = var.project
+  require_approval = false
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_clouddeploy_delivery_pipeline" "agones" {
+  for_each = var.default_regions
+
+  location = each.key
+  name     = "global-game-agones-deploy-pipeline-${each.key}"
+
+  annotations = {
+    my_first_annotation = "agones-annotation-1"
+
+    my_second_annotation = "agones-annotation-2"
+  }
+
+  description = "Global Game: Agones Deploy Pipeline - ${each.key}"
+
+  labels = {
+    my_first_label = "global-game-demo"
+
+    my_second_label = "agones"
+  }
+
+  project = var.project
+
+  serial_pipeline {
+    stages {
+      profiles  = ["agones-profile-one", "agones-profile-two"]
+      target_id = google_clouddeploy_target.agones[each.key].target_id
     }
   }
 }

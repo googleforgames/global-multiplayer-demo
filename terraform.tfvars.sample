@@ -16,15 +16,15 @@ project = "PROJECT_ID"
 
 default_regions = {
   "us-central1" : {
-    "vpc_subnet_name" : "global-game-subnet-us",
+    "name" : "global-game-us",
     "vpc_subnet_cidr" : "10.1.0.0/16"
   },
   "europe-west3" : {
-    "vpc_subnet_name" : "global-game-subnet-eu",
+    "name" : "global-game-eu",
     "vpc_subnet_cidr" : "10.4.0.0/16",
   },
   "asia-east1" : {
-    "vpc_subnet_name" : "global-game-subnet-asia",
+    "name" : "global-game-asia",
     "vpc_subnet_cidr" : "10.8.0.0/16",
   }
 }
