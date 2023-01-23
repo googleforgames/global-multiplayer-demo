@@ -15,7 +15,7 @@
 data "google_container_engine_versions" "regions" {
   for_each = var.default_regions
 
-  location       = each.key
+  location = each.key
 }
 
 module "agones_gke_clusters" {

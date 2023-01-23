@@ -12,6 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+# Give Cloud Build Access to the GKE Clusters for deployments
+
+resource "google_project_iam_policy" "cloudbuild" {
+  project     = var.project
+  policy_data = data.google_iam_policy.cloudbuild.policy_data
+
+  depends_on = [google_project_service.project]
+}
+
+data "google_iam_policy" "cloudbuild" {
+  binding {
+    role = "roles/container.developer"
+
+    members = [
+      "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
+    ]
+  }
+
+  depends_on = [google_project_service.project]
+}
+
 ##### Spanner Pipelines #####
 
 resource "google_clouddeploy_target" "spanner" {
@@ -64,7 +85,6 @@ resource "google_clouddeploy_delivery_pipeline" "spanner" {
 
   serial_pipeline {
     stages {
-      profiles  = ["spanner-profile-one"]
       target_id = google_clouddeploy_target.spanner.target_id
     }
   }
@@ -126,7 +146,6 @@ resource "google_clouddeploy_delivery_pipeline" "agones" {
 
   serial_pipeline {
     stages {
-      profiles  = ["agones-profile-one", "agones-profile-two"]
       target_id = google_clouddeploy_target.agones[each.key].target_id
     }
   }
