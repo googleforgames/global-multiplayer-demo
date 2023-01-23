@@ -39,6 +39,13 @@ gcp_project_services = [
 
 vpc_name = "global-game-vpc"
 
+spanner_config = {
+  db_name = "global-game-spanner-db"
+  instance_name = "global-game-spanner-instance"
+  location = "us-central1"
+  num_nodes = 3
+}
+
 spanner_gke_config = {
   cluster_name = "global-game-gke-spanner"
   location     = "us-central1"
