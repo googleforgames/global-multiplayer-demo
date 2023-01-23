@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+data "google_container_engine_versions" "regions" {
+  for_each = var.default_regions
+
+  location       = each.key
+}
+
 module "agones_gke_clusters" {
   for_each = var.default_regions
 
@@ -26,7 +32,8 @@ module "agones_gke_clusters" {
     mindNodeCount = 1
     maxNodeCount  = 5
 
-    kubernetesVersion = "1.24.9-gke.1500"
+    # Install Current GKE default version
+    kubernetesVersion = data.google_container_engine_versions.regions[each.key].default_cluster_version
 
     network    = google_compute_network.vpc.id
     subnetwork = "${each.value.name}-subnet"
