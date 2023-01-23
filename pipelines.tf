@@ -129,3 +129,37 @@ resource "google_clouddeploy_delivery_pipeline" "agones" {
     }
   }
 }
+
+##### Cloud Deploy IAM #####
+
+resource "google_project_iam_member" "clouddeploy-container" {
+  project = var.project
+  role    = "roles/container.developer"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_project_iam_member" "clouddeploy-build" {
+  project = var.project
+  role    = "roles/cloudbuild.workerPoolUser"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_project_iam_member" "clouddeploy-logs" {
+  project = var.project
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_project_iam_member" "clouddeploy-jobrunner" {
+  project = var.project
+  role    = "roles/clouddeploy.jobRunner"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+
+  depends_on = [google_project_service.project]
+}
