@@ -8,8 +8,8 @@ dedicated game servers, utlising both Google Cloud's products and open source ga
 Get terraform set up and variables configured:
 
 ```shell
-terraform init
-cp terraform.tfvars.sample terraform.tfvars
+$ terraform init
+$ cp terraform.tfvars.sample terraform.tfvars
 
 # Edit terraform.tfvars, especially project
 ```
@@ -17,7 +17,27 @@ cp terraform.tfvars.sample terraform.tfvars
 Provision the infrastructure.
 
 ```shell
-terraform apply
+$ terraform apply
+```
+
+### Deploy To GKE Clusters 
+
+The below will list all GKE clusters in your project:
+ 
+```shell
+$ gcloud container clusters list
+```
+
+The below will list all Cloud Deploy Pipelines for a region:
+ 
+```shell
+$ gcloud deploy delivery-pipelines list --region=us-central1|grep name|awk -F\/ '{print $6}'
+```
+
+The below will deploy release `release-v1` from a provided K8s manifest file to a GKE cluster through it's delCloud Deploy Delivery Pipeline:
+ 
+```shell
+$ gcloud deploy releases create release-v1 --from-k8s-manifest=release-v1.yaml --region=us-central1 --delivery-pipeline=global-game-agones-deploy-pipeline-us-central1 
 ```
 
 ## Licence
