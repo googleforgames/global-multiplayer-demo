@@ -88,9 +88,9 @@ resource "google_clouddeploy_target" "spanner" {
   name     = "global-game-spanner-deploy-target"
 
   annotations = {
-    my_first_annotation = "example-annotation-1"
+    my_first_annotation = "spanner-annotation-1"
 
-    my_second_annotation = "example-annotation-2"
+    my_second_annotation = "spanner-annotation-2"
   }
 
   description = "Global Game: Spanner Deploy Target"
@@ -116,9 +116,9 @@ resource "google_clouddeploy_delivery_pipeline" "spanner" {
   name     = "global-game-spanner-deploy-pipeline"
 
   annotations = {
-    my_first_annotation = "example-annotation-1"
+    my_first_annotation = "spanner-annotation-1"
 
-    my_second_annotation = "example-annotation-2"
+    my_second_annotation = "spanner-annotation-2"
   }
 
   description = "Global Game: Spanner Deploy Pipeline"
@@ -129,17 +129,12 @@ resource "google_clouddeploy_delivery_pipeline" "spanner" {
     my_second_label = "spanner"
   }
 
-  project          = var.project
+  project = var.project
 
   serial_pipeline {
     stages {
-      profiles  = ["example-profile-one", "example-profile-two"]
+      profiles  = ["spanner-profile-one"]
       target_id = google_clouddeploy_target.spanner.target_id
     }
-
-#    stages {
-#      profiles  = []
-#      target_id = "example-target-two"
-#    }
   }
 }
