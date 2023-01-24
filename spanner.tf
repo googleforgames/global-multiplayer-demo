@@ -5,7 +5,7 @@ resource "google_spanner_instance" "global-game-spanner" {
 }
 
 resource "google_spanner_database" "spanner-database" {
-  instance                 = google_spanner_instance.main.name
+  instance                 = google_spanner_instance.global-game-spanner.name
   name                     = var.spanner_config.db_name
   version_retention_period = "3d"
   deletion_protection = false
