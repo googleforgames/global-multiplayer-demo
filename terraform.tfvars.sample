@@ -43,13 +43,13 @@ vpc_name = "global-game-vpc"
 spanner_config = {
   db_name = "global-game-spanner-db"
   instance_name = "global-game-spanner-instance"
-  location = "us-central1"
+  location = "nam-eur-asia1"
   num_nodes = 3
 }
 
 spanner_gke_config = {
   cluster_name = "global-game-gke-spanner"
-  location     = "nam-eur-asia1"
+  location     = "us-central1"
   resource_labels = {
     environment = "staging"
   }
