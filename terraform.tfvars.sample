@@ -49,7 +49,7 @@ spanner_config = {
 
 spanner_gke_config = {
   cluster_name = "global-game-gke-spanner"
-  location     = "us-central1"
+  location     = "nam-eur-asia1"
   resource_labels = {
     environment = "staging"
   }
