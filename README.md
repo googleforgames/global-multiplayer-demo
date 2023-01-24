@@ -28,16 +28,10 @@ The below will list all GKE clusters in your project:
 $ gcloud container clusters list
 ```
 
-The below will list all Cloud Deploy Pipelines for a region:
- 
+Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild
+will deploy Agones using Cloud Deploy. 
 ```shell
-$ gcloud deploy delivery-pipelines list --region=us-central1|grep name|awk -F\/ '{print $6}'
-```
-
-The below will deploy release `release-v1` from a provided K8s manifest file to a GKE cluster through it's delCloud Deploy Delivery Pipeline:
- 
-```shell
-$ gcloud deploy releases create release-v1 --from-k8s-manifest=release-v1.yaml --region=us-central1 --delivery-pipeline=global-game-agones-deploy-pipeline-us-central1 
+gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-0001
 ```
 
 ## Licence
