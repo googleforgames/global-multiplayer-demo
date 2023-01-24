@@ -35,10 +35,18 @@ gcp_project_services = [
   "compute.googleapis.com",
   "container.googleapis.com",
   "gameservices.googleapis.com",
-  "artifactregistry.googleapis.com"
+  "artifactregistry.googleapis.com",
+  "spanner.googleapis.com"
 ]
 
 vpc_name = "global-game-vpc"
+
+spanner_config = {
+  db_name = "global-game-spanner-db"
+  instance_name = "global-game-spanner-instance"
+  location = "nam-eur-asia1"
+  num_nodes = 3
+}
 
 spanner_gke_config = {
   cluster_name = "global-game-gke-spanner"

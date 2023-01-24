@@ -39,6 +39,17 @@ variable "vpc_name" {
 
 ### Spanner Variables ###
 
+variable "spanner_config" {
+  type = object({
+    instance_name = string
+    db_name       = string
+    location      = string
+    num_nodes     = number
+  })
+
+  description = "Configuration specs for Spanner"
+}
+
 variable "spanner_gke_config" {
   type = object({
     cluster_name    = string
@@ -61,3 +72,4 @@ variable "k8s_service_account_id" {
   type        = string
   description = "The kubernetes service account that will impersonate the IAM service account to access Cloud Spanner. This account will be created."
 }
+
