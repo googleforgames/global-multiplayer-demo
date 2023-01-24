@@ -19,7 +19,7 @@ steps:
     - run
     - --filename=agones-system.yaml
     - --location=asia-east1
-    - --cluster=global-game-subnet-asia-asia-east1
+    - --cluster=global-game-asia-asia-east1
     - --output=output/asia-east1
 
   - name: "gcr.io/cloud-builders/gke-deploy"
@@ -27,7 +27,7 @@ steps:
     - run
     - --filename=agones-system.yaml
     - --location=europe-west3
-    - --cluster=global-game-subnet-eu-europe-west3
+    - --cluster=global-game-eu-europe-west3
     - --output=output/europe-west3
 
   - name: "gcr.io/cloud-builders/gke-deploy"
@@ -35,7 +35,7 @@ steps:
     - run
     - --filename=agones-system.yaml
     - --location=us-central1
-    - --cluster=global-game-subnet-us-us-central1
+    - --cluster=global-game-us-us-central1
     - --output=outputus-central1
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk

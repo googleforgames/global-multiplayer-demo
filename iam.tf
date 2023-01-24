@@ -10,6 +10,12 @@ resource "google_project_iam_member" "cloudbuild-sa-cloudbuild" {
   member  = "serviceAccount:${google_service_account.cloudbuild-sa.email}"
 }
 
+resource "google_project_iam_member" "cloudbuild-sa-gke-admin" {
+  project = var.project
+  role    = "roles/container.admin"
+  member  = "serviceAccount:${google_service_account.cloudbuild-sa.email}"
+}
+
 resource "google_project_iam_member" "cloudbuild-sa-cloudbuild-roles" {
   project = var.project
   for_each = toset([

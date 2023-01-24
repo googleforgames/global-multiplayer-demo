@@ -3,15 +3,37 @@
 This multiplayer demo is a cloud first implementation of a global scale, realtime multiplayer game utilising
 dedicated game servers, utlising both Google Cloud's products and open source gaming solutions.
 
+### Prerequisites
+
+To run the Game Demo install, you will need the following applications installed on your workstation:
+
+* [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
+* [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
+
+## Google Cloud Auth
+
+Once you have Google Cloud CLI installed, you will need to authenticate against Google Cloud:
+
+```shell
+$ gcloud auth application-default login
+```
+
+and then set your Google Cloud Project project name/PROJECT_ID:
+
+```shell
+$ gcloud config set project <PROJECT_ID>
+```
+
+
 ### Provision
 
-Get terraform set up and variables configured:
+Initialize Terraform  & configure variables
 
 ```shell
 $ terraform init
 $ cp terraform.tfvars.sample terraform.tfvars
 
-# Edit terraform.tfvars, especially project
+# Edit terraform.tfvars, especially <PROJECT_ID>
 ```
 
 Provision the infrastructure.
@@ -22,16 +44,11 @@ $ terraform apply
 
 ### Deploy To GKE Clusters 
 
-The below will list all GKE clusters in your project:
- 
-```shell
-$ gcloud container clusters list
-```
-
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild
 will deploy Agones using Cloud Deploy. 
 ```shell
-gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-0001
+$ cd deploy/
+$ gcloud builds submit --config=deploy/cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
 ## Licence
