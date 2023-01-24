@@ -50,8 +50,6 @@ variable "spanner_config" {
   description = "Configuration specs for Spanner"
 }
 
-### GKE Variables ###
-
 variable "spanner_gke_config" {
   type = object({
     cluster_name    = string

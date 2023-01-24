@@ -31,7 +31,14 @@ resource "google_container_cluster" "game-demo-spanner-gke" {
     enable_private_endpoint = false
   }
 
-  depends_on = [google_project_service.project]
+  depends_on = [google_compute_subnetwork.subnet, google_project_service.project]
+}
+
+data "google_container_cluster" "game-demo-spanner-gke" {
+  name     = var.spanner_gke_config.cluster_name
+  location = var.spanner_gke_config.location
+
+  depends_on = [google_container_cluster.game-demo-spanner-gke]
 }
 
 resource "google_service_account" "app-service-account" {
@@ -40,45 +47,20 @@ resource "google_service_account" "app-service-account" {
   project      = var.project
 }
 
-resource "kubernetes_service_account" "k8s-service-account" {
-  metadata {
-    name      = var.k8s_service_account_id
-    namespace = "default"
-    annotations = {
-      "iam.gke.io/gcp-service-account" : "${google_service_account.app-service-account.email}"
-    }
-  }
-}
-
-resource "kubernetes_secret_v1" "k8s-service-account" {
-  metadata {
-    annotations = {
-      "kubernetes.io/service-account.name" = "k8s-service-account"
-    }
-    name = "k8s-service-account"
-  }
-
-  type = "kubernetes.io/service-account-token"
-
-  depends_on = [kubernetes_service_account.k8s-service-account]
-}
-
 data "google_iam_policy" "spanner-policy" {
   binding {
     role = "roles/iam.workloadIdentityUser"
     members = [
-      "serviceAccount:${var.project}.svc.id.goog[default/${kubernetes_service_account.k8s-service-account.metadata[0].name}]"
+      "serviceAccount:${var.project}.svc.id.goog[default/${var.k8s_service_account_id}]"
     ]
   }
+
+  depends_on = [google_project_service.project]
 }
 
 resource "google_service_account_iam_policy" "app-service-account-iam" {
   service_account_id = google_service_account.app-service-account.name
   policy_data        = data.google_iam_policy.spanner-policy.policy_data
-}
 
-
-data "google_container_cluster" "game-demo-spanner-gke" {
-  name     = var.spanner_gke_config.cluster_name
-  location = var.spanner_gke_config.location
+  depends_on = [google_project_service.project]
 }
