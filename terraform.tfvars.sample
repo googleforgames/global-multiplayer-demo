@@ -35,7 +35,7 @@ gcp_project_services = [
   "compute.googleapis.com",
   "container.googleapis.com",
   "gameservices.googleapis.com",
-  "artifactregistry.googleapis.com"
+  "artifactregistry.googleapis.com",
   "spanner.googleapis.com"
 ]
 
