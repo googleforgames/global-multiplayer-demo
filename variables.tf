@@ -37,7 +37,7 @@ variable "vpc_name" {
   description = "VPC Name"
 }
 
-### GKE Variables ###
+### Spanner Variables ###
 
 variable "spanner_gke_config" {
   type = object({

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+##### Spanner Pipelines #####
+
 resource "google_clouddeploy_target" "spanner" {
   location = var.spanner_gke_config.location
   name     = "global-game-spanner-deploy-target"
@@ -62,8 +64,102 @@ resource "google_clouddeploy_delivery_pipeline" "spanner" {
 
   serial_pipeline {
     stages {
-      profiles  = ["spanner-profile-one"]
       target_id = google_clouddeploy_target.spanner.target_id
     }
   }
+}
+
+##### Agones Pipelines #####
+
+resource "google_clouddeploy_target" "agones" {
+  for_each = var.default_regions
+
+  location = each.key
+  name     = "global-game-agones-deploy-target-${each.key}"
+
+  annotations = {
+    my_first_annotation = "agones-annotation-1"
+
+    my_second_annotation = "agones-annotation-2"
+  }
+
+  description = "Global Game: Agones Deploy Target - ${each.key}"
+
+  gke {
+    cluster = data.google_container_cluster.game-demo-agones-gke[each.key].id
+  }
+
+  labels = {
+    my_first_label = "global-game-demo"
+
+    my_second_label = "agones"
+  }
+
+  project          = var.project
+  require_approval = false
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_clouddeploy_delivery_pipeline" "agones" {
+  for_each = var.default_regions
+
+  location = each.key
+  name     = "global-game-agones-deploy-pipeline-${each.key}"
+
+  annotations = {
+    my_first_annotation = "agones-annotation-1"
+
+    my_second_annotation = "agones-annotation-2"
+  }
+
+  description = "Global Game: Agones Deploy Pipeline - ${each.key}"
+
+  labels = {
+    my_first_label = "global-game-demo"
+
+    my_second_label = "agones"
+  }
+
+  project = var.project
+
+  serial_pipeline {
+    stages {
+      target_id = google_clouddeploy_target.agones[each.key].target_id
+    }
+  }
+}
+
+##### Cloud Deploy IAM #####
+
+resource "google_project_iam_member" "clouddeploy-container" {
+  project = var.project
+  role    = "roles/container.developer"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_project_iam_member" "clouddeploy-build" {
+  project = var.project
+  role    = "roles/cloudbuild.workerPoolUser"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_project_iam_member" "clouddeploy-logs" {
+  project = var.project
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_project_iam_member" "clouddeploy-jobrunner" {
+  project = var.project
+  role    = "roles/clouddeploy.jobRunner"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+
+  depends_on = [google_project_service.project]
 }
