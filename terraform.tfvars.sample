@@ -36,6 +36,7 @@ gcp_project_services = [
   "container.googleapis.com",
   "gameservices.googleapis.com",
   "artifactregistry.googleapis.com"
+  "spanner.googleapis.com"
 ]
 
 vpc_name = "global-game-vpc"
