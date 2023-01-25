@@ -23,4 +23,6 @@ resource "google_spanner_database" "spanner-database" {
   name                     = var.spanner_config.db_name
   version_retention_period = "3d"
   deletion_protection      = false
+
+  depends_on = [google_project_service.project]
 }
