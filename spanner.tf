@@ -16,6 +16,8 @@ resource "google_spanner_instance" "global-game-spanner" {
   config       = var.spanner_config.location
   display_name = var.spanner_config.instance_name
   num_nodes    = var.spanner_config.num_nodes
+
+  depends_on = [google_project_service.project]
 }
 
 resource "google_spanner_database" "spanner-database" {
@@ -23,6 +25,4 @@ resource "google_spanner_database" "spanner-database" {
   name                     = var.spanner_config.db_name
   version_retention_period = "3d"
   deletion_protection      = false
-
-  depends_on = [google_project_service.project]
 }
