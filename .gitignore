@@ -17,3 +17,5 @@
 *.iml
 terraform.tfstate*
 *.tfvars
+
+deploy/base/charts/
