@@ -25,12 +25,13 @@ module "agones_gke_clusters" {
   #count  = var.agones_region_cluster_count
 
   cluster = {
-    name         = "${each.value.name}-${each.key}"
-    location     = each.key
-    project      = var.project
-    autoscale    = true
-    minNodeCount = 1
-    maxNodeCount = 5
+    name             = "${each.value.name}-${each.key}"
+    location         = each.key
+    project          = var.project
+    autoscale        = true
+    workloadIdentity = true
+    minNodeCount     = 1
+    maxNodeCount     = 5
 
     # Install Current GKE default version
     kubernetesVersion = data.google_container_engine_versions.regions[each.key].default_cluster_version
