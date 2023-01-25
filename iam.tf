@@ -30,9 +30,13 @@ resource "google_project_iam_member" "cloudbuild-sa-cloudbuild-roles" {
   member = "serviceAccount:${google_service_account.cloudbuild-sa.email}"
 }
 
-resource "google_project_iam_member" "clouddeploy-admin" {
+resource "google_project_iam_member" "clouddeploy-iam" {
   project = var.project
-  role    = "roles/container.admin"
+  for_each = toset([
+    "roles/container.admin",
+    "roles/storage.admin"
+  ])
+  role   = each.key
   member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
 
   depends_on = [google_project_service.project]
