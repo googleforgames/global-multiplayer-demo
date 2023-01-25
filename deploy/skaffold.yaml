@@ -1,20 +1,9 @@
 apiVersion: skaffold/v2beta29
 kind: Config
 deploy:
-  kubectl:
-  #  manifests:
-  #    - https://raw.githubusercontent.com/googleforgames/agones/release-1.29.0/install/yaml/install.yaml
+  kustomize:
+    paths:
+      - "."
+    buildArgs: ["--enable-helm"]
     flags:
       apply: ['--server-side'] # Avoid the "Too long: must have at most 262144 bytes" problem
-  helm:
-    releases:
-    - name: agones
-      repo: https://agones.dev/chart/stable/
-      remoteChart: agones
-
-      # Can't use the namespace property. Since the agones helm chart creates resources in 3 different namespaces:
-      # the Release.namespace + default + kube-system, and Cloud Deploy deploys helm by rendering the chart then
-      # applying, you will receive a "the namespace from the provided object does not match the namespace" error.
-      # Applying to the default namespace, without explictly specifying a --namespace flag allows helm deployment
-      # without altering the chart. 
-      # namespace: agones-system
