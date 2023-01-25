@@ -37,7 +37,7 @@ resource "google_project_iam_member" "clouddeploy-iam" {
     "roles/storage.admin"
   ])
   role   = each.key
-  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+  member = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
 
   depends_on = [google_project_service.project]
 }
