@@ -56,7 +56,7 @@ data "google_iam_policy" "workload-id-policy" {
     ]
   }
 
-  depends_on = [google_project_service.project]
+  depends_on = [google_project_service.project, google_container_cluster.game-demo-spanner-gke]
 }
 
 resource "google_service_account_iam_policy" "app-service-account-iam" {
