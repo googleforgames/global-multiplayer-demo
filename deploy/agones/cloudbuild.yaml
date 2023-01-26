@@ -36,7 +36,7 @@ steps:
     - --filename=agones-system.yaml
     - --location=us-central1
     - --cluster=global-game-us-us-central1
-    - --output=outputus-central1
+    - --output=output/us-central1
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud

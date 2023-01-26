@@ -47,8 +47,8 @@ $ terraform apply
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild
 will deploy Agones using Cloud Deploy. 
 ```shell
-$ cd deploy/
-$ gcloud builds submit --config=deploy/cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
+$ cd deploy/agones
+$ gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
 ## Licence
