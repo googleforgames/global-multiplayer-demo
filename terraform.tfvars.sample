@@ -17,15 +17,18 @@ project = "PROJECT_ID"
 default_regions = {
   "us-central1" : {
     "name" : "global-game-us",
+    "allocation_endpoint" : "34.172.234.39", # Temporary Fix - Hardcoding until SW solution found
     "vpc_subnet_cidr" : "10.1.0.0/16"
   },
   "europe-west3" : {
     "name" : "global-game-eu",
-    "vpc_subnet_cidr" : "10.4.0.0/16",
+    "allocation_endpoint" : "34.159.237.222", # Temporary Fix - Hardcoding until SW solution found
+    "vpc_subnet_cidr" : "10.4.0.0/16"
   },
   "asia-east1" : {
     "name" : "global-game-asia",
-    "vpc_subnet_cidr" : "10.8.0.0/16",
+    "allocation_endpoint" : "34.81.180.254", # Temporary Fix - Hardcoding until SW solution found
+    "vpc_subnet_cidr" : "10.8.0.0/16"
   }
 }
 
@@ -36,16 +39,19 @@ gcp_project_services = [
   "container.googleapis.com",
   "gameservices.googleapis.com",
   "artifactregistry.googleapis.com",
-  "spanner.googleapis.com"
+  "spanner.googleapis.com",
+  "secretmanager.googleapis.com",
+  "servicecontrol.googleapis.com",
+  "run.googleapis.com"
 ]
 
 vpc_name = "global-game-vpc"
 
 spanner_config = {
-  db_name = "global-game-spanner-db"
+  db_name       = "global-game-spanner-db"
   instance_name = "global-game-spanner-instance"
-  location = "nam-eur-asia1"
-  num_nodes = 3
+  location      = "nam-eur-asia1"
+  num_nodes     = 3
 }
 
 spanner_gke_config = {
@@ -62,3 +68,11 @@ app_service_account_config = {
 }
 
 k8s_service_account_id = "k8s-service-account"
+
+allocation_endpoint = {
+  name             = "agones-allocation-endpoint"
+  proxy_image      = "us-docker.pkg.dev/agones-images/examples/allocation-endpoint-proxy:0.3"
+  weight           = 100
+  namespace        = "default"
+  agones_namespace = "agones-system"
+}

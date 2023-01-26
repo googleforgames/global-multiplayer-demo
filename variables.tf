@@ -73,3 +73,15 @@ variable "k8s_service_account_id" {
   description = "The kubernetes service account that will impersonate the IAM service account to access Cloud Spanner. This account will be created."
 }
 
+### Allocation Endpoint Variables ###
+
+variable "allocation_endpoint" {
+  type = object({
+    name             = string
+    proxy_image      = string
+    weight           = number
+    namespace        = string
+    agones_namespace = string
+  })
+  description = "Allocation Endpoint Configuration Variables"
+}

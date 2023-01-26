@@ -5,3 +5,11 @@ helmCharts:
   version: 1.29.0
   releaseName: my-agones
   namespace: agones-system
+  valuesInline:
+    agones:
+       allocator:
+         disableMTLS: true
+         disableTLS: true
+         service: 
+           http:
+             enabled: false
