@@ -20,7 +20,7 @@ steps:
     - --filename=agones-system.yaml
     - --location=asia-east1
     - --cluster=global-game-asia-asia-east1
-    - --output=output/asia-east1
+    - --output=output/agones-deploy-asia-east1
 
   - name: "gcr.io/cloud-builders/gke-deploy"
     args:
@@ -28,7 +28,7 @@ steps:
     - --filename=agones-system.yaml
     - --location=europe-west3
     - --cluster=global-game-eu-europe-west3
-    - --output=output/europe-west3
+    - --output=output/agones-deploy-europe-west3
 
   - name: "gcr.io/cloud-builders/gke-deploy"
     args:
@@ -36,7 +36,7 @@ steps:
     - --filename=agones-system.yaml
     - --location=us-central1
     - --cluster=global-game-us-us-central1
-    - --output=output/us-central1
+    - --output=output/agones-deploy-us-central1
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
@@ -47,6 +47,14 @@ steps:
         "--region", "asia-east1"
       ]
 
+  - name: "gcr.io/cloud-builders/gke-deploy"
+    args:
+    - run
+    - --filename=patch-agones-allocator-asia-east1.yaml
+    - --location=asia-east1
+    - --cluster=global-game-asia-asia-east1
+    - --output=output/agones-patch-asia-east1
+
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args:
@@ -56,6 +64,14 @@ steps:
         "--region", "europe-west3"
       ]
 
+  - name: "gcr.io/cloud-builders/gke-deploy"
+    args:
+    - run
+    - --filename=patch-agones-allocator-europe-west3.yaml
+    - --location=europe-west3
+    - --cluster=global-game-eu-europe-west3
+    - --output=output/agones-patch-europe-west3
+
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args:
@@ -64,6 +80,15 @@ steps:
         "--delivery-pipeline", "global-game-agones-deploy-pipeline-us-central1",
         "--region", "us-central1"
       ]
+
+  - name: "gcr.io/cloud-builders/gke-deploy"
+    args:
+    - run
+    - --filename=patch-agones-allocator-us-central1.yaml
+    - --location=us-central1
+    - --cluster=global-game-us-us-central1
+    - --output=output/agones-patch-us-central1
+
 substitutions:
   _RELEASE_NAME: rel-0001
 options:

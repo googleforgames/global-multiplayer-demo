@@ -53,7 +53,8 @@ resource "google_cloud_run_service_iam_binding" "binding" {
   role     = "roles/run.invoker"
   members = [
     "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com",
-    "serviceAccount:${google_service_account.cloudbuild-sa.email}"
+    "serviceAccount:${google_service_account.cloudbuild-sa.email}",
+    "serviceAccount:${google_service_account.ae_sa.email}"
   ]
 }
 
@@ -170,4 +171,16 @@ resource "google_project_service" "allocator-service" {
 
   service                    = google_endpoints_service.endpoints_service[each.key].id
   disable_dependent_services = true
+}
+
+# Make Kubernetes manifest files to patch the Agones deployment for Allocation Endpoint
+resource "local_file" "patch-agones-manifest" {
+  for_each = var.default_regions
+
+  content = templatefile(
+    "${path.module}/deploy/agones/patch-agones-allocator.yaml.tpl", {
+      project_id = var.project
+      location   = each.key
+  })
+  filename = "${path.module}/deploy/agones/patch-agones-allocator-${each.key}.yaml"
 }
