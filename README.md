@@ -66,7 +66,7 @@ Or if you have kubectl already setup for each cluster, you can use it to to grab
 $ kubectl get svc/agones-allocator -n agones-system
 ```
 
-Once the Agones Allocator's External load balancer IPs have been obtained, the game_gke_clusters allocation_endpoints can be updated in `terraform.tfvars`.
+Once the Agones Allocator's External load balancer IPs have been obtained, the `game_gke_clusters -  allocation_endpoints` can be updated in `terraform.tfvars`.
 
 Re-run terraform to apply the new Agones Allocator's External load balancer IPs to each Cloud Run instance:
 
