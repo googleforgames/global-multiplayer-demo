@@ -44,22 +44,23 @@ $ terraform apply
 
 ### Deploy Agones To GKE Clusters 
 
-The Agones deployment is in two steps: The initial install and the Allocation Endpoint Patch.
+The Agones deployment is in two steps: The Initial Install and the Allocation Endpoint Patch.
 
 #### Initial Install
-Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild
-will deploy Agones using Cloud Deploy. 
+Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy. 
 
 ```shell
 $ cd deploy/agones/install
 $ gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
-After the initial Agones Deployment, we must now get the Agones Allocatior's External load balancer IPs:
+After the initial Agones Deployment, we must now get the Agones Allocatior's External load balancer IPs for each GKE cluster:
+
+From the GKE web console:
 
 ![GKE Service](files/gke-service.jpg)
 
-If you have kubectl already setup for each cluster, You can use it to to grab the EXTERNAL-IPs on each GKE cluster:
+Or if you have kubectl already setup for each cluster, You can use it to to grab the EXTERNAL-IPs on each GKE cluster:
 
 ```shell
 $ kubectl get svc/agones-allocator -n agones-system
@@ -67,13 +68,14 @@ $ kubectl get svc/agones-allocator -n agones-system
 
 Once the Agones Allocator's External load balancer IPs have been obtained, the game_gke_clusters allocation_endpoints can be updated in `terraform.tfvars`.
 
-Re-run terraform to apply the new Agones Allocator's External load balancer IPs
+Re-run terraform to apply the new Agones Allocator's External load balancer IPs to each Cloud Run instance:
 
 ```shell
 $ terraform apply
 ```
 
-Finally run the Allocation Endpoint Patch build to apply the appropriate patches: 
+#### Allocation Endpoint Patch
+Finally run the Allocation Endpoint Patch Cloud Deploy to apply the appropriate endpoint patches to each cluster: 
 
 ```shell
 $ cd deploy/agones/endpoint-patch/
