@@ -84,7 +84,7 @@ resource "google_cloud_run_service" "aep_cloud_run" {
         }
         env {
           name  = "AUDIENCE"
-          value = var.allocation_endpoint.name
+          value = "${each.key}.endpoints.${var.project}.cloud.goog"
         }
         env {
           name = "SA_KEY"
@@ -179,9 +179,10 @@ resource "local_file" "patch-agones-manifest" {
 
   content = templatefile(
     "${path.module}/deploy/agones/endpoint-patch/patch-agones-allocator.yaml.tpl", {
-      project_id = var.project
-      location   = each.value.region
-      sa_email   = google_service_account.ae_sa.email
+      project_id   = var.project
+      location     = each.value.region
+      cluster_name = each.key
+      sa_email     = google_service_account.ae_sa.email
   })
   filename = "${path.module}/deploy/agones/endpoint-patch/patch-agones-allocator-${each.key}.yaml"
 }

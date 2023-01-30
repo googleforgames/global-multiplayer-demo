@@ -12,17 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agones-allocator
+  namespace: agones-system
+spec:
+  ports:
+  - name: https
+    port: 443
+    targetPort: 9443
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    iam.gke.io/gcp-service-account: ${sa_email}
+  name: agones-allocator
+  namespace: agones-system
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: agones
     app.kubernetes.io/managed-by: google-cloud-deploy
-    deploy.cloud.google.com/delivery-pipeline-id: global-game-agones-deploy-pipeline-${location}
+    deploy.cloud.google.com/delivery-pipeline-id: agones-deploy-pipeline-${cluster_name}
     deploy.cloud.google.com/location: ${location}
     deploy.cloud.google.com/project-id: ${project_id}
     deploy.cloud.google.com/release-id: rel-1
-    deploy.cloud.google.com/target-id: global-game-agones-deploy-target-${location}
+    deploy.cloud.google.com/target-id: agones-deploy-target-${cluster_name}
     heritage: Helm
     multicluster.agones.dev/role: allocator
     release: my-agones
@@ -53,11 +72,11 @@ spec:
       labels:
         app: agones
         app.kubernetes.io/managed-by: google-cloud-deploy
-        deploy.cloud.google.com/delivery-pipeline-id: global-game-agones-deploy-pipeline-${location}
+        deploy.cloud.google.com/delivery-pipeline-id: agones-deploy-pipeline-${cluster_name}
         deploy.cloud.google.com/location: ${location}
         deploy.cloud.google.com/project-id: ${project_id}
         deploy.cloud.google.com/release-id: rel-1
-        deploy.cloud.google.com/target-id: global-game-agones-deploy-target-${location}
+        deploy.cloud.google.com/target-id: agones-deploy-target-${cluster_name}
         heritage: Helm
         multicluster.agones.dev/role: allocator
         release: my-agones
@@ -75,7 +94,7 @@ spec:
         - --listener_port=9443
         - --generate_self_signed_cert
         - --backend=grpc://127.0.0.1:8443
-        - --service=agones-allocation-endpoint-${location}.endpoints.${project_id}.cloud.goog
+        - --service=${cluster_name}.endpoints.${project_id}.cloud.goog
         - --rollout_strategy=managed
         image: gcr.io/endpoints-release/endpoints-runtime:2
         imagePullPolicy: IfNotPresent
@@ -164,23 +183,4 @@ spec:
         key: agones.dev/agones-system
         operator: Equal
         value: "true"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: agones-allocator
-  namespace: agones-system
-spec:
-  ports:
-  - name: https
-    port: 443
-    targetPort: 9443
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  annotations:
-    iam.gke.io/gcp-service-account: allocation-endpoint-esp-sa@${project_id}.iam.gserviceaccount.com
-  name: agones-allocator
-  namespace: agones-system
 ---
