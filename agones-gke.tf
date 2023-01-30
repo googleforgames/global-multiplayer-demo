@@ -13,43 +13,41 @@
 // limitations under the License.
 
 data "google_container_engine_versions" "regions" {
-  for_each = var.default_regions
+  for_each = var.game_gke_clusters
 
-  location = each.key
+  location = each.value.region
 }
 
 module "agones_gke_clusters" {
-  for_each = var.default_regions
+  for_each = var.game_gke_clusters
 
-  source = "git::https://github.com/googleforgames/agones.git//install/terraform/modules/gke/?ref=release-1.29.0&depth=1"
-  #count  = var.agones_region_cluster_count
+  source = "git::https://github.com/googleforgames/agones.git//install/terraform/modules/gke/?ref=main"
 
   cluster = {
-    name             = "${each.value.name}-${each.key}"
-    location         = each.key
+    name             = each.key
+    location         = each.value.region
     project          = var.project
     autoscale        = true
     workloadIdentity = true
-    minNodeCount     = 1
-    maxNodeCount     = 5
+    machineType      = each.value.machine_type
 
     # Install Current GKE default version
     kubernetesVersion = data.google_container_engine_versions.regions[each.key].default_cluster_version
 
     network    = google_compute_network.vpc.id
-    subnetwork = "${each.value.name}-subnet"
+    subnetwork = "global-game-${each.value.region}-subnet"
   }
 
-  firewallName = "agones-firewall-${each.key}"
+  firewallName = "${each.key}-firewall"
 
   depends_on = [google_compute_subnetwork.subnet, google_project_service.project]
 }
 
 data "google_container_cluster" "game-demo-agones-gke" {
-  for_each = var.default_regions
+  for_each = var.game_gke_clusters
 
-  name     = "${each.value.name}-${each.key}"
-  location = each.key
+  name     = each.key
+  location = each.value.region
 
   depends_on = [module.agones_gke_clusters]
 }

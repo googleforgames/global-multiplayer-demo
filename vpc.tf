@@ -18,8 +18,8 @@ resource "google_compute_network" "vpc" {
 }
 
 resource "google_compute_subnetwork" "subnet" {
-  for_each      = var.default_regions
-  name          = "${each.value.name}-subnet"
+  for_each      = var.vpc_regions
+  name          = "global-game-${each.key}-subnet"
   ip_cidr_range = each.value.vpc_subnet_cidr
   region        = each.key
   network       = google_compute_network.vpc.id

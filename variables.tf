@@ -19,11 +19,6 @@ variable "project" {
   description = "GCP Project Name"
 }
 
-variable "default_regions" {
-  description = "Default Regions & associated values"
-  type        = map(any)
-}
-
 variable "gcp_project_services" {
   type        = list(any)
   description = "GCP Service APIs (<api>.googleapis.com) to enable for this project"
@@ -35,6 +30,18 @@ variable "gcp_project_services" {
 variable "vpc_name" {
   type        = string
   description = "VPC Name"
+}
+
+variable "vpc_regions" {
+  type        = map(any)
+  description = "Regions for VPC Subnets to be created"
+}
+
+### Agones Variables ###
+
+variable "game_gke_clusters" {
+  type        = map(any)
+  description = "GKE gameclusters & associated values"
 }
 
 ### Spanner Variables ###

@@ -13,11 +13,11 @@
 // limitations under the License.
 
 resource "google_endpoints_service" "endpoints_service" {
-  for_each     = var.default_regions
-  service_name = "${var.allocation_endpoint.name}-${each.key}.endpoints.${var.project}.cloud.goog"
+  for_each     = var.game_gke_clusters
+  service_name = "${each.key}.endpoints.${var.project}.cloud.goog"
   grpc_config = templatefile(
     "${path.module}/files/allocation-endpoint/api_config.yaml.tpl", {
-      service-name    = "${var.allocation_endpoint.name}-${each.key}.endpoints.${var.project}.cloud.goog"
+      service-name    = "${each.key}.endpoints.${var.project}.cloud.goog"
       service-account = google_service_account.ae_sa.email
     }
   )
@@ -25,7 +25,7 @@ resource "google_endpoints_service" "endpoints_service" {
 }
 
 resource "google_endpoints_service_iam_binding" "endpoints_service_binding" {
-  for_each = var.default_regions
+  for_each = var.game_gke_clusters
 
   service_name = google_endpoints_service.endpoints_service[each.key].service_name
   role         = "roles/servicemanagement.serviceController"
@@ -45,7 +45,7 @@ resource "google_service_account_key" "ae_sa_key" {
 }
 
 resource "google_cloud_run_service_iam_binding" "binding" {
-  for_each = var.default_regions
+  for_each = var.game_gke_clusters
 
   service  = google_cloud_run_service.aep_cloud_run[each.key].name
   project  = google_cloud_run_service.aep_cloud_run[each.key].project
@@ -60,11 +60,11 @@ resource "google_cloud_run_service_iam_binding" "binding" {
 
 
 resource "google_cloud_run_service" "aep_cloud_run" {
-  for_each = var.default_regions
+  for_each = var.game_gke_clusters
 
   project  = var.project
   name     = "allocation-endpoint-proxy-${each.key}"
-  location = each.key
+  location = each.value.region
 
   template {
     spec {
@@ -167,7 +167,7 @@ resource "google_secret_manager_secret_iam_member" "secret-access" {
 }
 
 resource "google_project_service" "allocator-service" {
-  for_each = var.default_regions
+  for_each = var.game_gke_clusters
 
   service                    = google_endpoints_service.endpoints_service[each.key].id
   disable_dependent_services = true
@@ -175,12 +175,13 @@ resource "google_project_service" "allocator-service" {
 
 # Make Kubernetes manifest files to patch the Agones deployment for Allocation Endpoint
 resource "local_file" "patch-agones-manifest" {
-  for_each = var.default_regions
+  for_each = var.game_gke_clusters
 
   content = templatefile(
-    "${path.module}/deploy/agones/patch-agones-allocator.yaml.tpl", {
+    "${path.module}/deploy/agones/endpoint-patch/patch-agones-allocator.yaml.tpl", {
       project_id = var.project
-      location   = each.key
+      location   = each.value.region
+      sa_email   = google_service_account.ae_sa.email
   })
-  filename = "${path.module}/deploy/agones/patch-agones-allocator-${each.key}.yaml"
+  filename = "${path.module}/deploy/agones/endpoint-patch/patch-agones-allocator-${each.key}.yaml"
 }
