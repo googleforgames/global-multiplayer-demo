@@ -60,7 +60,7 @@ From the GKE web console:
 
 ![GKE Service](files/gke-service.jpg)
 
-Or if you have kubectl already setup for each cluster, You can use it to to grab the EXTERNAL-IPs on each GKE cluster:
+Or if you have kubectl already setup for each cluster, you can use it to to grab the EXTERNAL-IPs on each GKE cluster:
 
 ```shell
 $ kubectl get svc/agones-allocator -n agones-system
