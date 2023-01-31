@@ -194,7 +194,7 @@ resource "local_file" "agones-skaffold-file" {
   for_each = var.game_gke_clusters
 
   content = templatefile(
-    "${path.module}/deploy/agones/install/skaffold.yaml.tpl", {
+    "${path.module}/files/allocation-endpoint/skaffold.yaml.tpl", {
       cluster_name = each.key
   })
   filename = "${path.module}/deploy/agones/install/skaffold-${each.key}.yaml"
@@ -205,7 +205,7 @@ resource "local_file" "agones-ae-lb-file" {
   for_each = var.game_gke_clusters
 
   content = templatefile(
-    "${path.module}/deploy/agones/install/ae-lb-ip-patch.yaml.tpl", {
+    "${path.module}/files/allocation-endpoint/ae-lb-ip-patch.yaml.tpl", {
       lb_ip = google_compute_address.allocation-endpoint[each.key].address
   })
   filename = "${path.module}/deploy/agones/install/${each.key}/kustomization.yaml"
@@ -217,7 +217,7 @@ resource "local_file" "patch-agones-manifest" {
   for_each = var.game_gke_clusters
 
   content = templatefile(
-    "${path.module}/deploy/agones/endpoint-patch/patch-agones-allocator.yaml.tpl", {
+    "${path.module}/files/allocation-endpoint/patch-agones-allocator.yaml.tpl", {
       project_id   = var.project
       location     = each.value.region
       cluster_name = each.key
