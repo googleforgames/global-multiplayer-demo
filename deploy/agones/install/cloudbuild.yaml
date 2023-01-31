@@ -19,31 +19,40 @@ steps:
     - run
     - --filename=agones-system.yaml
     - --location=asia-east1
-    - --cluster=global-game-asia-asia-east1
-    - --output=output/asia-east1
+    - --cluster=global-game-asia-east1-01
+    - --output=output/agones-deploy-asia-east1-01
 
   - name: "gcr.io/cloud-builders/gke-deploy"
     args:
     - run
     - --filename=agones-system.yaml
-    - --location=europe-west3
-    - --cluster=global-game-eu-europe-west3
-    - --output=output/europe-west3
+    - --location=europe-west1
+    - --cluster=global-game-eu-west1-01
+    - --output=output/agones-deploy-europe-west1-01
 
   - name: "gcr.io/cloud-builders/gke-deploy"
     args:
     - run
     - --filename=agones-system.yaml
     - --location=us-central1
-    - --cluster=global-game-us-us-central1
-    - --output=output/us-central1
+    - --cluster=global-game-us-central1-01
+    - --output=output/agones-deploy-us-central1-01
+
+  - name: "gcr.io/cloud-builders/gke-deploy"
+    args:
+    - run
+    - --filename=agones-system.yaml
+    - --location=us-central1
+    - --cluster=global-game-us-central1-02
+    - --output=output/agones-deploy-us-central1-02
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args:
       [
         "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "global-game-agones-deploy-pipeline-asia-east1",
+        "--delivery-pipeline", "agones-deploy-pipeline-global-game-asia-east1-01",
+        "--skaffold-file", "skaffold-global-game-asia-east1-01.yaml",
         "--region", "asia-east1"
       ]
 
@@ -52,8 +61,9 @@ steps:
     args:
       [
         "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "global-game-agones-deploy-pipeline-europe-west3",
-        "--region", "europe-west3"
+        "--delivery-pipeline", "agones-deploy-pipeline-global-game-eu-west1-01",
+        "--skaffold-file", "skaffold-global-game-eu-west1-01.yaml",
+        "--region", "europe-west1"
       ]
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
@@ -61,9 +71,21 @@ steps:
     args:
       [
         "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "global-game-agones-deploy-pipeline-us-central1",
+        "--delivery-pipeline", "agones-deploy-pipeline-global-game-us-central1-01",
+        "--skaffold-file", "skaffold-global-game-us-central1-01.yaml",
         "--region", "us-central1"
       ]
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      [
+        "deploy", "releases", "create", "${_RELEASE_NAME}",
+        "--delivery-pipeline", "agones-deploy-pipeline-global-game-us-central1-02",
+        "--skaffold-file", "skaffold-global-game-us-central1-02.yaml",
+        "--region", "us-central1"
+      ]
+
 substitutions:
   _RELEASE_NAME: rel-0001
 options:

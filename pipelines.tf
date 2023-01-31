@@ -72,10 +72,10 @@ resource "google_clouddeploy_delivery_pipeline" "spanner" {
 ##### Agones Pipelines #####
 
 resource "google_clouddeploy_target" "agones" {
-  for_each = var.default_regions
+  for_each = var.game_gke_clusters
 
-  location = each.key
-  name     = "global-game-agones-deploy-target-${each.key}"
+  location = each.value.region
+  name     = "agones-deploy-target-${each.key}"
 
   annotations = {
     my_first_annotation = "agones-annotation-1"
@@ -102,10 +102,10 @@ resource "google_clouddeploy_target" "agones" {
 }
 
 resource "google_clouddeploy_delivery_pipeline" "agones" {
-  for_each = var.default_regions
+  for_each = var.game_gke_clusters
 
-  location = each.key
-  name     = "global-game-agones-deploy-pipeline-${each.key}"
+  location = each.value.region
+  name     = "agones-deploy-pipeline-${each.key}"
 
   annotations = {
     my_first_annotation = "agones-annotation-1"

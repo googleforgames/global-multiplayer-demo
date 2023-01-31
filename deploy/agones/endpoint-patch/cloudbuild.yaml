@@ -1,0 +1,50 @@
+# Copyright 2023 Google LLC All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT_ID}.iam.gserviceaccount.com
+steps:
+  - name: "gcr.io/cloud-builders/gke-deploy"
+    args:
+    - run
+    - --filename=patch-agones-allocator-global-game-asia-east1-01.yaml
+    - --location=asia-east1
+    - --cluster=global-game-asia-east1-01
+    - --output=output/agones-patch-asia-east1-01
+
+  - name: "gcr.io/cloud-builders/gke-deploy"
+    args:
+    - run
+    - --filename=patch-agones-allocator-global-game-eu-west1-01.yaml
+    - --location=europe-west1
+    - --cluster=global-game-eu-west1-01
+    - --output=output/agones-patch-europe-west1-01
+
+  - name: "gcr.io/cloud-builders/gke-deploy"
+    args:
+    - run
+    - --filename=patch-agones-allocator-global-game-us-central1-01.yaml
+    - --location=us-central1
+    - --cluster=global-game-us-central1-01
+    - --output=output/agones-patch-us-central1-01
+
+  - name: "gcr.io/cloud-builders/gke-deploy"
+    args:
+    - run
+    - --filename=patch-agones-allocator-global-game-us-central1-02.yaml
+    - --location=us-central1
+    - --cluster=global-game-us-central1-02
+    - --output=output/agones-patch-us-central1-02
+
+options:
+  logging: CLOUD_LOGGING_ONLY

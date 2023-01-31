@@ -42,14 +42,26 @@ Provision the infrastructure.
 $ terraform apply
 ```
 
-### Deploy To GKE Clusters 
+### Deploy Agones To GKE Clusters 
 
-Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild
-will deploy Agones using Cloud Deploy. 
+The Agones deployment is in two steps: The Initial Install and the Allocation Endpoint Patch.
+
+#### Initial Install
+Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy. 
+
 ```shell
-$ cd deploy/agones
+$ cd deploy/agones/install
 $ gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
+
+#### Allocation Endpoint Patch
+After the Agones install has completed and the GKE Workloads show complete, run the Allocation Endpoint Patch Cloud Deploy to apply the appropriate endpoint patches to each cluster: 
+
+```shell
+$ cd deploy/agones/endpoint-patch/
+$ gcloud builds submit --config=cloudbuild.yaml
+```
+
 
 ## Licence
 

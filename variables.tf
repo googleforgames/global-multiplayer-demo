@@ -19,11 +19,6 @@ variable "project" {
   description = "GCP Project Name"
 }
 
-variable "default_regions" {
-  description = "Default Regions & associated values"
-  type        = map(any)
-}
-
 variable "gcp_project_services" {
   type        = list(any)
   description = "GCP Service APIs (<api>.googleapis.com) to enable for this project"
@@ -35,6 +30,18 @@ variable "gcp_project_services" {
 variable "vpc_name" {
   type        = string
   description = "VPC Name"
+}
+
+variable "vpc_regions" {
+  type        = map(any)
+  description = "Regions for VPC Subnets to be created"
+}
+
+### Agones Variables ###
+
+variable "game_gke_clusters" {
+  type        = map(any)
+  description = "GKE gameclusters & associated values"
 }
 
 ### Spanner Variables ###
@@ -73,3 +80,15 @@ variable "k8s_service_account_id" {
   description = "The kubernetes service account that will impersonate the IAM service account to access Cloud Spanner. This account will be created."
 }
 
+### Allocation Endpoint Variables ###
+
+variable "allocation_endpoint" {
+  type = object({
+    name             = string
+    proxy_image      = string
+    weight           = number
+    namespace        = string
+    agones_namespace = string
+  })
+  description = "Allocation Endpoint Configuration Variables"
+}
