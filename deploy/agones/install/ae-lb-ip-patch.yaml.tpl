@@ -1,4 +1,3 @@
-# ./base/kustomization.yaml
 helmCharts:
 - name: agones
   repo: https://agones.dev/chart/stable
@@ -10,6 +9,7 @@ helmCharts:
        allocator:
          disableMTLS: true
          disableTLS: true
-         service: 
+         service:
            http:
              enabled: false
+           loadBalancerIP: "${lb_ip}"

@@ -86,7 +86,7 @@ resource "google_cloud_run_service" "aep_cloud_run" {
           value = templatefile(
             "${path.module}/files/allocation-endpoint/clusters_info.tpl", {
               name      = data.google_container_cluster.game-demo-agones-gke[each.key].name
-              ip        = each.value.allocation_endpoint
+              ip        = google_compute_address.allocation-endpoint[each.key].address
               weight    = var.allocation_endpoint.weight
               namespace = var.allocation_endpoint.agones_namespace
           })
@@ -181,6 +181,36 @@ resource "google_project_service" "allocator-service" {
   service                    = google_endpoints_service.endpoints_service[each.key].id
   disable_dependent_services = true
 }
+
+resource "google_compute_address" "allocation-endpoint" {
+  for_each = var.game_gke_clusters
+  region = each.value.region
+
+  name = "allocator-endpoint-ip-${each.key}"
+}
+
+# Make Skaffold file for Cloud Deploy into each GKE Cluster
+resource "local_file" "agones-skaffold-file" {
+  for_each = var.game_gke_clusters
+
+  content = templatefile(
+    "${path.module}/deploy/agones/install/skaffold.yaml.tpl", {
+      cluster_name = each.key
+  })
+  filename = "${path.module}/deploy/agones/install/skaffold-${each.key}.yaml"
+}
+
+# Make cluster specific helm value for LB IP
+resource "local_file" "agones-ae-lb-file" {
+  for_each = var.game_gke_clusters
+
+  content = templatefile(
+    "${path.module}/deploy/agones/install/ae-lb-ip-patch.yaml.tpl", {
+      lb_ip = google_compute_address.allocation-endpoint[each.key].address
+  })
+  filename = "${path.module}/deploy/agones/install/${each.key}/kustomization.yaml"
+}
+
 
 # Make Kubernetes manifest files to patch the Agones deployment for Allocation Endpoint
 resource "local_file" "patch-agones-manifest" {
