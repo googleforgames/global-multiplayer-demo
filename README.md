@@ -54,7 +54,7 @@ $ cd deploy/agones/install
 $ gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
-After the initial Agones Deployment, we must now get the Agones Allocatior's External load balancer IPs for each GKE cluster:
+After the initial Agones Deployment, we must now get the Agones Allocation's External load balancer IPs for each GKE cluster:
 
 From the GKE web console:
 
