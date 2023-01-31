@@ -35,6 +35,15 @@ resource "google_endpoints_service_iam_binding" "endpoints_service_binding" {
   depends_on = [google_project_service.allocator-service]
 }
 
+resource "google_service_account_iam_binding" "workload-identity-binding" {
+  service_account_id = google_service_account.ae_sa.name
+  role = "roles/iam.workloadIdentityUser"
+
+  members = [
+    "serviceAccount:${var.project}.svc.id.goog[${var.allocation_endpoint.agones_namespace}/agones-allocator]",
+  ]
+}
+
 resource "google_service_account" "ae_sa" {
   account_id   = "allocation-endpoint-esp-sa"
   display_name = "Service Account for Allocation Endpoint"
