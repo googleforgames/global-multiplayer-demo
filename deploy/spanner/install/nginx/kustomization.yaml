@@ -1,7 +1,8 @@
-# ./base/kustomization.yaml
+# ./nginx/kustomization.yaml
 helmCharts:
 - name: nginx
-  repo: bitnami/nginx
-  version: latest
-  releaseName: my-nginx
+  repo: https://charts.bitnami.com/bitnami
+  releaseName: nginx
+  version: 13.2.23
+  releaseName: example-web
   namespace: spanner
