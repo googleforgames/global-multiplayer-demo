@@ -62,6 +62,7 @@ $ cd deploy/agones/endpoint-patch/
 $ gcloud builds submit --config=cloudbuild.yaml
 ```
 
+***NOTE*** - The cloudbuild.yaml, kustomization.yaml & skaffold.yaml files will not exist until Terraform runs for the first time! The templates used for these files are stored in `files/agones/`.
 
 ## Licence
 

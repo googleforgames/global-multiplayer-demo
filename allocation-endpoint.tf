@@ -16,12 +16,12 @@ resource "google_endpoints_service" "endpoints_service" {
   for_each     = var.game_gke_clusters
   service_name = "${each.key}.endpoints.${var.project}.cloud.goog"
   grpc_config = templatefile(
-    "${path.module}/files/allocation-endpoint/api_config.yaml.tpl", {
+    "${path.module}/files/agones/api_config.yaml.tpl", {
       service-name    = "${each.key}.endpoints.${var.project}.cloud.goog"
       service-account = google_service_account.ae_sa.email
     }
   )
-  protoc_output_base64 = filebase64("files/allocation-endpoint/agones_allocation_api_descriptor.pb")
+  protoc_output_base64 = filebase64("files/agones/agones_allocation_api_descriptor.pb")
 }
 
 resource "google_endpoints_service_iam_binding" "endpoints_service_binding" {
@@ -37,7 +37,7 @@ resource "google_endpoints_service_iam_binding" "endpoints_service_binding" {
 
 resource "google_service_account_iam_binding" "workload-identity-binding" {
   service_account_id = google_service_account.ae_sa.name
-  role = "roles/iam.workloadIdentityUser"
+  role               = "roles/iam.workloadIdentityUser"
 
   members = [
     "serviceAccount:${var.project}.svc.id.goog[${var.allocation_endpoint.agones_namespace}/agones-allocator]",
@@ -84,7 +84,7 @@ resource "google_cloud_run_service" "aep_cloud_run" {
         env {
           name = "CLUSTERS_INFO"
           value = templatefile(
-            "${path.module}/files/allocation-endpoint/clusters_info.tpl", {
+            "${path.module}/files/agones/clusters_info.tpl", {
               name      = data.google_container_cluster.game-demo-agones-gke[each.key].name
               ip        = google_compute_address.allocation-endpoint[each.key].address
               weight    = var.allocation_endpoint.weight
@@ -184,7 +184,7 @@ resource "google_project_service" "allocator-service" {
 
 resource "google_compute_address" "allocation-endpoint" {
   for_each = var.game_gke_clusters
-  region = each.value.region
+  region   = each.value.region
 
   name = "allocator-endpoint-ip-${each.key}"
 }
@@ -194,7 +194,7 @@ resource "local_file" "agones-skaffold-file" {
   for_each = var.game_gke_clusters
 
   content = templatefile(
-    "${path.module}/files/allocation-endpoint/skaffold.yaml.tpl", {
+    "${path.module}/files/agones/skaffold.yaml.tpl", {
       cluster_name = each.key
   })
   filename = "${path.module}/deploy/agones/install/skaffold-${each.key}.yaml"
@@ -205,7 +205,7 @@ resource "local_file" "agones-ae-lb-file" {
   for_each = var.game_gke_clusters
 
   content = templatefile(
-    "${path.module}/files/allocation-endpoint/ae-lb-ip-patch.yaml.tpl", {
+    "${path.module}/files/agones/ae-lb-ip-patch.yaml.tpl", {
       lb_ip = google_compute_address.allocation-endpoint[each.key].address
   })
   filename = "${path.module}/deploy/agones/install/${each.key}/kustomization.yaml"
@@ -217,7 +217,7 @@ resource "local_file" "patch-agones-manifest" {
   for_each = var.game_gke_clusters
 
   content = templatefile(
-    "${path.module}/files/allocation-endpoint/patch-agones-allocator.yaml.tpl", {
+    "${path.module}/files/agones/patch-agones-allocator.yaml.tpl", {
       project_id   = var.project
       location     = each.value.region
       cluster_name = each.key
