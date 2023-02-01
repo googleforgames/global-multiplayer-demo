@@ -70,6 +70,16 @@ You can monitor the status of the deployment through the Cloud Logging URL retur
 nd as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as O
 K, Agones should be avaialable. 
 
+### Deploy Spanner Applications to GKE Cluster
+
+#### Initial Deploy
+Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Spanner applications using Cloud Deploy.
+
+```shell
+$ cd deploy/spanner/install
+$ gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
+```
+
 ## Licence
 
 Apache 2.0
