@@ -24,3 +24,28 @@ resource "google_compute_subnetwork" "subnet" {
   region        = each.key
   network       = google_compute_network.vpc.id
 }
+
+resource "google_compute_router" "vpc_router" {
+  for_each = var.vpc_regions
+  name     = "global-game-${each.key}-router"
+  region   = each.key
+  network  = google_compute_network.vpc.id
+
+  bgp {
+    asn = 64514
+  }
+}
+
+resource "google_compute_router_nat" "vpc_nat" {
+  for_each                           = var.vpc_regions
+  name                               = "global-game-${each.key}-nat"
+  router                             = google_compute_router.vpc_router[each.key].name
+  region                             = each.key
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
+}

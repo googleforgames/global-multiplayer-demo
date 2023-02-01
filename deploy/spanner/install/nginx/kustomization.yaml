@@ -1,0 +1,7 @@
+# ./base/kustomization.yaml
+helmCharts:
+- name: nginx
+  repo: bitnami/nginx
+  version: latest
+  releaseName: my-nginx
+  namespace: spanner
