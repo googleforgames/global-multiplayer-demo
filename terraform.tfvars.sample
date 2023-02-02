@@ -14,6 +14,10 @@
 
 project = "PROJECT_ID"
 
+# VPC Regions & associated subnet CIDRs Values
+
+vpc_name = "global-game-vpc"
+
 vpc_regions = {
   "us-central1" : {
     "vpc_subnet_cidr" : "10.1.0.0/16"
@@ -26,6 +30,9 @@ vpc_regions = {
   }
 }
 
+# Game GKE Cluster Config Values
+### NOTE: If you change the GKE Clusters, please make sure to change `cloudbuild.yaml` in 
+### `agones/install` & `deploy/agones/endpoint-patch/` as they are not dynamically created.  
 game_gke_clusters = {
   "global-game-us-central1-01" : {
     "region" : "us-central1",
@@ -45,6 +52,7 @@ game_gke_clusters = {
   }
 }
 
+# GCP APIs to Enable
 gcp_project_services = [
   "clouddeploy.googleapis.com",
   "cloudbuild.googleapis.com",
@@ -58,8 +66,8 @@ gcp_project_services = [
   "run.googleapis.com"
 ]
 
-vpc_name = "global-game-vpc"
 
+# Spanner DB Config Values
 spanner_config = {
   db_name       = "global-game-spanner-db"
   instance_name = "global-game-spanner-instance"
@@ -67,6 +75,7 @@ spanner_config = {
   num_nodes     = 3
 }
 
+# Spanner GKE Config Values
 spanner_gke_config = {
   cluster_name = "global-game-gke-spanner"
   location     = "us-central1"
@@ -75,13 +84,19 @@ spanner_gke_config = {
   }
 }
 
+
+# Agones Application Service Account Name
 app_service_account_config = {
   name        = "app-service-account"
   description = "Global Multiplayer Game service account"
 }
 
+
+# Agones GKE Service Account Name
 k8s_service_account_id = "k8s-service-account"
 
+
+# Agones Allocation Endpoint Config Values
 allocation_endpoint = {
   name             = "agones-allocation-endpoint"
   proxy_image      = "us-docker.pkg.dev/agones-images/examples/allocation-endpoint-proxy:0.3"

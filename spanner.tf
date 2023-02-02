@@ -26,3 +26,15 @@ resource "google_spanner_database" "spanner-database" {
   version_retention_period = "3d"
   deletion_protection      = false
 }
+
+resource "google_service_account" "spanner-sa" {
+  project      = var.project
+  account_id   = "spanner-sa"
+  display_name = "Spanner Service Account"
+}
+
+resource "google_project_iam_member" "spanner-sa" {
+  project = var.project
+  role    = "roles/spanner.databaseUser"
+  member  = "serviceAccount:${google_service_account.spanner-sa.email}"
+}

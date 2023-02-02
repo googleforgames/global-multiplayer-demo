@@ -54,6 +54,8 @@ $ cd deploy/agones/install
 $ gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
+You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as OK, you can proceed to apply the Allocation Endpoint Patch.
+
 #### Allocation Endpoint Patch
 After the Agones install has completed and the GKE Workloads show complete, run the Allocation Endpoint Patch Cloud Deploy to apply the appropriate endpoint patches to each cluster: 
 
@@ -62,6 +64,21 @@ $ cd deploy/agones/endpoint-patch/
 $ gcloud builds submit --config=cloudbuild.yaml
 ```
 
+***NOTE*** - The cloudbuild.yaml, kustomization.yaml & skaffold.yaml files will not exist until Terraform runs for the first time! The templates used for these files are stored in `files/agones/`.
+
+You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` comma
+nd as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as O
+K, Agones should be avaialable. 
+
+### Deploy Spanner Applications to GKE Cluster
+
+#### Initial Deploy
+Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Spanner applications using Cloud Deploy.
+
+```shell
+$ cd deploy/spanner/install
+$ gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
+```
 
 ## Licence
 
