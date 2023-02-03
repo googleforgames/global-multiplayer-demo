@@ -130,6 +130,63 @@ resource "google_clouddeploy_delivery_pipeline" "agones" {
   }
 }
 
+##### Open Match Pipelines #####
+
+resource "google_clouddeploy_target" "open-match-target" {
+  location = var.open-match_gke_config.location
+  name     = "global-game-open-match-deploy-target"
+
+  annotations = {
+    my_first_annotation = "open-match-annotation-1"
+
+    my_second_annotation = "open-match-annotation-2"
+  }
+
+  description = "Global Game: Open Match Deploy Target"
+
+  gke {
+    cluster = data.google_container_cluster.game-demo-open-match-gke.id
+  }
+
+  labels = {
+    my_first_label = "global-game-demo"
+
+    my_second_label = "open-match"
+  }
+
+  project          = var.project
+  require_approval = false
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_clouddeploy_delivery_pipeline" "open-match" {
+  location = var.open-match_gke_config.location
+  name     = "global-game-open-match-deploy-pipeline"
+
+  annotations = {
+    my_first_annotation = "open-match-annotation-1"
+
+    my_second_annotation = "open-match-annotation-2"
+  }
+
+  description = "Global Game: Open Match Deploy Pipeline"
+
+  labels = {
+    my_first_label = "global-game-demo"
+
+    my_second_label = "open-match"
+  }
+
+  project = var.project
+
+  serial_pipeline {
+    stages {
+      target_id = google_clouddeploy_target.open-match-target.target_id
+    }
+  }
+}
+
 ##### Cloud Deploy IAM #####
 
 resource "google_project_iam_member" "clouddeploy-container" {

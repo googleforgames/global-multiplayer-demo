@@ -1,0 +1,14 @@
+# ./base/kustomization.yaml
+helmCharts:
+- name: open-match
+  repo: https://open-match.dev/chart/stable
+  version: 1.6.0
+  releaseName: open-match
+  namespace: open-match
+  valuesInline:
+    open-match-override:
+      enabled: true
+    open-match-customize:
+      enabled: true
+      evaluator:
+        enabled: true
