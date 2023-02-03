@@ -1,11 +1,11 @@
 # GKE
 
-This repository provides support for running the backend applications on GKE Autopilot utilizing Workload Identity.
+This repository provides support for running the game services on GKE Autopilot utilizing Workload Identity.
 
 ## Setup
 
 ### Terraform
-The provided Terraform [gke.tf](../gke.tf) will provision a [GKE Autopilot](https://cloud.google.com/kubernetes-engine/docs/concepts/autopilot-overview) cluster. This method of provisioning GKE will automatically manage the nodes for the cluster as the backend applications are added.
+The provided Terraform [gke.tf](../terraform/spanner-gke.tf) will provision a [GKE Autopilot](https://cloud.google.com/kubernetes-engine/docs/concepts/autopilot-overview) cluster. This method of provisioning GKE will automatically manage the nodes for the cluster as the backend applications are added.
 
 Additionally, there is a service account created for the backend services.
 

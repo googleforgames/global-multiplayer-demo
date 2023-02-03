@@ -24,12 +24,18 @@ and then set your Google Cloud Project project name/PROJECT_ID:
 $ gcloud config set project <PROJECT_ID>
 ```
 
+Now, set an environment variable for the home directory for easy navigation:
+
+```shell
+$ export GAME_DEMO_HOME=$(pwd)
+```
 
 ### Provision
 
 Initialize Terraform  & configure variables
 
 ```shell
+$ cd $GAME_DEMO_HOME/infrastructure
 $ terraform init
 $ cp terraform.tfvars.sample terraform.tfvars
 
@@ -42,25 +48,25 @@ Provision the infrastructure.
 $ terraform apply
 ```
 
-### Deploy Agones To GKE Clusters 
+### Deploy Agones To GKE Clusters
 
 The Agones deployment is in two steps: The Initial Install and the Allocation Endpoint Patch.
 
 #### Initial Install
-Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy. 
+Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy.
 
 ```shell
-$ cd deploy/agones/install
+$ cd $GAME_DEMO_HOME/infrastructure/deploy/agones/install
 $ gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
 You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as OK, you can proceed to apply the Allocation Endpoint Patch.
 
 #### Allocation Endpoint Patch
-After the Agones install has completed and the GKE Workloads show complete, run the Allocation Endpoint Patch Cloud Deploy to apply the appropriate endpoint patches to each cluster: 
+After the Agones install has completed and the GKE Workloads show complete, run the Allocation Endpoint Patch Cloud Deploy to apply the appropriate endpoint patches to each cluster:
 
 ```shell
-$ cd deploy/agones/endpoint-patch/
+$ cd $GAME_DEMO_HOME/infrastructure/deploy/agones/endpoint-patch/
 $ gcloud builds submit --config=cloudbuild.yaml
 ```
 
@@ -68,7 +74,7 @@ $ gcloud builds submit --config=cloudbuild.yaml
 
 You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` comma
 nd as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as O
-K, Agones should be avaialable. 
+K, Agones should be avaialable.
 
 ### Deploy Spanner Applications to GKE Cluster
 
@@ -76,7 +82,7 @@ K, Agones should be avaialable.
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Spanner applications using Cloud Deploy.
 
 ```shell
-$ cd deploy/spanner/install
+$ cd $GAME_DEMO_HOME/infrastructure/deploy/spanner/install
 $ gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
