@@ -34,27 +34,11 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-type GoogleOauthToken struct {
-	AccessToken  string
-	RefreshToken string
-	Expiry       string
-	TokenType    string
-	IdToken      string
-}
-
-type UserInfo struct {
-	Id    string `json:"id"`
-	Sub   string `json:"sub"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
-
 var (
-	myToken        string
-	myRefreshToken string
-	myApp          fyne.App
-	myWindow       fyne.Window
-	iniCfg         *ini.File
+	myToken  string
+	myApp    fyne.App
+	myWindow fyne.Window
+	iniCfg   *ini.File
 )
 
 func main() {
@@ -110,25 +94,21 @@ func handleGoogleCallback(rw http.ResponseWriter, req *http.Request) {
 	}()
 
 	// Save my token
-	myToken = req.FormValue("access_token")
+	myToken = req.FormValue("token")
 	if len(myToken) == 0 {
 		panic("No token received!")
 	}
-	myRefreshToken = req.FormValue("refresh_token")
-	if len(myRefreshToken) == 0 {
-		panic("No refresh received!")
-	}
 
 	// Update UI with profile info and launch game button
-	myProfile := getProfileInfo()
-	fmt.Printf("My name is " + myProfile.Name)
+	playerName := getPlayerName()
+	fmt.Printf("My name is " + playerName)
 
 	image := canvas.NewImageFromFile("assets/header.png")
 	image.FillMode = canvas.ImageFillContain
 
-	label1 := widget.NewLabel(fmt.Sprintf("Welcome %s!", myProfile.Name))
+	label1 := widget.NewLabel(fmt.Sprintf("Welcome %s!", playerName))
 	label1.Alignment = fyne.TextAlignCenter
-	label2 := widget.NewLabel(fmt.Sprintf("Are you ready to play again?!"))
+	label2 := widget.NewLabel("Are you ready to play again?!")
 	label2.Alignment = fyne.TextAlignCenter
 
 	buttonPlay := widget.NewButtonWithIcon("Open Droidshooter", theme.MediaPlayIcon(), func() {
@@ -157,7 +137,7 @@ func handleGoogleCallback(rw http.ResponseWriter, req *http.Request) {
 }
 
 func handlePlay() {
-	params := fmt.Sprintf("-token=%s -refresh_token=%s", myToken, myRefreshToken)
+	params := fmt.Sprintf("-token=%s", myToken)
 
 	// Get the binary file from the ini
 	cmd := exec.Command(iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
@@ -169,10 +149,23 @@ func handlePlay() {
 	}
 }
 
-func getProfileInfo() UserInfo {
-	fmt.Printf("Getting profile info\n")
+func getPlayerName() string {
+	fmt.Printf("Getting player info\n")
 
-	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + myToken)
+	req, err := http.NewRequest("GET", iniCfg.Section("").Key("frontend_api").String()+"/profile", nil)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", myToken))
+
+	if err != nil {
+		panic("Unable to initiate request to game api. Connection issues?")
+	}
+
+	client := &http.Client{}
+	response, err := client.Do(req)
+
+	if err != nil {
+		panic(err)
+	}
+
 	if response.StatusCode != 200 {
 		panic("Unable to fetch user information. Expired token?")
 	}
@@ -185,12 +178,12 @@ func getProfileInfo() UserInfo {
 		panic(err)
 	}
 
-	var result UserInfo
+	var result map[string]interface{}
 	if err := json.Unmarshal(data, &result); err != nil {
-		panic(err)
+		panic(fmt.Sprintf("Unable to decode json: %s", err))
 	}
 
-	return result
+	return result["player_name"].(string)
 }
 
 func openBrowser(url string) {
