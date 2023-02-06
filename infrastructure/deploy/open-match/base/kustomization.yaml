@@ -4,7 +4,6 @@ helmCharts:
   repo: https://open-match.dev/chart/stable
   version: 1.6.0
   releaseName: open-match
-  namespace: open-match
   valuesInline:
     open-match-override:
       enabled: true
