@@ -12,3 +12,6 @@ helmCharts:
       enabled: true
       evaluator:
         enabled: true
+
+resources:
+  - open-match.yaml

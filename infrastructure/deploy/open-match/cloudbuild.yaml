@@ -14,14 +14,6 @@
 
 serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT_ID}.iam.gserviceaccount.com
 steps:
-  - name: "gcr.io/cloud-builders/gke-deploy"
-    args:
-    - run
-    - --filename=open-match.yaml
-    - --location=us-central1
-    - --cluster=global-game-gke-open-match
-    - --output=output/us-central1
-
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args:
