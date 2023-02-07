@@ -17,6 +17,10 @@ CREATE TABLE players (
   player_uuid STRING(36) NOT NULL,
   google_id STRING(MAX) NOT NULL,
   player_name STRING(64) NOT NULL,
+  profile_image STRING(MAX) NOT NULL,
+  region STRING(10) NOT NULL, -- AMER, EUR, ASIA
+  skill_level int64 NOT NULL,
+  tier STRING(1) NOT NULL, -- S, A, B, etc
   stats JSON,
 ) PRIMARY KEY(player_uuid);
 
