@@ -84,6 +84,14 @@ spanner_gke_config = {
   }
 }
 
+# Open Match GKE Config Values
+open-match_gke_config = {
+  cluster_name = "global-game-gke-open-match"
+  location     = "us-central1"
+  resource_labels = {
+    environment = "staging"
+  }
+}
 
 # Agones Application Service Account Name
 app_service_account_config = {
