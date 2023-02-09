@@ -3,6 +3,8 @@
 This multiplayer demo is a cloud first implementation of a global scale, realtime multiplayer game utilising
 dedicated game servers, utlising both Google Cloud's products and open source gaming solutions.
 
+## Infrastructure and Services
+
 ### Prerequisites
 
 To run the Game Demo install, you will need the following applications installed on your workstation:
@@ -52,6 +54,7 @@ $ terraform apply
 
 The Agones deployment is in two steps: The Initial Install and the Allocation Endpoint Patch.
 
+
 #### Initial Install
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy.
 
@@ -94,6 +97,25 @@ Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild wi
 $ cd $GAME_DEMO_HOME/infrastructure/deploy/spanner/install
 $ gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
+
+## Game Client
+
+To build the Game Client for your host machine, you will need:
+
+* [Unreal Engine 5.1.0](https://www.unrealengine.com/en-US/download) for your platform.
+
+Open the [`game`](./game) folder in Unreal Engine. Once finished opening, you can run the game client directly within 
+the editor (Hit the ▶️ button), or we can package the project via: Platforms > {your host platform} > Package Project,
+and execute the resultant package.
+
+### Troubleshooting
+
+##### This project was made with a different version of the Unreal Engine.
+
+If you hit this issue, it may be that you are building on a different host platform than the original. To solve, 
+click: More Options > Convert in-place.
+
+The project should open as normal now.
 
 ## Licence
 

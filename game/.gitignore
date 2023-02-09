@@ -8,3 +8,5 @@ Droidshooter.sln
 Intermediate
 Packaged
 Saved
+*.code-workspace
+/Makefile
