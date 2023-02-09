@@ -1,39 +1,45 @@
-// Copyright 2023 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package main
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"sort"
-	"strconv"
 
-	"crypto/tls"
-	"crypto/x509"
-	"io/ioutil"
-
-	pballoc "agones.dev/agones/pkg/allocation/go"
-	"github.com/pkg/errors"
-	"google.golang.org/grpc/credentials"
-
-	"google.golang.org/grpc"
+	"github.com/joho/godotenv"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
+
+const htmlIndex = `<html><body>
+<a href="/login">Log in with Google</a>
+</body></html>
+`
+
+type GoogleOauthToken struct {
+	AccessToken  string
+	RefreshToken string
+	Expiry       string
+	TokenType    string
+	IdToken      string
+}
+
+type UserInfo struct {
+	Id            string `json:"id"`
+	Sub           string `json:"sub"`
+	Name          string `json:"name"`
+	GivenName     string `json:"given_name"`
+	FamilyName    string `json:"family_name"`
+	Profile       string `json:"profile"`
+	Picture       string `json:"picture"`
+	Email         string `json:"email"`
+	EmailVerified bool   `json:"email_verified"`
+	Gender        string `json:"gender"`
+}
 
 type OMServerResponse struct {
 	IP     string
@@ -46,78 +52,178 @@ type RegionalLatency struct {
 	Latency int
 }
 
-/*
-const (
-	OMFrontendEndpoint = "open-match-frontend.cluster-name.svc.cluster.local:50504"
+var (
+	googleOauthConfig = &oauth2.Config{
+		RedirectURL: "http://localhost:8080/callback",
+		Scopes:      []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
+		Endpoint:    google.Endpoint,
+	}
+	// Some random string, random for each request
+	oauthStateString = "random"
 )
-*/
-
-/*
-
-Dummy request until OpenMatch is implemented:
-
-curl -X POST localhost:8080 \
-     -H "Content-Type: application/json" \
-     -d "[{\"Region\": \"EU\", \"Latency\": 50}, {\"Region\": \"US\", \"Latency\": 100}]"
-
-Expected response:
-
-{
-	"IP":"127.0.0.1",
-	"Port":7777,
-	"Region":"EU"
-}
-
-*/
 
 func main() {
-	validateEnv()
+	godotenv.Load()
 
-	Port := os.Getenv("PORT")
-	if Port == "" {
-		Port = "8080"
-		log.Printf("Defaulting to port %s\n", Port)
+	googleOauthConfig.ClientID = os.Getenv("APP_CLIENT_ID")
+	googleOauthConfig.ClientSecret = os.Getenv("APP_CLIENT_SECRET")
+
+	log.Printf("%+v\n", googleOauthConfig)
+
+	http.HandleFunc("/", handleMain)
+	http.HandleFunc("/login", handleGoogleLogin)
+	http.HandleFunc("/callback", handleGoogleCallback)
+	http.HandleFunc("/profile", handleProfileInfo)
+	http.HandleFunc("/play", handlePlay)
+	fmt.Println(http.ListenAndServe(":8080", nil))
+}
+
+func handleMain(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, htmlIndex)
+}
+
+func handleGoogleLogin(w http.ResponseWriter, r *http.Request) {
+	url := googleOauthConfig.AuthCodeURL(oauthStateString)
+	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+}
+
+func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
+	state := r.FormValue("state")
+	if state != oauthStateString {
+		fmt.Printf("invalid oauth state, expected '%s', got '%s'\n", oauthStateString, state)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if err := recover(); err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				fmt.Fprintf(w, "{\"error\": \"%s\"}", err)
-				log.Println("panic occurred:", err)
-			}
-		}()
+	code := r.FormValue("code")
+	token, err := googleOauthConfig.Exchange(context.Background(), code)
+	if err != nil {
+		fmt.Printf("Code exchange failed with '%s'\n", err)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
 
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Content-Type", "application/json")
+	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
+	if err != nil || response.StatusCode != 200 {
+		fmt.Printf("Failed getting user info: %s\n", err)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
 
-		LatencyList := parseRegionalLatencies(w, r)
-		for _, LatencyItem := range LatencyList {
-			log.Printf("Latency for %s is %d\n", LatencyItem.Region, LatencyItem.Latency)
+	defer response.Body.Close()
+	// Use response.Body to get user information.
+
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	var result UserInfo
+	if err := json.Unmarshal(data, &result); err != nil {
+		panic(err)
+	}
+
+	fmt.Fprintf(w, "Token: %s\n", token.AccessToken)
+	fmt.Fprintf(w, "Login Successful!")
+}
+
+func handleProfileInfo(rw http.ResponseWriter, req *http.Request) {
+	token := req.FormValue("token")
+	token = refreshToken(token)
+
+	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token)
+	if err != nil || response.StatusCode != 200 {
+		fmt.Printf("Failed getting user info: %s\n", err)
+		http.Redirect(rw, req, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
+	defer response.Body.Close()
+	// Use response.Body to get user information.
+
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	var result UserInfo
+	if err := json.Unmarshal(data, &result); err != nil {
+		panic(err)
+	}
+
+	jsonResponse, _ := json.Marshal(result)
+
+	rw.Header().Set("Access-Control-Allow-Origin", "*")
+	rw.Header().Set("Content-Type", "application/json")
+
+	fmt.Fprintln(rw, string(jsonResponse))
+}
+
+func handlePlay(rw http.ResponseWriter, req *http.Request) {
+	/*defer func() {
+		if err := recover(); err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(rw, "{\"error\": \"%s\"}", err)
+			log.Println("panic occurred:", err)
 		}
+	}()*/
 
-		// Sort by latency
-		sort.SliceStable(LatencyList, func(i, j int) bool {
-			return LatencyList[i].Latency < LatencyList[j].Latency
-		})
+	/*token := req.FormValue("token")
+	token = refreshToken(token)
 
-		mOMResponse, _ := json.Marshal(findMatchingServer(LatencyList))
+	//Get profile here (from Cloud Spanner via token/id??)
+	*/
 
-		fmt.Fprint(w, string(mOMResponse))
+	rw.Header().Set("Access-Control-Allow-Origin", "*")
+	rw.Header().Set("Content-Type", "application/json")
+
+	LatencyList := parseRegionalLatencies(rw, req)
+	for _, LatencyItem := range LatencyList {
+		log.Printf("Latency for %s is %d\n", LatencyItem.Region, LatencyItem.Latency)
+	}
+
+	// Sort by latency
+	sort.SliceStable(LatencyList, func(i, j int) bool {
+		return LatencyList[i].Latency < LatencyList[j].Latency
 	})
 
-	log.Printf("Listening on port %s\n", Port)
-	http.ListenAndServe(":"+Port, nil)
+	mOMResponse, _ := json.Marshal(findMatchingServer(LatencyList)) // add profile param for finding the server
+
+	fmt.Fprint(rw, string(mOMResponse))
+}
+
+func refreshToken(t string) string {
+	token := oauth2.Token{
+		AccessToken: t,
+		TokenType:   "bearer",
+	}
+
+	tokenSource := googleOauthConfig.TokenSource(context.TODO(), &token)
+	newToken, err := tokenSource.Token()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if newToken.AccessToken != token.AccessToken {
+		log.Println("Saved new token: ", newToken.AccessToken)
+	} else {
+		log.Println("Old token still good: ", token.AccessToken)
+	}
+
+	return newToken.AccessToken
 }
 
 func findMatchingServer(LatencyList []RegionalLatency) OMServerResponse {
-	log.Printf("Looking for a server in the %s region.\n", LatencyList[0].Region)
+	if len(LatencyList) > 0 {
+		log.Printf("Looking for a server in the %s region.\n", LatencyList[0].Region)
+	} else {
+		LatencyList = append(LatencyList, RegionalLatency{Region: "n/a", Latency: -1})
+	}
 
-	// TODO: Query OpenMatch on `OMFrontendEndpoint` in a specified region for a server. For now we query Agones directly.
+	// TODO: Query OpenMatch on `OMFrontendEndpoint` in a specified region for a server.
 
-	IP, Port := getAvailableServer()
-	/* ip := "127.0.0.1"
-	port := 7777 */
+	IP := "127.0.0.1"
+	Port := 7777
 
 	return OMServerResponse{
 		IP:     IP,
@@ -132,106 +238,8 @@ func parseRegionalLatencies(rw http.ResponseWriter, req *http.Request) []Regiona
 	err := decoder.Decode(&LatencyList)
 
 	if err != nil {
-		panic(err)
+		return LatencyList
 	}
 
 	return LatencyList
-}
-
-func validateEnv() {
-	keyFile := os.Getenv("key")
-	certFile := os.Getenv("cert")
-	cacertFile := os.Getenv("cacert")
-	externalIP := os.Getenv("ip")
-
-	if len(keyFile) == 0 || len(certFile) == 0 || len(cacertFile) == 0 || len(externalIP) == 0 {
-		fmt.Println("key, cert, cacert and ip are mandatory ENV variables")
-		os.Exit(0)
-	}
-}
-
-func getAvailableServer() (string, int) {
-	keyFile := os.Getenv("key")
-	certFile := os.Getenv("cert")
-	cacertFile := os.Getenv("cacert")
-	externalIP := os.Getenv("ip")
-	port := os.Getenv("port")
-	namespace := os.Getenv("namespace")
-	multicluster := os.Getenv("multicluster")
-
-	if len(port) == 0 {
-		port = "443"
-	}
-
-	if len(namespace) == 0 {
-		namespace = "default"
-	}
-
-	if len(multicluster) == 0 {
-		multicluster = "false"
-	}
-
-	endpoint := externalIP + ":" + port
-	cert, err := ioutil.ReadFile(certFile)
-	if err != nil {
-		panic(err)
-	}
-	key, err := ioutil.ReadFile(keyFile)
-	if err != nil {
-		panic(err)
-	}
-	cacert, err := ioutil.ReadFile(cacertFile)
-	if err != nil {
-		panic(err)
-	}
-
-	_multicluster, _ := strconv.ParseBool(multicluster)
-	request := &pballoc.AllocationRequest{
-		Namespace: namespace,
-		MultiClusterSetting: &pballoc.MultiClusterSetting{
-			Enabled: _multicluster,
-		},
-	}
-
-	dialOpts, err := createRemoteClusterDialOption(cert, key, cacert)
-	if err != nil {
-		panic(err)
-	}
-	conn, err := grpc.Dial(endpoint, dialOpts)
-	if err != nil {
-		panic(err)
-	}
-	defer conn.Close()
-
-	grpcClient := pballoc.NewAllocationServiceClient(conn)
-	response, err := grpcClient.Allocate(context.Background(), request)
-	if err != nil {
-		fmt.Printf("%s", err)
-		panic("Unable to allocate a server")
-	}
-
-	fmt.Printf("%s", response)
-
-	return response.Address, int(response.Ports[len(response.Ports)-1].Port)
-}
-
-// createRemoteClusterDialOption creates a grpc client dial option with TLS configuration.
-func createRemoteClusterDialOption(clientCert, clientKey, caCert []byte) (grpc.DialOption, error) {
-	// Load client cert
-	cert, err := tls.X509KeyPair(clientCert, clientKey)
-	if err != nil {
-		return nil, err
-	}
-
-	tlsConfig := &tls.Config{Certificates: []tls.Certificate{cert}}
-	if len(caCert) != 0 {
-		// Load CA cert, if provided and trust the server certificate.
-		// This is required for self-signed certs.
-		tlsConfig.RootCAs = x509.NewCertPool()
-		if !tlsConfig.RootCAs.AppendCertsFromPEM(caCert) {
-			return nil, errors.New("only PEM format is accepted for server CA")
-		}
-	}
-
-	return grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)), nil
 }
