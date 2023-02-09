@@ -7,8 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
-	"sort"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
@@ -47,11 +46,6 @@ type OMServerResponse struct {
 	Region string
 }
 
-type RegionalLatency struct {
-	Region  string
-	Latency int
-}
-
 var (
 	googleOauthConfig = &oauth2.Config{
 		RedirectURL: "http://localhost:8080/callback",
@@ -65,15 +59,14 @@ var (
 func main() {
 	godotenv.Load()
 
-	googleOauthConfig.ClientID = os.Getenv("APP_CLIENT_ID")
-	googleOauthConfig.ClientSecret = os.Getenv("APP_CLIENT_SECRET")
+	googleOauthConfig.ClientID = "660338607680-6lvcj5ui4js21if8smteb31tqgjs8dj6.apps.googleusercontent.com"
+	googleOauthConfig.ClientSecret = "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"
 
 	log.Printf("%+v\n", googleOauthConfig)
 
 	http.HandleFunc("/", handleMain)
 	http.HandleFunc("/login", handleGoogleLogin)
 	http.HandleFunc("/callback", handleGoogleCallback)
-	http.HandleFunc("/profile", handleProfileInfo)
 	http.HandleFunc("/play", handlePlay)
 	fmt.Println(http.ListenAndServe(":8080", nil))
 }
@@ -123,73 +116,51 @@ func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	fmt.Fprintf(w, "Token: %s\n", token.AccessToken)
-	fmt.Fprintf(w, "Login Successful!")
-}
-
-func handleProfileInfo(rw http.ResponseWriter, req *http.Request) {
-	token := req.FormValue("token")
-	token = refreshToken(token)
-
-	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token)
-	if err != nil || response.StatusCode != 200 {
-		fmt.Printf("Failed getting user info: %s\n", err)
-		http.Redirect(rw, req, "/", http.StatusTemporaryRedirect)
-		return
-	}
-
-	defer response.Body.Close()
-	// Use response.Body to get user information.
-
-	data, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	var result UserInfo
-	if err := json.Unmarshal(data, &result); err != nil {
-		panic(err)
-	}
-
-	jsonResponse, _ := json.Marshal(result)
-
-	rw.Header().Set("Access-Control-Allow-Origin", "*")
-	rw.Header().Set("Content-Type", "application/json")
-
-	fmt.Fprintln(rw, string(jsonResponse))
+	// TODO: use env var for callback in the launcher
+	http.Redirect(w, r, "http://localhost:8888/callback?access_token="+token.AccessToken, http.StatusTemporaryRedirect)
 }
 
 func handlePlay(rw http.ResponseWriter, req *http.Request) {
-	/*defer func() {
+	defer func() {
 		if err := recover(); err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(rw, "{\"error\": \"%s\"}", err)
 			log.Println("panic occurred:", err)
 		}
-	}()*/
+	}()
 
-	/*token := req.FormValue("token")
+	token := req.FormValue("access_token")
 	token = refreshToken(token)
 
-	//Get profile here (from Cloud Spanner via token/id??)
-	*/
+	// Get regions by preferred order
+	preferredRegions := strings.Split(req.FormValue("preferred_regions"), ",")
+	for _, region := range preferredRegions {
+		log.Println(region)
+	}
+
+	// Get profile here (from Cloud Spanner via token/id??)
 
 	rw.Header().Set("Access-Control-Allow-Origin", "*")
 	rw.Header().Set("Content-Type", "application/json")
 
-	LatencyList := parseRegionalLatencies(rw, req)
-	for _, LatencyItem := range LatencyList {
-		log.Printf("Latency for %s is %d\n", LatencyItem.Region, LatencyItem.Latency)
-	}
-
-	// Sort by latency
-	sort.SliceStable(LatencyList, func(i, j int) bool {
-		return LatencyList[i].Latency < LatencyList[j].Latency
-	})
-
-	mOMResponse, _ := json.Marshal(findMatchingServer(LatencyList)) // add profile param for finding the server
+	mOMResponse, _ := json.Marshal(findMatchingServer(preferredRegions)) // add profile param for finding the server
 
 	fmt.Fprint(rw, string(mOMResponse))
+}
+
+func findMatchingServer(regions []string) OMServerResponse {
+	log.Printf("Looking for a server in the %s region.\n", regions[0])
+
+	// TODO: Query OpenMatch on `OMFrontendEndpoint` in a preferred region for a server
+
+	IP := "127.0.0.1"
+	Port := 7777
+
+	return OMServerResponse{
+		IP:     IP,
+		Port:   Port,
+		Region: regions[0]}
+
 }
 
 func refreshToken(t string) string {
@@ -211,35 +182,4 @@ func refreshToken(t string) string {
 	}
 
 	return newToken.AccessToken
-}
-
-func findMatchingServer(LatencyList []RegionalLatency) OMServerResponse {
-	if len(LatencyList) > 0 {
-		log.Printf("Looking for a server in the %s region.\n", LatencyList[0].Region)
-	} else {
-		LatencyList = append(LatencyList, RegionalLatency{Region: "n/a", Latency: -1})
-	}
-
-	// TODO: Query OpenMatch on `OMFrontendEndpoint` in a specified region for a server.
-
-	IP := "127.0.0.1"
-	Port := 7777
-
-	return OMServerResponse{
-		IP:     IP,
-		Port:   Port,
-		Region: LatencyList[0].Region}
-
-}
-
-func parseRegionalLatencies(rw http.ResponseWriter, req *http.Request) []RegionalLatency {
-	decoder := json.NewDecoder(req.Body)
-	var LatencyList []RegionalLatency
-	err := decoder.Decode(&LatencyList)
-
-	if err != nil {
-		return LatencyList
-	}
-
-	return LatencyList
 }
