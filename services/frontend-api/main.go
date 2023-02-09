@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -48,7 +49,7 @@ type OMServerResponse struct {
 
 var (
 	googleOauthConfig = &oauth2.Config{
-		RedirectURL: "http://localhost:8080/callback",
+		RedirectURL: "http://localhost:8080/callback", // This is the listening endpoint in our game launcher for callbacks
 		Scopes:      []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
 		Endpoint:    google.Endpoint,
 	}
@@ -59,10 +60,8 @@ var (
 func main() {
 	godotenv.Load()
 
-	googleOauthConfig.ClientID = "660338607680-6lvcj5ui4js21if8smteb31tqgjs8dj6.apps.googleusercontent.com"
-	googleOauthConfig.ClientSecret = "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"
-
-	log.Printf("%+v\n", googleOauthConfig)
+	googleOauthConfig.ClientID = os.Getenv("CLIENT_ID")
+	googleOauthConfig.ClientSecret = os.Getenv("CLIENT_SECRET")
 
 	http.HandleFunc("/", handleMain)
 	http.HandleFunc("/login", handleGoogleLogin)
