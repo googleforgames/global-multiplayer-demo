@@ -1,0 +1,27 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{5C3B4018-4CD1-8E97-940E-36B7C3CCB0C8}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "Droidshooter",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "EnhancedInput",
+			"Enabled": true
+		},
+		{
+			"Enabled": true,
+			"Name": "Agones"
+		}
+
+	]
+}

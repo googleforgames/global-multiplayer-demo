@@ -1,0 +1,12 @@
+.vs
+*.blend1
+*.fbx
+Binaries
+Build
+DerivedDataCache
+Droidshooter.sln
+Intermediate
+Packaged
+Saved
+*.code-workspace
+/Makefile
