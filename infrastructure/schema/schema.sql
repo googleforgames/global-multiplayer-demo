@@ -14,17 +14,14 @@
 --
 
 CREATE TABLE players (
-  player_uuid STRING(36) NOT NULL,
-  google_id STRING(MAX) NOT NULL,
+  player_google_id STRING(MAX) NOT NULL,
   player_name STRING(64) NOT NULL,
   profile_image STRING(MAX) NOT NULL,
-  region STRING(10) NOT NULL, -- AMER, EUR, ASIA
+  region STRING(10) NOT NULL,
   skill_level int64 NOT NULL,
-  tier STRING(1) NOT NULL, -- S, A, B, etc
+  tier STRING(1) NOT NULL,
   stats JSON,
-) PRIMARY KEY(player_uuid);
-
-CREATE UNIQUE INDEX PlayerGoogleID ON players(google_id) STORING (player_name, stats);
+) PRIMARY KEY(player_google_id);
 
 CREATE UNIQUE INDEX PlayerName ON players(player_name);
 
@@ -38,9 +35,9 @@ CREATE TABLE game_assets
 CREATE TABLE player_assets
 (
   player_asset_uuid STRING(36) NOT NULL,
-  player_uuid STRING(36) NOT NULL,
+  player_google_id STRING(MAX) NOT NULL,
   asset_uuid STRING(36) NOT NULL,
   acquire_time TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP()),
   FOREIGN KEY (asset_uuid) REFERENCES game_assets (asset_uuid)
-) PRIMARY KEY (player_uuid, player_asset_uuid),
+) PRIMARY KEY (player_google_id, player_asset_uuid),
     INTERLEAVE IN PARENT players ON DELETE CASCADE;
