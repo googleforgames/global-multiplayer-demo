@@ -42,6 +42,8 @@ resource "google_service_account_iam_binding" "workload-identity-binding" {
   members = [
     "serviceAccount:${var.project}.svc.id.goog[${var.allocation_endpoint.agones_namespace}/agones-allocator]",
   ]
+
+  depends_on = [module.agones_gke_clusters]
 }
 
 resource "google_service_account" "ae_sa" {
