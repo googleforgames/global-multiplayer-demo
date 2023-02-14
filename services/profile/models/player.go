@@ -230,10 +230,10 @@ func UpdateStats(ctx context.Context, client spanner.Client, gStats SingleGameSt
 		// TODO: Modify tier
 
 		// Update player
-		cols := []string{"player_google_id", "stats", "skill_level", "tier"}
+		cols := []string{"player_google_id", "stats", "skill_level"}
 
 		err = txn.BufferWrite([]*spanner.Mutation{
-			spanner.Update("players", cols, []interface{}{player.Player_google_id, player.Stats, player.Skill_level, player.Tier}),
+			spanner.Update("players", cols, []interface{}{player.Player_google_id, player.Stats, player.Skill_level}),
 		})
 
 		if err != nil {

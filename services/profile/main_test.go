@@ -31,6 +31,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 	databasepb "google.golang.org/genproto/googleapis/spanner/admin/database/v1"
 	instancepb "google.golang.org/genproto/googleapis/spanner/admin/instance/v1"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -42,7 +43,7 @@ import (
 //go:embed test_data/schema.sql
 var SCHEMAFILE embed.FS
 
-var TESTNETWORK = "game-sample-test"
+var TESTNETWORK = "globalgame-spanner-test"
 
 // These integration tests run against the Spanner emulator. The emulator
 // must be running and accessible prior to integration tests running.
@@ -95,13 +96,14 @@ func setupSpannerEmulator(ctx context.Context) (*Emulator, error) {
 	}
 
 	// Retrieve the container port
-	port, err := spannerEmulator.MappedPort(ctx, "9010")
+	mappedPort, err := spannerEmulator.MappedPort(ctx, "9010")
 	if err != nil {
 		return nil, err
 	}
 
 	// OS environment needed for setting up instance and database
-	os.Setenv("SPANNER_EMULATOR_HOST", fmt.Sprintf("%s:%d", ip, port.Int()))
+	grpcEndpoint := fmt.Sprintf("%s:%s", ip, mappedPort.Port())
+	os.Setenv("SPANNER_EMULATOR_HOST", grpcEndpoint)
 
 	var ec = Emulator{
 		Container: spannerEmulator,
@@ -237,17 +239,34 @@ func setupService(ctx context.Context, ec *Emulator) (*Service, error) {
 	}, nil
 }
 
+func httpPUT(url string, data io.Reader) (*http.Response, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodPut, url, data)
+	if err != nil {
+		return nil, err
+	}
+	// set the request header Content-Type for json
+	req.Header.Set("Content-Type", "application/json")
+	response, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
 func TestMain(m *testing.M) {
 	ctx := context.Background()
 
 	// Setup the docker network so containers can talk to each other
-	nr := testcontainers.NetworkRequest{
-		Name:       TESTNETWORK,
-		Attachable: true,
-	}
-	_, err := testcontainers.GenericNetwork(ctx, testcontainers.GenericNetworkRequest{
-		NetworkRequest: nr,
+	net, err := testcontainers.GenericNetwork(ctx, testcontainers.GenericNetworkRequest{
+		NetworkRequest: testcontainers.NetworkRequest{
+			Name:           TESTNETWORK,
+			CheckDuplicate: true,
+		},
 	})
+	defer net.Remove(ctx)
+
 	if err != nil {
 		fmt.Printf("Error setting up docker test network: %s\n", err)
 		os.Exit(1)
@@ -279,9 +298,19 @@ var test_player = models.Player{
 	Region:           "amer",
 }
 
-var test_stats = []string{
-	"{'won': false, 'score': 100, 'kills': 5, 'deaths': 20 }",
-	"{'won': true, 'score': 1000, 'kills': 20, 'deaths': 1 }"
+var test_stats = []models.SingleGameStats{
+	{
+		Won:    false,
+		Score:  100,
+		Kills:  5,
+		Deaths: 20,
+	},
+	{
+		Won:    true,
+		Score:  1000,
+		Kills:  20,
+		Deaths: 1,
+	},
 }
 
 func TestAddPlayers(t *testing.T) {
@@ -317,6 +346,37 @@ func TestGetPlayers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err.Error())
 	}
+	assert.Equal(t, 200, response.StatusCode)
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	var pData models.Player
+	json.Unmarshal(body, &pData)
+
+	var skill_level int64 = 0
+
+	assert.Equal(t, test_player.Player_google_id, pData.Player_google_id)
+	assert.Equal(t, test_player.Player_name, pData.Player_name)
+	assert.Equal(t, test_player.Profile_image, pData.Profile_image)
+	assert.Equal(t, test_player.Region, pData.Region)
+	assert.Equal(t, skill_level, pData.Skill_level)
+	assert.Equal(t, "U", pData.Tier)
+}
+
+func TestUpdatePlayer(t *testing.T) {
+	test_player.Region = "asia"
+
+	pJson, err := json.Marshal(test_player)
+	assert.Nil(t, err)
+
+	response, err := httpPUT("http://localhost/players", bytes.NewBuffer(pJson))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	assert.Equal(t, 200, response.StatusCode)
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
@@ -330,38 +390,18 @@ func TestGetPlayers(t *testing.T) {
 	assert.Equal(t, test_player.Player_name, pData.Player_name)
 	assert.Equal(t, test_player.Profile_image, pData.Profile_image)
 	assert.Equal(t, test_player.Region, pData.Region)
-	assert.Equal(t, 0, pData.Skill_level)
-	assert.Equal(t, "U", pData.Tier)
-}
-
-func TestUpdatePlayer(t *testing.T) {
-	test_player.region = "asia"
-
-	pJson, err := json.Marshal(test_player)
-	assert.Nil(t, err)
-
-	bufferJson := bytes.NewBuffer(pJson)
-
-	response, err := http.Put("http://localhost/players", "application/json", bufferJson)
-	assert.Nil(t, err)
-
-	assert.Equal(t, 200, response.StatusCode)
-
-	assert.Equal(t, test_player.Player_google_id, pData.Player_google_id)
-	assert.Equal(t, test_player.Player_name, pData.Player_name)
-	assert.Equal(t, test_player.Profile_image, pData.Profile_image)
-	assert.Equal(t, test_player.Region, pData.Region)
-	assert.Equal(t, 0, pData.Skill_level)
-	assert.Equal(t, "U", pData.Tier)
 }
 
 func TestUpdatePlayerStats(t *testing.T) {
 	for _, new_stats := range test_stats {
-		bufferJson := bytes.NewBuffer(new_stats)
-
-		response, err := http.Put(fmt.Sprintf("http://localhost/players/%s/stats", test_player.Player_google_id), "application/json", bufferJson)
+		new_stats.Player_google_id = test_player.Player_google_id
+		statsJson, err := json.Marshal(new_stats)
 		assert.Nil(t, err)
 
+		response, err := httpPUT(fmt.Sprintf("http://localhost/players/%s/stats", test_player.Player_google_id), bytes.NewBuffer(statsJson))
+		if err != nil {
+			t.Fatal(err.Error())
+		}
 		assert.Equal(t, 200, response.StatusCode)
 	}
 }
@@ -379,13 +419,21 @@ func TestGetPlayerStats(t *testing.T) {
 	}
 
 	var pData models.Player
-	json.Unmarshal(body, &pData)
+	if err = json.Unmarshal(body, &pData); err != nil {
+		t.Fatal(err.Error())
+	}
+
+	var pStats models.PlayerStats
+	if err = json.Unmarshal([]byte(pData.Stats.String()), &pStats); err != nil {
+		t.Fatal(err.Error())
+	}
 
 	assert.Equal(t, test_player.Player_google_id, pData.Player_google_id)
-	assert.Equal(t, 2, pData.Stats.Games_played)
-	assert.Equal(t, 1, pData.Stats.Games_won)
-	assert.Equal(t, 1100, pData.Stats.Total_score)
-	assert.Equal(t, 25, pData.Stats.Total_kills)
-	assert.Equal(t, 21, pData.Stats.Total_deaths)
-	assert.Equal(t, 1, pData.Skill_level)
+	assert.Equal(t, int64(2), pStats.Games_played)
+	assert.Equal(t, int64(1), pStats.Games_won)
+	assert.Equal(t, int64(1100), pStats.Total_score)
+	assert.Equal(t, int64(25), pStats.Total_kills)
+	assert.Equal(t, int64(21), pStats.Total_deaths)
+	assert.Equal(t, int64(1), pData.Skill_level)
+	assert.Equal(t, "U", pData.Tier)
 }
