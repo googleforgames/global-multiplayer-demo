@@ -20,13 +20,13 @@ export SPANNER_PROJECT_ID=your-project-id
 export SPANNER_INSTANCE_ID=your-instance-id
 export SPANNER_DATABASE_ID=your-database-id
 
-wrench create --directory ../infrastructure/schema
+wrench create --directory ../../infrastructure/schema
 ```
 
 - Apply migrations
 
 ```
-wrench migrate up --directory ./schema
+wrench migrate up --directory ../../infrastructure/schema
 ```
 
 ## Local deployment
