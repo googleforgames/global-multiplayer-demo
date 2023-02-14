@@ -26,9 +26,11 @@ and then set your Google Cloud Project project name/PROJECT_ID:
 $ gcloud config set project <PROJECT_ID>
 ```
 
-Now, set an environment variable for the home directory for easy navigation:
+Clone this directory locally and, we'll also set an environment variable to it's root directory, for easy navigation:
 
 ```shell
+$ git clone https://github.com/googleforgames/global-multiplayer-demo.git
+$ cd global-multiplayer-demo
 $ export GAME_DEMO_HOME=$(pwd)
 ```
 
