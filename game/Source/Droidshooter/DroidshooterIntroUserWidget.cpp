@@ -6,6 +6,7 @@
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Components/TextBlock.h"
+#include "Components/EditableTextBox.h"
 #include "Components/Button.h"
 #include "Droidshooter.h"
 #include "Json.h"
@@ -13,18 +14,56 @@
 void UDroidshooterIntroUserWidget::NativePreConstruct() 
 {
     Super::NativePreConstruct();
-    AuthenticateCall();
-
     //B_Auth->OnClicked.AddDynamic(this, &UDroidshooterIntroUserWidget::AuthenticateCall);
 }
 
-void UDroidshooterIntroUserWidget::AuthenticateCall() 
+void UDroidshooterIntroUserWidget::FetchGameServer(const FString& accessToken)
 {
-    UE_LOG(LogDroidshooter, Log, TEXT("------------------------ ON POST LOAD! ----------------------------"));
+    UE_LOG(LogDroidshooter, Log, TEXT("Fetch server/ip call with token: %s"), *accessToken);
 
-    FString accessToken = "ya29.a0AVvZVsrSTgn9gYpfoyDFBUxYyTJawpa9YzcPPphHq7HUwF9QQNjUdgsZuSAWJJuCrefXTY1GjiCerLaW3bAG2RBSvM9SHVliGr7CmN4Xaj6fz1gz2dtKh9aWpoWIlUXSyVy-iGJ2TSWp1ZnfFHP5hqaOIOlUaCgYKAU8SARISFQGbdwaI-KqLIyv7DfG2ijSc3rAcOw0163";
+    FString uriBase = "http://localhost";
+    FString uriPlay = uriBase + TEXT("/play?access_token=") + accessToken;
 
-	FString uriBase = "http://localhost:8080";
+    FHttpModule& httpModule = FHttpModule::Get();
+    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> pRequest = httpModule.CreateRequest();
+
+    pRequest->SetVerb(TEXT("GET"));
+    pRequest->SetURL(uriPlay);
+
+    // Set the callback, which will execute when the HTTP call is complete
+    pRequest->OnProcessRequestComplete().BindLambda(
+        // Here, we "capture" the 'this' pointer (the "&"), so our lambda can call this
+        // class's methods in the callback.
+        [&](
+            FHttpRequestPtr pRequest,
+            FHttpResponsePtr pResponse,
+            bool connectedSuccessfully) mutable {
+
+                if (connectedSuccessfully) {
+                    std::function<void(const TSharedPtr<FJsonObject>&)> f = [=](const TSharedPtr<FJsonObject>& JsonResponseObject) {
+                        this->ProcessGameserverResponse(JsonResponseObject);
+                    };
+                    ProcessGenericJsonResponse(pResponse->GetContentAsString(), f);
+                }
+                else {
+                    switch (pRequest->GetStatus()) {
+                    case EHttpRequestStatus::Failed_ConnectionError:
+                        UE_LOG(LogDroidshooter, Log, TEXT("Connection failed."));
+                    default:
+                        UE_LOG(LogDroidshooter, Log, TEXT("Request failed."));
+                    }
+                }
+        });
+
+    // Finally, submit the request for processing
+    pRequest->ProcessRequest();
+}
+
+void UDroidshooterIntroUserWidget::AuthenticateCall(const FString& accessToken)
+{
+    UE_LOG(LogDroidshooter, Log, TEXT("Auth call with token: %s"), *accessToken);
+
+	FString uriBase = "http://localhost";
 	FString uriProfile = uriBase + TEXT("/profile?access_token=") + accessToken;
 
 	FHttpModule& httpModule = FHttpModule::Get();
@@ -64,7 +103,11 @@ void UDroidshooterIntroUserWidget::AuthenticateCall()
                 if (connectedSuccessfully) {
 
                     // We should have a JSON response - attempt to process it.
-                    ProcessProfileResponse(pResponse->GetContentAsString());
+                    std::function<void(const TSharedPtr<FJsonObject>&)> f = [=](const TSharedPtr<FJsonObject>& JsonResponseObject) {
+                        this->ProcessProfileResponse(JsonResponseObject);
+                    };
+                        
+                    ProcessGenericJsonResponse(pResponse->GetContentAsString(), f);
                 }
                 else {
                     switch (pRequest->GetStatus()) {
@@ -80,17 +123,14 @@ void UDroidshooterIntroUserWidget::AuthenticateCall()
     pRequest->ProcessRequest();
 }
 
-void UDroidshooterIntroUserWidget::ProcessProfileResponse(const FString& ResponseContent)
+void UDroidshooterIntroUserWidget::ProcessGenericJsonResponse(const FString& ResponseContent, std::function<void(const TSharedPtr<FJsonObject>&)>& func)
 {
-    // Validate http called us back on the Game Thread...
-    check(IsInGameThread());
-
     TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ResponseContent);
     TSharedPtr<FJsonObject> JsonObject;
 
     if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
     {
-        ProcessProfileResponse(JsonObject);
+        func(JsonObject);
     }
 }
 
@@ -110,5 +150,29 @@ void UDroidshooterIntroUserWidget::ProcessProfileResponse(const TSharedPtr<FJson
             UE_LOG(LogDroidshooter, Log, TEXT("Unable to fetch player data. Timed out token?"));
         }
 
+    }
+}
+
+void UDroidshooterIntroUserWidget::ProcessGameserverResponse(const TSharedPtr<FJsonObject>& JsonResponseObject)
+{
+    if (JsonResponseObject)
+    {
+        FString IP = JsonResponseObject->GetStringField(TEXT("IP"));
+        FString Port = JsonResponseObject->GetStringField(TEXT("Port"));
+
+        if (IP.Len() != 0 && Port.Len() != 0) {
+            // Set IP - Port variables!
+            ServerIPValue = IP;
+            ServerPortValue = Port;
+
+            ServerIPBox->SetText(FText::FromString(IP));
+            ServerPortBox->SetText(FText::FromString(Port));
+
+            UE_LOG(LogDroidshooter, Log, TEXT("Found game server at: %s %s"), *IP, *Port);
+
+        }
+        else {
+            UE_LOG(LogDroidshooter, Log, TEXT("Unable to server player data. Timed out token?"));
+        }
     }
 }

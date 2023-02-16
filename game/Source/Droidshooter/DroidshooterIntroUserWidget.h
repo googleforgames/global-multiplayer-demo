@@ -19,18 +19,40 @@ public:
 	void NativePreConstruct();
 
 	UFUNCTION(BlueprintCallable)
-	void AuthenticateCall();
+	void AuthenticateCall(const FString& accessToken);
 
-	void ProcessProfileResponse(const FString& ResponseContent);
-	void ProcessProfileResponse(const TArray<TSharedPtr<FJsonValue>>& JsonResponseArray);
+	UFUNCTION(BlueprintCallable)
+	void FetchGameServer(const FString& accessToken);
+
+	//void ProcessGenericJsonResponse(const FString& ResponseContent)
+	void ProcessGenericJsonResponse(const FString& ResponseContent, std::function<void(const TSharedPtr<FJsonObject>&)>& func);
 	void ProcessProfileResponse(const TSharedPtr<FJsonObject>& JsonResponseObject);
+	void ProcessGameserverResponse(const TSharedPtr<FJsonObject>& JsonResponseObject);
 
-	/** Widget to display current score. */
+	// Server IP/Port editboxes
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UEditableTextBox* ServerIPBox;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UEditableTextBox* ServerPortBox;
+
+	/** Widget to display current user's name. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UTextBlock* NameTextBlock;
 
 	/* Button to handle auth */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UButton* B_Auth;
+
+	/** Saving token for further queries */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString GlobalAccessToken;
+
+	/** Saving token for further queries */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ServerIPValue;
+
+	/** Saving token for further queries */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ServerPortValue;
 
 };
