@@ -116,6 +116,14 @@ func updatePlayer(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, player)
 }
 
+// ReturnPlayerStats provides player's identifier and their stats
+type ReturnPlayerStats struct {
+	Player_google_id string           `json:"player_google_id"`
+	Stats            spanner.NullJSON `json:"stats"`
+	Skill_level      int64            `json:"skill_level"`
+	Tier             string           `json:"tier"`
+}
+
 // getPlayerStats responds to the GET /players/:id/stats endpoint
 // Returns a player's stats when provided a valid player_google_id
 func getPlayerStats(c *gin.Context) {
@@ -129,7 +137,10 @@ func getPlayerStats(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, player)
+	rStats := ReturnPlayerStats{Player_google_id: player.Player_google_id, Stats: player.Stats, Skill_level: player.Skill_level,
+		Tier: player.Tier}
+
+	c.IndentedJSON(http.StatusOK, rStats)
 }
 
 // updatePlayerStats responds to the PUT /player/stats endpoint
@@ -164,7 +175,10 @@ func updatePlayerStats(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, player)
+	rStats := ReturnPlayerStats{Player_google_id: player.Player_google_id, Stats: player.Stats, Skill_level: player.Skill_level,
+		Tier: player.Tier}
+
+	c.IndentedJSON(http.StatusOK, rStats)
 }
 
 // main initializes the gin router and configures the endpoints
