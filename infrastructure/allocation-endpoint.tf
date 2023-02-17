@@ -193,13 +193,11 @@ resource "google_compute_address" "allocation-endpoint" {
 
 # Make Skaffold file for Cloud Deploy into each GKE Cluster
 resource "local_file" "agones-skaffold-file" {
-  for_each = var.game_gke_clusters
-
   content = templatefile(
     "${path.module}/files/agones/skaffold.yaml.tpl", {
-      cluster_name = each.key
+      gke_clusters = var.game_gke_clusters
   })
-  filename = "${path.module}/deploy/agones/install/skaffold-${each.key}.yaml"
+  filename = "${path.module}/deploy/agones/install/skaffold.yaml"
 }
 
 # Make cluster specific helm value for LB IP
