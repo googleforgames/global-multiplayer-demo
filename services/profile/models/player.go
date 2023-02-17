@@ -220,7 +220,11 @@ func UpdateStats(ctx context.Context, client spanner.Client, gStats SingleGameSt
 			pStats.Games_won = pStats.Games_won + 1
 		}
 
-		player.Skill_level = pStats.Total_kills / pStats.Total_deaths
+		if pStats.Total_deaths != 0 {
+			player.Skill_level = pStats.Total_kills / pStats.Total_deaths
+		} else {
+			player.Skill_level = pStats.Total_kills
+		}
 
 		updatedStats, _ := json.Marshal(pStats)
 		if err := player.Stats.UnmarshalJSON(updatedStats); err != nil {

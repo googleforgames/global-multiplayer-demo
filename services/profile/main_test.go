@@ -262,6 +262,7 @@ func TestMain(m *testing.M) {
 	net, err := testcontainers.GenericNetwork(ctx, testcontainers.GenericNetworkRequest{
 		NetworkRequest: testcontainers.NetworkRequest{
 			Name:           TESTNETWORK,
+			Attachable:     true,
 			CheckDuplicate: true,
 		},
 	})
@@ -299,6 +300,12 @@ var test_player = models.Player{
 }
 
 var test_stats = []models.SingleGameStats{
+	{
+		Won:    true,
+		Score:  500,
+		Kills:  1,
+		Deaths: 0,
+	},
 	{
 		Won:    false,
 		Score:  100,
@@ -429,10 +436,10 @@ func TestGetPlayerStats(t *testing.T) {
 	}
 
 	assert.Equal(t, test_player.Player_google_id, pData.Player_google_id)
-	assert.Equal(t, int64(2), pStats.Games_played)
-	assert.Equal(t, int64(1), pStats.Games_won)
-	assert.Equal(t, int64(1100), pStats.Total_score)
-	assert.Equal(t, int64(25), pStats.Total_kills)
+	assert.Equal(t, int64(3), pStats.Games_played)
+	assert.Equal(t, int64(2), pStats.Games_won)
+	assert.Equal(t, int64(1600), pStats.Total_score)
+	assert.Equal(t, int64(26), pStats.Total_kills)
 	assert.Equal(t, int64(21), pStats.Total_deaths)
 	assert.Equal(t, int64(1), pData.Skill_level)
 	assert.Equal(t, "U", pData.Tier)
