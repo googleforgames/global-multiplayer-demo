@@ -65,24 +65,14 @@ variable "spanner_config" {
   description = "Configuration specs for Spanner"
 }
 
-variable "spanner_gke_config" {
+variable "services_gke_config" {
   type = object({
     cluster_name    = string
     location        = string
     resource_labels = map(string)
   })
 
-  description = "Configuration specs for Spanner GKE Autopilot cluster"
-}
-
-variable "open-match_gke_config" {
-  type = object({
-    cluster_name    = string
-    location        = string
-    resource_labels = map(string)
-  })
-
-  description = "Configuration specs for Open Match GKE Autopilot cluster"
+  description = "Configuration specs for GKE Autopilot cluster that hosts all backend services"
 }
 
 variable "app_service_account_config" {

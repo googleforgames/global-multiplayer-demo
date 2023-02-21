@@ -16,7 +16,7 @@ You can also click on the following icon to open this repository in a 'batteries
 
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fgoogleforgames%2Fglobal-multiplayer-demo.git&cloudshell_git_branch=main&cloudshell_open_in_editor=README.md&cloudshell_workspace=.)
 
-## Google Cloud Auth
+### Google Cloud Auth
 
 Once you have Google Cloud CLI installed, you will need to authenticate against Google Cloud:
 
@@ -56,7 +56,7 @@ Provision the infrastructure.
 terraform apply
 ```
 
-### Deploy Agones To GKE Clusters
+#### Deploy Agones To Agones GKE Clusters
 
 The Agones deployment is in two steps: The Initial Install and the Allocation Endpoint Patch.
 
@@ -80,7 +80,7 @@ Continue the promotion until Agones has been deployed to all clusters.
 
 You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as OK, you can proceed to apply the Allocation Endpoint Patch.
 
-#### Allocation Endpoint Patch
+##### Allocation Endpoint Patch
 After the Agones install has completed and the GKE Workloads show complete, run the Allocation Endpoint Patch Cloud Deploy to apply the appropriate endpoint patches to each cluster:
 
 ```shell
@@ -94,7 +94,7 @@ You can monitor the status of the deployment through the Cloud Logging URL retur
 nd as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as O
 K, Agones should be avaialable.
 
-#### Deploy Open Match to GKE Cluster
+#### Deploy Open Match to Game Services GKE Cluster
 
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Open Match using Cloud Deploy.
 
@@ -103,15 +103,9 @@ cd $GAME_DEMO_HOME/infrastructure/deploy/open-match
 gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
-### Deploy Spanner Applications to GKE Cluster
+## Install Game Backend Services
 
-#### Initial Deploy
-Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Spanner applications using Cloud Deploy.
-
-```shell
-cd $GAME_DEMO_HOME/infrastructure/deploy/spanner/install
-gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
-```
+TODO: fill in once we have services.
 
 ## Game Client
 
