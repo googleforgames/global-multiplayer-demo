@@ -322,7 +322,9 @@ var test_stats = []models.SingleGameStats{
 
 func TestAddPlayers(t *testing.T) {
 	pJson, err := json.Marshal(test_player)
-	assert.Nil(t, err)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
 
 	bufferJson := bytes.NewBuffer(pJson)
 
@@ -345,6 +347,18 @@ func TestAddPlayers(t *testing.T) {
 	response, err = http.Post("http://localhost/players", "application/json", bufferJson)
 	assert.Nil(t, err)
 	assert.Equal(t, 400, response.StatusCode)
+
+	// Test add player with same name. Should succeed with 201 code
+	newPlayer := test_player
+	newPlayer.Player_google_id = "654321"
+	pJson, err = json.Marshal(newPlayer)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	response, err = http.Post("http://localhost/players", "application/json", bytes.NewBuffer(pJson))
+	assert.Nil(t, err)
+	assert.Equal(t, 201, response.StatusCode)
 }
 
 func TestGetPlayers(t *testing.T) {
