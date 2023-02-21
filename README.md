@@ -12,6 +12,10 @@ To run the Game Demo install, you will need the following applications installed
 * [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
 * [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
 
+You can also click on the following icon to open this repository in a 'batteries-included' [Google Cloud Shell](https://cloud.google.com/shell) web development environment.
+
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fgoogleforgames%2Fglobal-multiplayer-demo.git&cloudshell_git_branch=main&cloudshell_open_in_editor=README.md&cloudshell_workspace=.)
+
 ## Google Cloud Auth
 
 Once you have Google Cloud CLI installed, you will need to authenticate against Google Cloud:
