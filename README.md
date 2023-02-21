@@ -65,6 +65,8 @@ $ cd $GAME_DEMO_HOME/infrastructure/deploy/agones/install
 $ gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
+Cloudbuild will create a Cloud Deploy release which automatically deploys agones to the first game server cluster. Navigate to the [agones-deploy-pipeline](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/agones-deploy-pipeline) delivery pipeline to promote the deployment through all target clusters. 
+
 You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as OK, you can proceed to apply the Allocation Endpoint Patch.
 
 #### Allocation Endpoint Patch
