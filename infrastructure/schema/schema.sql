@@ -23,8 +23,6 @@ CREATE TABLE players (
   stats JSON,
 ) PRIMARY KEY(player_google_id);
 
-CREATE UNIQUE INDEX PlayerName ON players(player_name);
-
 CREATE TABLE game_assets
 (
   asset_uuid STRING(36) NOT NULL,
