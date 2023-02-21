@@ -211,6 +211,13 @@ resource "local_file" "agones-ae-lb-file" {
   filename = "${path.module}/deploy/agones/install/${each.key}/kustomization.yaml"
 }
 
+# Create agones-system ns manifest as resource referenced by kustomization.yaml
+resource "local_file" "agones-ns-file" {
+  for_each = var.game_gke_clusters
+
+  content = file("${path.module}/files/agones/agones-system.yaml")
+  filename = "${path.module}/deploy/agones/install/${each.key}/agones-system.yaml"
+}
 
 # Make Kubernetes manifest files to patch the Agones deployment for Allocation Endpoint
 resource "local_file" "patch-agones-manifest" {

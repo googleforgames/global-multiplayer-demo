@@ -13,3 +13,6 @@ helmCharts:
            http:
              enabled: false
            loadBalancerIP: "${lb_ip}"
+
+resources:
+- agones-system.yaml

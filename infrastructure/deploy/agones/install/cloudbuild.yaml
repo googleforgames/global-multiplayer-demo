@@ -14,38 +14,6 @@
 
 serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT_ID}.iam.gserviceaccount.com
 steps:
-  - name: "gcr.io/cloud-builders/gke-deploy"
-    args:
-    - run
-    - --filename=agones-system.yaml
-    - --location=asia-east1
-    - --cluster=global-game-asia-east1-01
-    - --output=output/agones-deploy-asia-east1-01
-
-  - name: "gcr.io/cloud-builders/gke-deploy"
-    args:
-    - run
-    - --filename=agones-system.yaml
-    - --location=europe-west1
-    - --cluster=global-game-eu-west1-01
-    - --output=output/agones-deploy-europe-west1-01
-
-  - name: "gcr.io/cloud-builders/gke-deploy"
-    args:
-    - run
-    - --filename=agones-system.yaml
-    - --location=us-central1
-    - --cluster=global-game-us-central1-01
-    - --output=output/agones-deploy-us-central1-01
-
-  - name: "gcr.io/cloud-builders/gke-deploy"
-    args:
-    - run
-    - --filename=agones-system.yaml
-    - --location=us-central1
-    - --cluster=global-game-us-central1-02
-    - --output=output/agones-deploy-us-central1-02
-
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args:
