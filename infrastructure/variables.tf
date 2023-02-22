@@ -74,7 +74,7 @@ variable "services_gke_config" {
     resource_labels = map(string)
   })
 
-  description = "Configuration specs for Spanner GKE Autopilot cluster"
+  description = "Configuration specs for Services GKE Autopilot cluster"
 }
 
 variable "app_service_account_config" {
