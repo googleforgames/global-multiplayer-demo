@@ -18,8 +18,10 @@ steps:
     entrypoint: gcloud
     args:
       [
-        "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "global-game-spanner-deploy-pipeline",
+        "deploy", "releases", "create", "open-match-${_RELEASE_NAME}",
+        "--delivery-pipeline", "global-game-open-match-deploy-pipeline",
+        "--skaffold-file", "skaffold-open-match.yaml",
+        "--skaffold-version", "1.39",
         "--region", "us-central1"
       ]
 

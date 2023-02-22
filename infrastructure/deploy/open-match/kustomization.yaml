@@ -1,3 +1,0 @@
-# ./kustomization.yaml
-resources:
-- base
