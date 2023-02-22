@@ -14,6 +14,11 @@
 
 project = "PROJECT_ID"
 
+# Cloud Deploy Configuration
+clouddeploy_config = {
+  "location" : "us-central1"
+}
+
 # VPC Regions & associated subnet CIDRs Values
 
 vpc_name = "global-game-vpc"
