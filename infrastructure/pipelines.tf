@@ -126,7 +126,7 @@ resource "google_clouddeploy_delivery_pipeline" "agones" {
       for_each = var.game_gke_clusters
       content {
         target_id = google_clouddeploy_target.agones[stages.key].target_id
-	      profiles = [stages.key]
+        profiles  = [stages.key]
       }
     }
   }

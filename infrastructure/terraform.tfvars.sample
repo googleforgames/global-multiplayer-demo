@@ -12,7 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Project Specific Variables
 project = "PROJECT_ID"
+
+# Cloud Deploy Configuration
+clouddeploy_config = {
+  "location" : "us-central1"
+}
 
 # VPC Regions & associated subnet CIDRs Values
 

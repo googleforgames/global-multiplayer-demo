@@ -215,7 +215,7 @@ resource "local_file" "agones-ae-lb-file" {
 resource "local_file" "agones-ns-file" {
   for_each = var.game_gke_clusters
 
-  content = file("${path.module}/files/agones/agones-system.yaml")
+  content  = file("${path.module}/files/agones/agones-system.yaml")
   filename = "${path.module}/deploy/agones/install/${each.key}/agones-system.yaml"
 }
 
