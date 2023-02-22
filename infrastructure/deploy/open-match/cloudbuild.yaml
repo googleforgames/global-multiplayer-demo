@@ -19,7 +19,7 @@ steps:
     args:
       [
         "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "global-game-open-match-deploy-pipeline",
+        "--delivery-pipeline", "global-game-open-match",
         "--region", "us-central1"
       ]
 substitutions:
