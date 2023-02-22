@@ -94,7 +94,7 @@ spec:
         - --listener_port=9443
         - --generate_self_signed_cert
         - --backend=grpc://127.0.0.1:8443
-        - --service=${cluster_name}.endpoints.${project_id}.cloud.goog
+        - --service=${service_name}
         - --rollout_strategy=managed
         image: gcr.io/endpoints-release/endpoints-runtime:2
         imagePullPolicy: IfNotPresent
