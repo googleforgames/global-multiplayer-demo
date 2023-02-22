@@ -74,7 +74,7 @@ resource "google_clouddeploy_delivery_pipeline" "spanner" {
 resource "google_clouddeploy_target" "agones" {
   for_each = var.game_gke_clusters
 
-  location = each.value.region
+  location = var.clouddeploy_config.location
   name     = "agones-deploy-target-${each.key}"
 
   annotations = {
@@ -102,10 +102,8 @@ resource "google_clouddeploy_target" "agones" {
 }
 
 resource "google_clouddeploy_delivery_pipeline" "agones" {
-  for_each = var.game_gke_clusters
-
-  location = each.value.region
-  name     = "agones-deploy-pipeline-${each.key}"
+  location = var.clouddeploy_config.location
+  name     = "agones-deploy-pipeline"
 
   annotations = {
     my_first_annotation = "agones-annotation-1"
@@ -113,7 +111,7 @@ resource "google_clouddeploy_delivery_pipeline" "agones" {
     my_second_annotation = "agones-annotation-2"
   }
 
-  description = "Global Game: Agones Deploy Pipeline - ${each.key}"
+  description = "Global Game: Agones Deploy Pipeline"
 
   labels = {
     my_first_label = "global-game-demo"
@@ -124,8 +122,12 @@ resource "google_clouddeploy_delivery_pipeline" "agones" {
   project = var.project
 
   serial_pipeline {
-    stages {
-      target_id = google_clouddeploy_target.agones[each.key].target_id
+    dynamic "stages" {
+      for_each = var.game_gke_clusters
+      content {
+        target_id = google_clouddeploy_target.agones[stages.key].target_id
+	      profiles = [stages.key]
+      }
     }
   }
 }

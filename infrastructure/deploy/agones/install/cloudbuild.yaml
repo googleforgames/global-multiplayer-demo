@@ -14,75 +14,14 @@
 
 serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT_ID}.iam.gserviceaccount.com
 steps:
-  - name: "gcr.io/cloud-builders/gke-deploy"
-    args:
-    - run
-    - --filename=agones-system.yaml
-    - --location=asia-east1
-    - --cluster=global-game-asia-east1-01
-    - --output=output/agones-deploy-asia-east1-01
-
-  - name: "gcr.io/cloud-builders/gke-deploy"
-    args:
-    - run
-    - --filename=agones-system.yaml
-    - --location=europe-west1
-    - --cluster=global-game-eu-west1-01
-    - --output=output/agones-deploy-europe-west1-01
-
-  - name: "gcr.io/cloud-builders/gke-deploy"
-    args:
-    - run
-    - --filename=agones-system.yaml
-    - --location=us-central1
-    - --cluster=global-game-us-central1-01
-    - --output=output/agones-deploy-us-central1-01
-
-  - name: "gcr.io/cloud-builders/gke-deploy"
-    args:
-    - run
-    - --filename=agones-system.yaml
-    - --location=us-central1
-    - --cluster=global-game-us-central1-02
-    - --output=output/agones-deploy-us-central1-02
-
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args:
       [
         "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "agones-deploy-pipeline-global-game-asia-east1-01",
-        "--skaffold-file", "skaffold-global-game-asia-east1-01.yaml",
-        "--region", "asia-east1"
-      ]
-
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    entrypoint: gcloud
-    args:
-      [
-        "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "agones-deploy-pipeline-global-game-eu-west1-01",
-        "--skaffold-file", "skaffold-global-game-eu-west1-01.yaml",
-        "--region", "europe-west1"
-      ]
-
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    entrypoint: gcloud
-    args:
-      [
-        "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "agones-deploy-pipeline-global-game-us-central1-01",
-        "--skaffold-file", "skaffold-global-game-us-central1-01.yaml",
-        "--region", "us-central1"
-      ]
-
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    entrypoint: gcloud
-    args:
-      [
-        "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "agones-deploy-pipeline-global-game-us-central1-02",
-        "--skaffold-file", "skaffold-global-game-us-central1-02.yaml",
+        "--delivery-pipeline", "agones-deploy-pipeline",
+        "--skaffold-file", "skaffold.yaml",
+        "--skaffold-version", "1.39",
         "--region", "us-central1"
       ]
 

@@ -44,6 +44,14 @@ variable "game_gke_clusters" {
   description = "GKE gameclusters & associated values"
 }
 
+### Cloud Deploy Variables ###
+
+variable "clouddeploy_config" {
+  type = object({
+    location = string
+  })
+}
+
 ### Spanner Variables ###
 
 variable "spanner_config" {
