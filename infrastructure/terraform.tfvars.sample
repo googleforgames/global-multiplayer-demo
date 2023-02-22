@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Project Specific Variables
 project = "PROJECT_ID"
 
 # Cloud Deploy Configuration
@@ -40,18 +41,32 @@ vpc_regions = {
 ### `agones/install` & `deploy/agones/endpoint-patch/` as they are not dynamically created.  
 game_gke_clusters = {
   "global-game-us-central1-01" : {
+    "short_name" : "us-central1-01",
     "region" : "us-central1",
     "machine_type" : "e2-standard-4"
   },
   "global-game-us-central1-02" : {
+    "short_name" : "us-central1-02",
     "region" : "us-central1",
     "machine_type" : "e2-standard-4"
   },
   "global-game-eu-west1-01" : {
+    "short_name" : "europe-west1-01",
+    "region" : "europe-west1",
+    "machine_type" : "e2-standard-4"
+  },
+  "global-game-eu-west1-02" : {
+    "short_name" : "europe-west1-02",
     "region" : "europe-west1",
     "machine_type" : "e2-standard-4"
   },
   "global-game-asia-east1-01" : {
+    "short_name" : "asia-east1-01",
+    "region" : "asia-east1",
+    "machine_type" : "e2-standard-4"
+  },
+  "global-game-asia-east1-02" : {
+    "short_name" : "asia-east1-02",
     "region" : "asia-east1",
     "machine_type" : "e2-standard-4"
   }

@@ -50,7 +50,8 @@ resource "google_clouddeploy_target" "agones" {
   for_each = var.game_gke_clusters
 
   location = var.clouddeploy_config.location
-  name     = "agones-deploy-target-${each.key}"
+  name     = "${each.value.short_name}-agones-deploy"
+
 
   annotations = {
     my_first_annotation = "agones-annotation-1"
@@ -101,7 +102,7 @@ resource "google_clouddeploy_delivery_pipeline" "agones" {
       for_each = var.game_gke_clusters
       content {
         target_id = google_clouddeploy_target.agones[stages.key].target_id
-	      profiles = [stages.key]
+        profiles  = [stages.key]
       }
     }
   }
