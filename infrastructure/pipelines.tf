@@ -75,7 +75,7 @@ resource "google_clouddeploy_target" "agones" {
   for_each = var.game_gke_clusters
 
   location = var.clouddeploy_config.location
-  name     = "agones-deploy-target-${each.key}"
+  name     = "${each.value.short_name}-agones-deploy"
 
   annotations = {
     my_first_annotation = "agones-annotation-1"
