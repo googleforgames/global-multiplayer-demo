@@ -1,6 +1,7 @@
 # ./base/kustomization.yaml
 helmCharts:
 - name: open-match
+  namespace: open-match
   repo: https://open-match.dev/chart/stable
   version: 1.6.0
   releaseName: open-match

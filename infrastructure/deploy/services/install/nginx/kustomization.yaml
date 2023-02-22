@@ -6,3 +6,6 @@ helmCharts:
   version: 13.2.23
   releaseName: example-web
   namespace: spanner
+
+resources:
+- spanner.yaml

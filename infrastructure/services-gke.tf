@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-resource "google_container_cluster" "game-demo-spanner-gke" {
-  name     = var.spanner_gke_config.cluster_name
-  location = var.spanner_gke_config.location
+resource "google_container_cluster" "game-demo-services-gke" {
+  name     = var.services_gke_config.cluster_name
+  location = var.services_gke_config.location
 
   network    = google_compute_network.vpc.name
-  subnetwork = google_compute_subnetwork.subnet[var.spanner_gke_config.location].name
+  subnetwork = google_compute_subnetwork.subnet[var.services_gke_config.location].name
 
   # See issue: https://github.com/hashicorp/terraform-provider-google/issues/10782
   ip_allocation_policy {}
@@ -34,11 +34,11 @@ resource "google_container_cluster" "game-demo-spanner-gke" {
   depends_on = [google_compute_subnetwork.subnet, google_project_service.project]
 }
 
-data "google_container_cluster" "game-demo-spanner-gke" {
-  name     = var.spanner_gke_config.cluster_name
-  location = var.spanner_gke_config.location
+data "google_container_cluster" "game-demo-services-gke" {
+  name     = var.services_gke_config.cluster_name
+  location = var.services_gke_config.location
 
-  depends_on = [google_container_cluster.game-demo-spanner-gke]
+  depends_on = [google_container_cluster.game-demo-services-gke]
 }
 
 resource "google_service_account" "app-service-account" {
@@ -63,5 +63,5 @@ resource "google_service_account_iam_policy" "app-service-account-iam" {
   service_account_id = google_service_account.app-service-account.name
   policy_data        = data.google_iam_policy.workload-id-policy.policy_data
 
-  depends_on = [google_project_service.project, google_container_cluster.game-demo-spanner-gke]
+  depends_on = [google_project_service.project, google_container_cluster.game-demo-services-gke]
 }

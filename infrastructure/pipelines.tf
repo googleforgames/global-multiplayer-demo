@@ -15,7 +15,7 @@
 ##### Spanner Pipelines #####
 
 resource "google_clouddeploy_target" "spanner" {
-  location = var.spanner_gke_config.location
+  location = var.services_gke_config.location
   name     = "global-game-spanner-deploy-target"
 
   annotations = {
@@ -27,7 +27,7 @@ resource "google_clouddeploy_target" "spanner" {
   description = "Global Game: Spanner Deploy Target"
 
   gke {
-    cluster = data.google_container_cluster.game-demo-spanner-gke.id
+    cluster = data.google_container_cluster.game-demo-services-gke.id
   }
 
   labels = {
@@ -43,7 +43,7 @@ resource "google_clouddeploy_target" "spanner" {
 }
 
 resource "google_clouddeploy_delivery_pipeline" "spanner" {
-  location = var.spanner_gke_config.location
+  location = var.services_gke_config.location
   name     = "global-game-spanner-deploy-pipeline"
 
   annotations = {
@@ -135,7 +135,7 @@ resource "google_clouddeploy_delivery_pipeline" "agones" {
 ##### Open Match Pipelines #####
 
 resource "google_clouddeploy_target" "open-match-target" {
-  location = var.open-match_gke_config.location
+  location = var.services_gke_config.location
   name     = "global-game-open-match-deploy-target"
 
   annotations = {
@@ -147,7 +147,7 @@ resource "google_clouddeploy_target" "open-match-target" {
   description = "Global Game: Open Match Deploy Target"
 
   gke {
-    cluster = data.google_container_cluster.game-demo-open-match-gke.id
+    cluster = data.google_container_cluster.game-demo-services-gke.id
   }
 
   labels = {
@@ -163,7 +163,7 @@ resource "google_clouddeploy_target" "open-match-target" {
 }
 
 resource "google_clouddeploy_delivery_pipeline" "open-match" {
-  location = var.open-match_gke_config.location
+  location = var.services_gke_config.location
   name     = "global-game-open-match-deploy-pipeline"
 
   annotations = {
