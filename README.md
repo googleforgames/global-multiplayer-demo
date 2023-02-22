@@ -94,22 +94,13 @@ You can monitor the status of the deployment through the Cloud Logging URL retur
 nd as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as O
 K, Agones should be avaialable.
 
-#### Deploy Open Match to GKE Cluster
-
-Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Open Match using Cloud Deploy.
-
-```shell
-cd $GAME_DEMO_HOME/infrastructure/deploy/open-match
-gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
-```
-
-### Deploy Spanner Applications to GKE Cluster
+### Deploy Backend Applications to Services GKE Cluster
 
 #### Initial Deploy
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Spanner applications using Cloud Deploy.
 
 ```shell
-cd $GAME_DEMO_HOME/infrastructure/deploy/spanner/install
+cd $GAME_DEMO_HOME/infrastructure/deploy/services/install
 gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
