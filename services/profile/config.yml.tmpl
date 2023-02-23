@@ -12,17 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT_ID}.iam.gserviceaccount.com
-steps:
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    entrypoint: gcloud
-    args:
-      [
-        "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "global-game-open-match",
-        "--region", "us-central1"
-      ]
-substitutions:
-  _RELEASE_NAME: rel-0002
-options:
-  logging: CLOUD_LOGGING_ONLY
+server:
+  port: 8080
+
+spanner:
+  project_id: GCP_PROJECT_ID
+  instance_id: SPANNER_INSTANCE_ID
+  database_id: SPANNER_DATABASE_ID

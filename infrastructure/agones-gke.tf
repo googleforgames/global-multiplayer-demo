@@ -37,8 +37,7 @@ module "agones_gke_clusters" {
     network    = google_compute_network.vpc.id
     subnetwork = "global-game-${each.value.region}-subnet"
   }
-
-  firewallName = "${each.key}-firewall"
+  udpFirewall = false
 
   depends_on = [google_compute_subnetwork.subnet, google_project_service.project]
 }
@@ -50,4 +49,18 @@ data "google_container_cluster" "game-demo-agones-gke" {
   location = each.value.region
 
   depends_on = [module.agones_gke_clusters]
+}
+
+resource "google_compute_firewall" "agones-gameservers" {
+  name    = "agones-gameservers"
+  project = var.project
+  network = google_compute_network.vpc.id
+
+  allow {
+    protocol = "udp"
+    ports    = ["7000-8000"]
+  }
+
+  target_tags   = ["game-server"]
+  source_ranges = ["0.0.0.0/0"]
 }

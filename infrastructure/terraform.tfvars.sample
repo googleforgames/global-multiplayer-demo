@@ -14,6 +14,11 @@
 
 project = "PROJECT_ID"
 
+# Cloud Deploy Configuration
+clouddeploy_config = {
+  "location" : "us-central1"
+}
+
 # VPC Regions & associated subnet CIDRs Values
 
 vpc_name = "global-game-vpc"
@@ -75,18 +80,9 @@ spanner_config = {
   num_nodes     = 3
 }
 
-# Spanner GKE Config Values
-spanner_gke_config = {
-  cluster_name = "global-game-gke-spanner"
-  location     = "us-central1"
-  resource_labels = {
-    environment = "staging"
-  }
-}
-
-# Open Match GKE Config Values
-open-match_gke_config = {
-  cluster_name = "global-game-gke-open-match"
+# Services GKE Config Values
+services_gke_config = {
+  cluster_name = "global-game-services"
   location     = "us-central1"
   resource_labels = {
     environment = "staging"

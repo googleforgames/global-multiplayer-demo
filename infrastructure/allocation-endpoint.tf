@@ -12,12 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+# Generate random string to endpoint service name to avoid the following error when deleting/recreating endpoint service
+#   Error: googleapi: Error 400: Service global-game-us-central1-02.endpoints.global-game-sandbox.cloud.goog 
+#   has been deleted and will be purged after 30 days. To reuse this service, please undelete the service
+#   following https://cloud.google.com/service-infrastructure/docs/create-services#undeleting., failedPrecondition ...
+resource "random_string" "endpoint_random_string" {
+  length  = 4
+  special = false
+  upper   = false
+}
+
 resource "google_endpoints_service" "endpoints_service" {
   for_each     = var.game_gke_clusters
-  service_name = "${each.key}.endpoints.${var.project}.cloud.goog"
+  service_name = "${each.key}-${random_string.endpoint_random_string.result}.endpoints.${var.project}.cloud.goog"
   grpc_config = templatefile(
     "${path.module}/files/agones/api_config.yaml.tpl", {
-      service-name    = "${each.key}.endpoints.${var.project}.cloud.goog"
+      service-name    = "${each.key}-${random_string.endpoint_random_string.result}.endpoints.${var.project}.cloud.goog"
       service-account = google_service_account.ae_sa.email
     }
   )
@@ -95,7 +105,7 @@ resource "google_cloud_run_service" "aep_cloud_run" {
         }
         env {
           name  = "AUDIENCE"
-          value = "${each.key}.endpoints.${var.project}.cloud.goog"
+          value = "${each.key}-${random_string.endpoint_random_string.result}.endpoints.${var.project}.cloud.goog"
         }
         env {
           name = "SA_KEY"
@@ -193,13 +203,11 @@ resource "google_compute_address" "allocation-endpoint" {
 
 # Make Skaffold file for Cloud Deploy into each GKE Cluster
 resource "local_file" "agones-skaffold-file" {
-  for_each = var.game_gke_clusters
-
   content = templatefile(
     "${path.module}/files/agones/skaffold.yaml.tpl", {
-      cluster_name = each.key
+      gke_clusters = var.game_gke_clusters
   })
-  filename = "${path.module}/deploy/agones/install/skaffold-${each.key}.yaml"
+  filename = "${path.module}/deploy/agones/install/skaffold.yaml"
 }
 
 # Make cluster specific helm value for LB IP
@@ -213,6 +221,13 @@ resource "local_file" "agones-ae-lb-file" {
   filename = "${path.module}/deploy/agones/install/${each.key}/kustomization.yaml"
 }
 
+# Create agones-system ns manifest as resource referenced by kustomization.yaml
+resource "local_file" "agones-ns-file" {
+  for_each = var.game_gke_clusters
+
+  content = file("${path.module}/files/agones/agones-system.yaml")
+  filename = "${path.module}/deploy/agones/install/${each.key}/agones-system.yaml"
+}
 
 # Make Kubernetes manifest files to patch the Agones deployment for Allocation Endpoint
 resource "local_file" "patch-agones-manifest" {
@@ -223,6 +238,7 @@ resource "local_file" "patch-agones-manifest" {
       project_id   = var.project
       location     = each.value.region
       cluster_name = each.key
+      service_name = "${each.key}-${random_string.endpoint_random_string.result}.endpoints.${var.project}.cloud.goog"
       sa_email     = google_service_account.ae_sa.email
   })
   filename = "${path.module}/deploy/agones/endpoint-patch/patch-agones-allocator-${each.key}.yaml"

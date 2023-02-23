@@ -1,10 +1,10 @@
-# Copyright 2023 Google LLC All Rights Reserved.
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#    https:#www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,21 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.*
-!.gitignore
-*.iml
-terraform.tfstate*
-*.tfvars
+FROM golang:alpine as builder
+WORKDIR /app
+COPY . .
 
-deploy/base/charts/
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o profile-service -ldflags="-w -s" .
 
-# Ignore Terraform generated k8s manifest files
-patch-agones-allocator-*.yaml
+FROM alpine:latest as certs
+RUN apk --update add ca-certificates
 
-# Ignore Terraform generated skaffold files
-skaffold-global-game-*.yaml
-infrastructure/deploy/agones/install/skaffold.yaml
+FROM scratch
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=builder /app/profile-service /usr/bin/
 
-# Ignore Terraform generated kustomization files
-**/global-game-*/kustomization.yaml
-**/global-game-*/agones-system.yaml
+EXPOSE 80
+
+ENTRYPOINT ["profile-service"]
