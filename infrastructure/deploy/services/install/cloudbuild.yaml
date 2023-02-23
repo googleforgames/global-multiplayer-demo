@@ -27,7 +27,7 @@ steps:
     args:
       [
         "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "global-game-spanner-deploy-pipeline",
+        "--delivery-pipeline", "global-game-services",
         "--region", "us-central1"
       ]
 
