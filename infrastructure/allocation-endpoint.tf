@@ -216,7 +216,10 @@ resource "local_file" "agones-ae-lb-file" {
 
   content = templatefile(
     "${path.module}/files/agones/ae-lb-ip-patch.yaml.tpl", {
-      lb_ip = google_compute_address.allocation-endpoint[each.key].address
+      lb_ip        = google_compute_address.allocation-endpoint[each.key].address
+      service_name = "${each.key}-${random_string.endpoint_random_string.result}.endpoints.${var.project}.cloud.goog"
+      sa_email     = google_service_account.ae_sa.email
+      location     = each.value.region
   })
   filename = "${path.module}/${var.platform_directory}/agones/install/${each.key}/kustomization.yaml"
 }
@@ -227,19 +230,4 @@ resource "local_file" "agones-ns-file" {
 
   content  = file("${path.module}/files/agones/agones-system.yaml")
   filename = "${path.module}/${var.platform_directory}/agones/install/${each.key}/agones-system.yaml"
-}
-
-# Make Kubernetes manifest files to patch the Agones deployment for Allocation Endpoint
-resource "local_file" "patch-agones-manifest" {
-  for_each = var.game_gke_clusters
-
-  content = templatefile(
-    "${path.module}/files/agones/patch-agones-allocator.yaml.tpl", {
-      project_id   = var.project
-      location     = each.value.region
-      cluster_name = each.key
-      service_name = "${each.key}-${random_string.endpoint_random_string.result}.endpoints.${var.project}.cloud.goog"
-      sa_email     = google_service_account.ae_sa.email
-  })
-  filename = "${path.module}/${var.platform_directory}/agones/endpoint-patch/patch-agones-allocator-${each.key}.yaml"
 }
