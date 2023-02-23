@@ -207,7 +207,7 @@ resource "local_file" "agones-skaffold-file" {
     "${path.module}/files/agones/skaffold.yaml.tpl", {
       gke_clusters = var.game_gke_clusters
   })
-  filename = "${path.module}/deploy/agones/install/skaffold.yaml"
+  filename = "${path.module}/${var.platform_directory}/agones/install/skaffold.yaml"
 }
 
 # Make cluster specific helm value for LB IP
@@ -218,15 +218,15 @@ resource "local_file" "agones-ae-lb-file" {
     "${path.module}/files/agones/ae-lb-ip-patch.yaml.tpl", {
       lb_ip = google_compute_address.allocation-endpoint[each.key].address
   })
-  filename = "${path.module}/deploy/agones/install/${each.key}/kustomization.yaml"
+  filename = "${path.module}/${var.platform_directory}/agones/install/${each.key}/kustomization.yaml"
 }
 
 # Create agones-system ns manifest as resource referenced by kustomization.yaml
 resource "local_file" "agones-ns-file" {
   for_each = var.game_gke_clusters
 
-  content = file("${path.module}/files/agones/agones-system.yaml")
-  filename = "${path.module}/deploy/agones/install/${each.key}/agones-system.yaml"
+  content  = file("${path.module}/files/agones/agones-system.yaml")
+  filename = "${path.module}/${var.platform_directory}/agones/install/${each.key}/agones-system.yaml"
 }
 
 # Make Kubernetes manifest files to patch the Agones deployment for Allocation Endpoint
@@ -241,5 +241,5 @@ resource "local_file" "patch-agones-manifest" {
       service_name = "${each.key}-${random_string.endpoint_random_string.result}.endpoints.${var.project}.cloud.goog"
       sa_email     = google_service_account.ae_sa.email
   })
-  filename = "${path.module}/deploy/agones/endpoint-patch/patch-agones-allocator-${each.key}.yaml"
+  filename = "${path.module}/${var.platform_directory}/agones/endpoint-patch/patch-agones-allocator-${each.key}.yaml"
 }

@@ -1,9 +1,0 @@
-apiVersion: skaffold/v2beta29
-kind: Config
-deploy:
-  kustomize:
-    paths:
-      - "."
-    buildArgs: ["--enable-helm"]
-    flags:
-      apply: ['--server-side']
