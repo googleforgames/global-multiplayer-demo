@@ -21,12 +21,13 @@ void UDroidshooterIntroUserWidget::FetchGameServer(const FString& accessToken)
 {
     UE_LOG(LogDroidshooter, Log, TEXT("Fetch server/ip call with token: %s"), *accessToken);
 
-    FString uriBase = "http://localhost";
-    FString uriPlay = uriBase + TEXT("/play?access_token=") + accessToken;
+    FString uriBase = "http://localhost:8081";
+    FString uriPlay = uriBase + TEXT("/play");
 
     FHttpModule& httpModule = FHttpModule::Get();
     TSharedRef<IHttpRequest, ESPMode::ThreadSafe> pRequest = httpModule.CreateRequest();
 
+    pRequest->SetHeader("Authorization", "Bearer " + accessToken);
     pRequest->SetVerb(TEXT("GET"));
     pRequest->SetURL(uriPlay);
 
@@ -63,8 +64,8 @@ void UDroidshooterIntroUserWidget::AuthenticateCall(const FString& accessToken)
 {
     UE_LOG(LogDroidshooter, Log, TEXT("Auth call with token: %s"), *accessToken);
 
-	FString uriBase = "http://localhost";
-	FString uriProfile = uriBase + TEXT("/profile?access_token=") + accessToken;
+	FString uriBase = "http://localhost:8081";
+	FString uriProfile = uriBase + TEXT("/profile");
 
 	FHttpModule& httpModule = FHttpModule::Get();
 
@@ -76,6 +77,9 @@ void UDroidshooterIntroUserWidget::AuthenticateCall(const FString& accessToken)
     // The Space-Track.org REST API exposes a "POST" method we can use to get
     // general perturbations data about objects orbiting Earth
     pRequest->SetVerb(TEXT("GET"));
+
+    // Here we set auth JWT token
+    pRequest->SetHeader("Authorization", "Bearer " + accessToken);
 
     // We'll need to tell the server what type of content to expect in the POST data
     // pRequest->SetHeader(TEXT("Content-Type"), TEXT("application/x-www-form-urlencoded"));
@@ -136,9 +140,10 @@ void UDroidshooterIntroUserWidget::ProcessGenericJsonResponse(const FString& Res
 
 void UDroidshooterIntroUserWidget::ProcessProfileResponse(const TSharedPtr<FJsonObject>& JsonResponseObject) 
 {
+    UE_LOG(LogDroidshooter, Log, TEXT("Processing json response for profile"));
     if (JsonResponseObject)
     {
-        FString Name = JsonResponseObject->GetStringField(TEXT("name"));
+        FString Name = JsonResponseObject->GetStringField(TEXT("player_name"));
 
         if (Name.Len() != 0) {
             //UE_LOG(LogDroidshooter, Log, TEXT("Logged in player is: %s"), "yes");
