@@ -16,6 +16,7 @@
 project = "PROJECT_ID"
 
 # Cloud Deploy Configuration
+services_directory = "../services" # Relative to Terraform directory
 clouddeploy_config = {
   "location" : "us-central1"
 }

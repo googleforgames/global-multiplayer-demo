@@ -65,7 +65,7 @@ The Agones deployment is in two steps: The Initial Install and the Allocation En
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy.
 
 ```shell
-cd $GAME_DEMO_HOME/infrastructure/deploy/agones/install
+cd $GAME_DEMO_HOME/services/agones/install
 gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
@@ -84,7 +84,7 @@ You can monitor the status of the deployment through the Cloud Logging URL retur
 After the Agones install has completed and the GKE Workloads show complete, run the Allocation Endpoint Patch Cloud Deploy to apply the appropriate endpoint patches to each cluster:
 
 ```shell
-cd $GAME_DEMO_HOME/infrastructure/deploy/agones/endpoint-patch/
+cd $GAME_DEMO_HOME/services/agones/endpoint-patch/
 gcloud builds submit --config=cloudbuild.yaml
 ```
 
@@ -94,12 +94,12 @@ You can monitor the status of the deployment through the Cloud Logging URL retur
 nd as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as O
 K, Agones should be avaialable.
 
-#### Deploy Backend Applications to Services GKE Cluster
+#### Deploy Open Match to Services GKE Cluster
 
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Open Match using Cloud Deploy.
 
 ```shell
-cd $GAME_DEMO_HOME/infrastructure/deploy/services/
+cd $GAME_DEMO_HOME/services/open-match/
 gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 

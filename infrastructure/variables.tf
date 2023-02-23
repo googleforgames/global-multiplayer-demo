@@ -102,3 +102,8 @@ variable "allocation_endpoint" {
   })
   description = "Allocation Endpoint Configuration Variables"
 }
+
+variable "services_directory" {
+  type        = string
+  description = "Services Directory for outputed Cloud Deploy related files"
+}
