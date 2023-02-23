@@ -18,7 +18,7 @@ steps:
     entrypoint: gcloud
     args:
       [
-        "deploy", "releases", "create", "agones-${_RELEASE_NAME}",
+        "deploy", "releases", "create", "${_RELEASE_NAME}",
         "--delivery-pipeline", "agones-deploy-pipeline",
         "--skaffold-file", "skaffold.yaml",
         "--skaffold-version", "1.39",

@@ -24,7 +24,7 @@ Once you have Google Cloud CLI installed, you will need to authenticate against 
 gcloud auth application-default login
 ```
 
-and then set your Google Cloud Project project name/PROJECT_ID:
+and then set your Google Cloud Project to name/PROJECT_ID:
 
 ```shell
 gcloud config set project <PROJECT_ID>
@@ -40,7 +40,7 @@ export GAME_DEMO_HOME=$(pwd)
 
 ### Provision
 
-Initialize Terraform  & configure variables
+Initialize Terraform & configure variables
 
 ```shell
 cd $GAME_DEMO_HOME/infrastructure
