@@ -15,9 +15,9 @@
 
 # Project Specific Variables
 
-project = "PROJECT_ID"
+project = "planet-scale-demo-001"
 
-apply_org_policies = false
+apply_org_policies = true
 
 # Cloud Deploy Configuration
 platform_directory = "../platform" # Relative to Terraform directory
@@ -126,9 +126,4 @@ allocation_endpoint = {
   weight           = 100
   namespace        = "default"
   agones_namespace = "agones-system"
-}
-
-# Cloud Deploy Configuration
-clouddeploy_config = {
-  "location" : "us-central1"
 }
