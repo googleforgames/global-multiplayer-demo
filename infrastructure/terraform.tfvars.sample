@@ -105,6 +105,11 @@ services_gke_config = {
   }
 }
 
+# Artifact Registry variables
+artifact_registry_config = {
+  location = "us-central1"
+}
+
 # Agones Application Service Account Name
 app_service_account_config = {
   name        = "app-service-account"
