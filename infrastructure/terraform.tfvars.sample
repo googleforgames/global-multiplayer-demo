@@ -15,9 +15,9 @@
 
 # Project Specific Variables
 
-project = "planet-scale-demo-001"
+project = "PROJECT_ID"
 
-apply_org_policies = true
+apply_org_policies = false
 
 # Cloud Deploy Configuration
 platform_directory = "../platform" # Relative to Terraform directory
