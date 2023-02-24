@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-project = "PROJECT_ID"
 
-# Cloud Deploy Configuration
-clouddeploy_config = {
-  "location" : "us-central1"
-}
+# GCP Project and Org configuration
+
+apply_org_policies = false
+
+project = <PROJECT_ID>
 
 # VPC Regions & associated subnet CIDRs Values
 
@@ -57,6 +57,7 @@ game_gke_clusters = {
   }
 }
 
+
 # GCP APIs to Enable
 gcp_project_services = [
   "clouddeploy.googleapis.com",
@@ -68,9 +69,9 @@ gcp_project_services = [
   "spanner.googleapis.com",
   "secretmanager.googleapis.com",
   "servicecontrol.googleapis.com",
-  "run.googleapis.com"
+  "run.googleapis.com",
+  "orgpolicy.googleapis.com"
 ]
-
 
 # Spanner DB Config Values
 spanner_config = {
@@ -95,10 +96,8 @@ app_service_account_config = {
   description = "Global Multiplayer Game service account"
 }
 
-
 # Agones GKE Service Account Name
 k8s_service_account_id = "k8s-service-account"
-
 
 # Agones Allocation Endpoint Config Values
 allocation_endpoint = {
@@ -107,4 +106,9 @@ allocation_endpoint = {
   weight           = 100
   namespace        = "default"
   agones_namespace = "agones-system"
+}
+
+# Cloud Deploy Configuration
+clouddeploy_config = {
+  "location" : "us-central1"
 }

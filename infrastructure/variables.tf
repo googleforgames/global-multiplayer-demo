@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+### Organziation Variables ###
+
+variable "apply_org_policies" {
+  type        = bool
+  description = "Boolean used to determine whether GCP Org Policies are applied"
+}
+
 ### Project Variables ###
 
 variable "project" {
