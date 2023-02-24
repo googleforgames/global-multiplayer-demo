@@ -27,6 +27,7 @@ gcloud config set project ${PROJECT_ID}
 
 and then authenticate to generate [Application Default Credentials (ADC)](https://cloud.google.com/docs/authentication/application-default-credentials) that can be leveraged by Terraform
 ```shell
+gcloud auth application-default login
 gcloud auth application-default set-quota-project ${PROJECT_ID}
 ```
 
