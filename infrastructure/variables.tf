@@ -72,6 +72,8 @@ variable "spanner_config" {
   description = "Configuration specs for Spanner"
 }
 
+### Services GKE Variables ###
+
 variable "services_gke_config" {
   type = object({
     cluster_name    = string
@@ -106,4 +108,9 @@ variable "allocation_endpoint" {
     agones_namespace = string
   })
   description = "Allocation Endpoint Configuration Variables"
+}
+
+variable "platform_directory" {
+  type        = string
+  description = "Services Directory for outputed Cloud Deploy related files"
 }

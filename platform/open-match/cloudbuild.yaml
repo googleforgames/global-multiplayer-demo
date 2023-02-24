@@ -18,11 +18,14 @@ steps:
     entrypoint: gcloud
     args:
       [
-        "deploy", "releases", "create", "${_RELEASE_NAME}",
+        "deploy", "releases", "create", "open-match-${_RELEASE_NAME}",
         "--delivery-pipeline", "global-game-open-match",
+        "--skaffold-file", "skaffold.yaml",
+        "--skaffold-version", "1.39",
         "--region", "us-central1"
       ]
+
 substitutions:
-  _RELEASE_NAME: rel-0002
+  _RELEASE_NAME: rel-0001
 options:
   logging: CLOUD_LOGGING_ONLY
