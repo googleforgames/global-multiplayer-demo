@@ -22,8 +22,11 @@ type OMServerResponse struct {
 }
 
 type PingServer struct {
-	IP     string
-	Region string
+	Name      string
+	Namespace string
+	Region    string
+	Address   string
+	Protocol  string
 }
 
 func FindMatchingServer(regions []string) OMServerResponse {

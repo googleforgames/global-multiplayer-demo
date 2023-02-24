@@ -1,15 +1,29 @@
-# Useage
+# For Local development
 
 Please setup .env file with the following variables:
 
 ```bash
-CLIENT_ID=000000000000-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.apps.googleusercontent.com
-CLIENT_SECRET=XXXXXX-XXXXXXX_XXXXXXXXXXXXXXXXXXXX
+CLIENT_ID=<CLIENT_ID>.apps.googleusercontent.com
+CLIENT_SECRET=<CLIENT_SECRET>
 LISTEN_PORT=8081
 CLIENT_LAUNCHER_PORT=8082
 PROFILE_SERVICE=http://localhost:8080
-JWT_KEY=somethingawesomehere
+PING_SERVICE=http://localhost:8083
+JWT_KEY=<JWT_KEY>
 ```
 
-Run via `go buiid -o frontend-api . && ./frontend-api`
+CLIENT_ID and SECRET_ID need to be generated in the https://console.cloud.google.com/apis/credentials (OAuth 2.0 Client IDs)
 
+# Building locally
+
+`make build`
+
+Binary will be generated in the `build/` folder
+
+# Building container
+
+`make build-docker`
+
+To use container locally:
+
+`docker run --env-file .env -p 8081:8081 frontend-api`

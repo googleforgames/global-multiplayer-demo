@@ -19,12 +19,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/googleforgames/global-multiplayer-demo/services/frontend-api/models"
 	"github.com/googleforgames/global-multiplayer-demo/services/frontend-api/shared"
 	"github.com/googleforgames/global-multiplayer-demo/services/frontend-api/shared/auth"
@@ -45,229 +46,226 @@ var (
 func main() {
 	// Load local .env
 	godotenv.Load()
+	shared.ValidateEnvVars()
 
 	// Oauth config from env vars
 	googleOauthConfig.ClientID = os.Getenv("CLIENT_ID")
 	googleOauthConfig.ClientSecret = os.Getenv("CLIENT_SECRET")
 	googleOauthConfig.RedirectURL = "http://localhost:" + os.Getenv("LISTEN_PORT") + "/callback"
 
-	// Endpoint handlers
-	http.HandleFunc("/login", handleGoogleLogin)
-	http.HandleFunc("/callback", handleGoogleCallback)
+	r := gin.Default()
+	// TODO: Better configuration of trusted proxy
+	if err := r.SetTrustedProxies(nil); err != nil {
+		fmt.Printf("could not set trusted proxies: %s", err)
+		return
+	}
+
+	r.GET("/login", handleGoogleLogin)
+	r.GET("/callback", handleGoogleCallback)
+
 	// JWT protected endpoint handlers
-	http.HandleFunc("/play", auth.VerifyJWT(handlePlay))
-	http.HandleFunc("/profile", auth.VerifyJWT(handleProfile))
-	http.HandleFunc("/stats", auth.VerifyJWT(handleStats))
-	http.HandleFunc("/ping", auth.VerifyJWT(handlePingServers))
+	r.GET("/play", auth.VerifyJWT(handlePlay))
+	r.GET("/profile", auth.VerifyJWT(handleProfile))
+	r.GET("/stats", auth.VerifyJWT(handleGetStats))
+	r.PUT("/stats", auth.VerifyJWT(handleUpdateStats))
+	r.GET("/ping", auth.VerifyJWT(handlePingServers))
 
 	fmt.Println("Google for Games Frontend API is listening on :" + os.Getenv("LISTEN_PORT"))
-	fmt.Println(http.ListenAndServe(":"+os.Getenv("LISTEN_PORT"), nil))
+
+	if err := r.Run(":" + os.Getenv("LISTEN_PORT")); err != nil {
+		fmt.Printf("could not run gin router: %s", err)
+		return
+	}
 }
 
 // Generates a redirect to google's login
-func handleGoogleLogin(rw http.ResponseWriter, req *http.Request) {
+func handleGoogleLogin(c *gin.Context) {
 	url := googleOauthConfig.AuthCodeURL(oauthStateString, oauth2.AccessTypeOffline)
-	http.Redirect(rw, req, url, http.StatusTemporaryRedirect)
+	http.Redirect(c.Writer, c.Request, url, http.StatusTemporaryRedirect)
 }
 
 // Callback handler that gets the access token for further profile querying of Google APIs
-func handleGoogleCallback(rw http.ResponseWriter, req *http.Request) {
-	// Generic panic recovery that spits out 500 response code and a json formatted error
-	defer shared.RecoverFromPanic(rw, req)
+func handleGoogleCallback(c *gin.Context) {
 
-	state := req.FormValue("state")
+	state := c.Request.FormValue("state")
 	if state != oauthStateString {
-		panic(fmt.Sprintf("invalid oauth state, expected '%s', got '%s'\n", oauthStateString, state))
+		err := fmt.Errorf("invalid oauth state, expected '%s', got '%s'", oauthStateString, state)
+		if shared.HandleError(c, http.StatusBadRequest, "auth callback", err) {
+			return
+		}
 	}
 
-	code := req.FormValue("code")
+	code := c.Request.FormValue("code")
 	token, err := googleOauthConfig.Exchange(context.Background(), code)
-	if err != nil {
-		fmt.Printf("Code exchange failed with '%s'\n", err)
-		panic(fmt.Sprintf("Code exchange failed with '%s'\n", err))
+	if shared.HandleError(c, http.StatusBadRequest, "auth exchange", err) {
+		return
 	}
 
 	// Call our profile service to create a new entry in Spanner DB
-	id := createProfileIfNotExists(token.AccessToken)
+	id, err := createProfileIfNotExists(token.AccessToken)
+	if shared.HandleError(c, http.StatusInternalServerError, "creating profile if not exists", err) {
+		return
+	}
 
 	// Generate our own jwt token (1 month validity) that will be used in the game launcher / game client
 	jwtToken, err := auth.GenerateJWT(id, 31)
-	if err != nil {
-		panic(fmt.Sprintf("Unable to generate JWT token '%s'\n", err))
+	if shared.HandleError(c, http.StatusInternalServerError, "token generation", err) {
+		return
 	}
 
 	// Redirect to the launcher callback port
-	http.Redirect(rw, req, fmt.Sprintf("http://localhost:%s/callback?token=%s", os.Getenv("CLIENT_LAUNCHER_PORT"), jwtToken), http.StatusTemporaryRedirect)
+	http.Redirect(c.Writer, c.Request, fmt.Sprintf("http://localhost:%s/callback?token=%s", os.Getenv("CLIENT_LAUNCHER_PORT"), jwtToken), http.StatusTemporaryRedirect)
 }
 
 // Profile handling endpoint
-func handleProfile(id string, rw http.ResponseWriter, req *http.Request) {
-	defer shared.RecoverFromPanic(rw, req)
-
+func handleProfile(id string, c *gin.Context) {
 	// Query our own profile service to get player data
 	response, err := http.Get(fmt.Sprintf("%s/players/%s", os.Getenv("PROFILE_SERVICE"), id))
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer response.Body.Close()
-
-	// If not found, return an error
-	if response.StatusCode == 404 {
-		panic("Profile not found: " + id)
-	} else if response.StatusCode == 200 {
-		// Profile found, decode and show
-		var p models.Player
-		err := json.NewDecoder(response.Body).Decode(&p)
-		if err != nil {
-			fmt.Printf("Failed getting user info: %s\n", err)
-			panic(err)
-		}
-
-		rw.Header().Set("Access-Control-Allow-Origin", "*")
-		rw.Header().Set("Content-Type", "application/json")
-
-		json.NewEncoder(rw).Encode(p)
+	if shared.HandleError(c, http.StatusInternalServerError, "fetching profile", err) {
 		return
 	}
 
-	panic("Unable to process player request")
-}
-
-// Stats handler for GET and PUT methods
-func handleStats(id string, rw http.ResponseWriter, req *http.Request) {
-	defer shared.RecoverFromPanic(rw, req)
-
-	if req.Method == "PUT" {
-		handleUpdateStats(id, rw, req)
-	} else if req.Method == "GET" {
-		handleGetStats(id, rw, req)
-	}
-}
-
-func handleGetStats(id string, rw http.ResponseWriter, req *http.Request) {
-	response, err := http.Get(fmt.Sprintf("%s/players/%s/stats", os.Getenv("PROFILE_SERVICE"), id))
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode == 404 {
-		panic("Profile stats not found")
-	} else if response.StatusCode == 200 {
-
-		var p models.Player
-		err := json.NewDecoder(response.Body).Decode(&p)
-		if err != nil {
-			fmt.Printf("Failed getting user info: %s\n", err)
-			panic(err)
-		}
-
-		rw.Header().Set("Access-Control-Allow-Origin", "*")
-		rw.Header().Set("Content-Type", "application/json")
-
-		json.NewEncoder(rw).Encode(p.Stats)
-		return
-	}
-
-	panic("Unable to process player request")
-}
-
-func handleUpdateStats(id string, rw http.ResponseWriter, req *http.Request) {
-	client := &http.Client{}
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/players/%s/stats", os.Getenv("PROFILE_SERVICE"), id), req.Body)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	response, err := client.Do(req)
-	if err != nil {
-		// handle error
-		log.Fatal(err)
-	}
 	defer response.Body.Close()
 
 	if response.StatusCode == 200 {
-		rw.Header().Set("Access-Control-Allow-Origin", "*")
-		rw.Header().Set("Content-Type", "application/json")
+		// Profile found, decode and show
+		var p models.Player
+		err := json.NewDecoder(response.Body).Decode(&p)
+		if shared.HandleError(c, http.StatusInternalServerError, "decoding profile", err) {
+			return
+		}
 
-		json.NewEncoder(rw).Encode("ok")
+		c.JSON(http.StatusOK, p)
+	} else if response.StatusCode == 404 { // If not found, return an error
+		err := fmt.Errorf("profile not found: %s", id)
+		if shared.HandleError(c, http.StatusBadRequest, "profile lookup", err) {
+			return
+		}
+	} else {
+		err := fmt.Errorf("unable to fetch profile, error code: %d", response.StatusCode)
+		if shared.HandleError(c, http.StatusBadRequest, "profile lookup", err) {
+			return
+		}
+	}
+}
+
+// Getting the stats from profile api
+func handleGetStats(id string, c *gin.Context) {
+	response, err := http.Get(fmt.Sprintf("%s/players/%s/stats", os.Getenv("PROFILE_SERVICE"), id))
+	if shared.HandleError(c, http.StatusInternalServerError, "fetching profile", err) {
 		return
 	}
 
-	panic("Unable to process player request")
+	defer response.Body.Close()
+
+	if response.StatusCode == 200 {
+		// Profile found, decode and show
+		var p models.Player
+		err := json.NewDecoder(response.Body).Decode(&p)
+		if shared.HandleError(c, http.StatusInternalServerError, "decoding profile", err) {
+			return
+		}
+
+		c.JSON(http.StatusOK, p.Stats)
+	} else if response.StatusCode == 404 { // If not found, return an error
+		err := fmt.Errorf("profile not found: %s", id)
+		if shared.HandleError(c, http.StatusBadRequest, "profile lookup", err) {
+			return
+		}
+	} else {
+		err := fmt.Errorf("unable to fetch profile, error code: %d", response.StatusCode)
+		if shared.HandleError(c, http.StatusBadRequest, "profile lookup", err) {
+			return
+		}
+	}
+}
+
+// Updating the stats in the profile api
+func handleUpdateStats(id string, c *gin.Context) {
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/players/%s/stats", os.Getenv("PROFILE_SERVICE"), id), c.Request.Body)
+	if shared.HandleError(c, http.StatusInternalServerError, "stats update", err) {
+		return
+	}
+
+	response, err := client.Do(req)
+	if shared.HandleError(c, http.StatusInternalServerError, "stats update", err) {
+		return
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode == 200 {
+		c.JSON(http.StatusOK, "OK")
+		return
+	} else {
+		err := fmt.Errorf("unable to update profile stats, error code: %d", response.StatusCode)
+		if shared.HandleError(c, http.StatusBadRequest, "stats update", err) {
+			return
+		}
+
+	}
 }
 
 // WIP: Needs an endpoint to fetch the ping servers
-func handlePingServers(id string, rw http.ResponseWriter, req *http.Request) {
-	defer shared.RecoverFromPanic(rw, req)
-
+func handlePingServers(id string, c *gin.Context) {
 	// TODO: fetch servers from some tbd endpoint
 
 	var pingServers []models.PingServer = []models.PingServer{
-		{IP: "216.239.32.53", Region: "Tokyo"},
-		{IP: "216.239.38.53", Region: "London"},
-		{IP: "216.239.34.53", Region: "North Virginia"},
+		{Name: "agones-ping-udp-service", Namespace: "agones-system", Region: "asia-east1", Address: "104.155.211.151", Protocol: "UDP"},
+		{Name: "agones-ping-udp-service", Namespace: "agones-system", Region: "europe-west1", Address: "34.22.151.131", Protocol: "UDP"},
+		{Name: "agones-ping-udp-service", Namespace: "agones-system", Region: "us-central1", Address: "35.227.137.95", Protocol: "UDP"},
 	}
 
-	PingResponse, _ := json.Marshal(pingServers)
-
-	rw.Header().Set("Access-Control-Allow-Origin", "*")
-	rw.Header().Set("Content-Type", "application/json")
-	fmt.Fprint(rw, string(PingResponse))
-
+	c.JSON(http.StatusOK, pingServers)
 }
 
 // WIP: Handles the play request from the game client
-func handlePlay(id string, rw http.ResponseWriter, req *http.Request) {
-	defer shared.RecoverFromPanic(rw, req)
+func handlePlay(id string, c *gin.Context) {
 
 	// Get regions by preferred order
-	preferredRegions := strings.Split(req.FormValue("preferred_regions"), ",")
+	preferredRegions := strings.Split(c.Request.FormValue("preferred_regions"), ",")
 	for _, region := range preferredRegions {
 		log.Println(region)
 	}
 
-	rw.Header().Set("Access-Control-Allow-Origin", "*")
-	rw.Header().Set("Content-Type", "application/json")
-
 	// TODO #1: Get profile here (from Cloud Spanner via token/id??)
 	// TODO #2: Add profile parameter for finding the server (besides the preferred region)
-	mOMResponse, _ := json.Marshal(models.FindMatchingServer(preferredRegions))
-
-	fmt.Fprint(rw, string(mOMResponse))
+	c.JSON(http.StatusOK, models.FindMatchingServer(preferredRegions))
 }
 
 // Function responsible for checking if profile is not yet created in our own profile service
-func createProfileIfNotExists(token string) string {
+func createProfileIfNotExists(token string) (string, error) {
 
 	// Fetch the data from Google's API by access token
 	response, err := http.Get("https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + token)
-	if err != nil || response.StatusCode != 200 {
-		panic("Failed getting user info: %s\n")
+	if err != nil {
+		return "", err
 	}
-
 	defer response.Body.Close()
 
-	udata, err := ioutil.ReadAll(response.Body)
+	if response.StatusCode != 200 {
+		return "", fmt.Errorf("unable to fetch google's user profile, error code: %d", response.StatusCode)
+	}
+
+	var udata bytes.Buffer
+	_, err = io.Copy(&udata, response.Body)
+
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	var userInfo models.UserInfo
-	if err := json.Unmarshal(udata, &userInfo); err != nil {
-		fmt.Printf("Failed getting user info: %s\n", err)
-		panic(err)
+	err = json.Unmarshal(udata.Bytes(), &userInfo)
+	if err != nil {
+		return "", err
 	}
 
 	// Fetch profile data from our profile service
 	response, err = http.Get(fmt.Sprintf("%s/players/%s", os.Getenv("PROFILE_SERVICE"), userInfo.Sub))
-
 	if err != nil {
-		panic(err.Error())
+		return "", err
 	}
-
 	defer response.Body.Close()
 
 	// If we get a 404, means that the player doesn't exist and we need to create it via POST call
@@ -286,16 +284,21 @@ func createProfileIfNotExists(token string) string {
 		profileData, _ := json.Marshal(p)
 		request, err := http.NewRequest("POST", os.Getenv("PROFILE_SERVICE")+"/players", bytes.NewBuffer(profileData))
 		request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+		if err != nil {
+			return "", err
+		}
 
 		client := &http.Client{}
 		response, err := client.Do(request)
+
 		if err != nil {
-			panic(err)
+			return "", err
 		}
+
 		defer response.Body.Close()
 
 	}
 
 	// Return google's user ID that we use as a primary in our profile service
-	return userInfo.Sub
+	return userInfo.Sub, nil
 }

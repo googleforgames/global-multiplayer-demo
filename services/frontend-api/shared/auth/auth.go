@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -52,10 +53,10 @@ func GenerateJWT(id string, days int) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyJWT(endpointHandler func(id string, rw http.ResponseWriter, req *http.Request)) http.HandlerFunc {
-	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+func VerifyJWT(endpointHandler func(id string, c *gin.Context)) gin.HandlerFunc {
+	return gin.HandlerFunc(func(c *gin.Context) {
 		prefix := "Bearer "
-		authHeader := req.Header.Get("Authorization")
+		authHeader := c.Request.Header.Get("Authorization")
 		reqToken := strings.TrimPrefix(authHeader, prefix)
 
 		if len(reqToken) != 0 {
@@ -71,22 +72,23 @@ func VerifyJWT(endpointHandler func(id string, rw http.ResponseWriter, req *http
 			if err != nil {
 				fmt.Println(err.Error())
 				if err == jwt.ErrSignatureInvalid {
-					rw.WriteHeader(http.StatusUnauthorized)
+					c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "context": "auth"})
 					return
 				}
-				rw.WriteHeader(http.StatusBadRequest)
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "context": "auth"})
 				return
 			}
 			if !tkn.Valid {
 				fmt.Println("Invalid token")
-				rw.WriteHeader(http.StatusUnauthorized)
+				c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "context": "auth"})
 				return
 			}
 
-			endpointHandler(claims.Id, rw, req)
+			endpointHandler(claims.Id, c)
 		} else {
-			fmt.Println("Authorization token is not present")
-			rw.WriteHeader(http.StatusBadRequest)
+			err := fmt.Errorf("authorization token is not present")
+			fmt.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "context": "auth"})
 			return
 		}
 	})
