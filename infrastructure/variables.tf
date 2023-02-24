@@ -52,6 +52,14 @@ variable "clouddeploy_config" {
   })
 }
 
+### Artifact Registry Variables ###
+
+variable "artifact_registry_config" {
+  type = object({
+    location = string
+  })
+}
+
 ### Spanner Variables ###
 
 variable "spanner_config" {
