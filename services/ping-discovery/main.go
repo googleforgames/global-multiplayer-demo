@@ -25,6 +25,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -78,6 +79,7 @@ type Service struct {
 	Namespace string
 	Region    string
 	Address   string
+	Port      uint64
 	Protocol  string
 }
 
@@ -204,6 +206,21 @@ func listGKEServices(ctx context.Context, c *compute.ForwardingRulesClient) ([]S
 					Region:    region[len(region)-1],
 					Address:   rule.GetIPAddress(),
 					Protocol:  rule.GetIPProtocol(),
+				}
+				// we know it's only one port in the range
+				if ports := rule.GetPortRange(); len(ports) > 0 {
+					// port range should be 5000-5000, so let's split and take the first one.
+					ports := strings.Split(ports, "-")
+					if len(ports) == 2 {
+						svc.Port, err = strconv.ParseUint(ports[0], 10, 64)
+						if err != nil {
+							log.Printf("Warning: port not parseable: %s", ports[0])
+						}
+					} else {
+						log.Printf("Warning: Port range format issue: %s", ports)
+					}
+				} else {
+					log.Printf("Warning: No port range set for the UDP ping service")
 				}
 
 				log.Printf("Service: %+v", svc)

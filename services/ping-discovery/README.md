@@ -27,21 +27,24 @@ This is to distribute the load amongst clusters.
         "Name": "agones-ping-udp-service",
         "Namespace": "agones-system",
         "Region": "asia-east1",
-        "Address": "104.155.211.151",
+        "Address": "35.229.159.46",
+        "Port": 50000,
         "Protocol": "UDP"
     },
     "europe-west1": {
         "Name": "agones-ping-udp-service",
         "Namespace": "agones-system",
         "Region": "europe-west1",
-        "Address": "34.22.151.131",
+        "Address": "34.25.152.131",
+        "Port": 50000,
         "Protocol": "UDP"
     },
     "us-central1": {
         "Name": "agones-ping-udp-service",
         "Namespace": "agones-system",
         "Region": "us-central1",
-        "Address": "35.227.137.95",
+        "Address": "35.226.145.95",
+        "Port": 50000,
         "Protocol": "UDP"
     }
 }
