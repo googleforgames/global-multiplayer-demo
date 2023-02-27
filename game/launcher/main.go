@@ -46,15 +46,15 @@ func main() {
 	var err error
 	iniCfg, err = ini.Load("app.ini")
 	if err != nil {
-		fmt.Printf("Fail to read file: %v", err)
+		log.Fatalf("Fail to read file: %v", err)
 		os.Exit(1)
 	}
 
 	// Callback handling from the frontend api
 	http.HandleFunc("/callback", handleGoogleCallback)
 	go func() {
-		fmt.Println("Google for Games Launcher is listening for callbacks on :" + iniCfg.Section("").Key("callback_listen_port").String())
-		fmt.Println(http.ListenAndServe(":"+iniCfg.Section("").Key("callback_listen_port").String(), nil))
+		log.Println("Google for Games Launcher is listening for callbacks on :" + iniCfg.Section("").Key("callback_listen_port").String())
+		log.Println(http.ListenAndServe(":"+iniCfg.Section("").Key("callback_listen_port").String(), nil))
 	}()
 
 	// UI
@@ -89,19 +89,18 @@ func handleGoogleCallback(rw http.ResponseWriter, req *http.Request) {
 			rw.WriteHeader(http.StatusInternalServerError)
 
 			fmt.Fprintf(rw, "{\"error\": \"%s\"}", err)
-			log.Println("panic occurred:", err)
+			log.Printf("panic occurred:", err)
 		}
 	}()
 
 	// Save my token
 	myToken = req.FormValue("token")
 	if len(myToken) == 0 {
-		panic("No token received!")
+		log.Fatal("No token received!")
 	}
 
 	// Update UI with profile info and launch game button
 	playerName := getPlayerName()
-	fmt.Printf("My name is " + playerName)
 
 	image := canvas.NewImageFromFile("assets/header.png")
 	image.FillMode = canvas.ImageFillContain
@@ -141,7 +140,7 @@ func handlePlay() {
 
 	// Get the binary file from the ini
 	cmd := exec.Command(iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
-	fmt.Printf("Launching: %s %s\n", iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
+	log.Printf("Launching: %s %s\n", iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
 
 	_, err := cmd.CombinedOutput()
 	if err != nil {
@@ -150,7 +149,7 @@ func handlePlay() {
 }
 
 func getPlayerName() string {
-	fmt.Printf("Getting player info\n")
+	log.Printf("Getting player info\n")
 
 	req, err := http.NewRequest("GET", iniCfg.Section("").Key("frontend_api").String()+"/profile", nil)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", myToken))

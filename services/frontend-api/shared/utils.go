@@ -15,7 +15,7 @@
 package shared
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +24,7 @@ import (
 func HandleError(c *gin.Context, code int, context string, err error) bool {
 	if err != nil {
 		c.JSON(code, gin.H{"error": err.Error(), "context": context})
-		fmt.Printf("error occured @ %s: %s\n", context, err.Error())
+		log.Printf("error occured @ %s: %s\n", context, err.Error())
 		return true
 	}
 	return false
@@ -33,30 +33,30 @@ func HandleError(c *gin.Context, code int, context string, err error) bool {
 func ValidateEnvVars() {
 	_, present := os.LookupEnv("CLIENT_ID")
 	if !present {
-		panic("CLIENT_ID is not present")
+		log.Fatal("CLIENT_ID is not present")
 	}
 	_, present = os.LookupEnv("CLIENT_SECRET")
 	if !present {
-		panic("CLIENT_SECRET is not present")
+		log.Fatal("CLIENT_SECRET is not present")
 	}
 	_, present = os.LookupEnv("LISTEN_PORT")
 	if !present {
-		panic("LISTEN_PORT is not present")
+		log.Fatal("LISTEN_PORT is not present")
 	}
 	_, present = os.LookupEnv("CLIENT_LAUNCHER_PORT")
 	if !present {
-		panic("CLIENT_LAUNCHER_PORT is not present")
+		log.Fatal("CLIENT_LAUNCHER_PORT is not present")
 	}
 	_, present = os.LookupEnv("PROFILE_SERVICE")
 	if !present {
-		panic("PROFILE_SERVICE is not present")
+		log.Fatal("PROFILE_SERVICE is not present")
 	}
 	_, present = os.LookupEnv("PING_SERVICE")
 	if !present {
-		panic("PING_SERVICE is not present")
+		log.Fatal("PING_SERVICE is not present")
 	}
 	_, present = os.LookupEnv("JWT_KEY")
 	if !present {
-		panic("JWT_KEY is not present")
+		log.Fatal("JWT_KEY is not present")
 	}
 }

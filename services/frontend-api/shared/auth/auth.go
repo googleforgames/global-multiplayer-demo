@@ -16,6 +16,7 @@ package auth
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -70,7 +71,7 @@ func VerifyJWT(endpointHandler func(id string, c *gin.Context)) gin.HandlerFunc 
 				return []byte(os.Getenv("JWT_KEY")), nil
 			})
 			if err != nil {
-				fmt.Println(err.Error())
+				log.Println(err.Error())
 				if err == jwt.ErrSignatureInvalid {
 					c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "context": "auth"})
 					return
@@ -79,7 +80,7 @@ func VerifyJWT(endpointHandler func(id string, c *gin.Context)) gin.HandlerFunc 
 				return
 			}
 			if !tkn.Valid {
-				fmt.Println("Invalid token")
+				log.Println("Invalid token")
 				c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "context": "auth"})
 				return
 			}
@@ -87,7 +88,7 @@ func VerifyJWT(endpointHandler func(id string, c *gin.Context)) gin.HandlerFunc 
 			endpointHandler(claims.Id, c)
 		} else {
 			err := fmt.Errorf("authorization token is not present")
-			fmt.Println(err)
+			log.Println(err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "context": "auth"})
 			return
 		}

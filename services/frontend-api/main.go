@@ -54,10 +54,10 @@ func main() {
 	googleOauthConfig.RedirectURL = "http://localhost:" + os.Getenv("LISTEN_PORT") + "/callback"
 
 	r := gin.Default()
+
 	// TODO: Better configuration of trusted proxy
 	if err := r.SetTrustedProxies(nil); err != nil {
-		fmt.Printf("could not set trusted proxies: %s", err)
-		return
+		log.Fatalf("could not set trusted proxies: %s", err)
 	}
 
 	r.GET("/login", handleGoogleLogin)
@@ -70,10 +70,10 @@ func main() {
 	r.PUT("/stats", auth.VerifyJWT(handleUpdateStats))
 	r.GET("/ping", auth.VerifyJWT(handlePingServers))
 
-	fmt.Println("Google for Games Frontend API is listening on :" + os.Getenv("LISTEN_PORT"))
+	log.Printf("Google for Games Frontend API is listening on :%s\n", os.Getenv("LISTEN_PORT"))
 
 	if err := r.Run(":" + os.Getenv("LISTEN_PORT")); err != nil {
-		fmt.Printf("could not run gin router: %s", err)
+		log.Fatalf("could not run gin router: %s", err)
 		return
 	}
 }
