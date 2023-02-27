@@ -48,7 +48,7 @@ Normally Terraform stores the current state in the `terraform.tfstate` file loca
 - [ ] Change the `bucket =` line to an already created GCS bucket
 - [ ] Rename `backend.tf.sample` to `backend.tf`.
 
-Note: The GCS bucket does not have to exist in the same Google project as the Global Game but the account runnint terraform must have write & read access to the bucket.
+NOTE: The GCS bucket does not have to exist in the same Google project as the Global Game but the Google user/service account running Terraform must have write & read access to that bucket.
 
 ### Initialize Terraform & configure variables
 
