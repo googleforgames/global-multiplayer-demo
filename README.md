@@ -38,37 +38,36 @@ cd global-multiplayer-demo
 export GAME_DEMO_HOME=$(pwd)
 ```
 
-### Provision
+## Provision
 
-# Optional: GCS Backend
+### Optional: GCS Backend
 
 Normally Terraform stores the current state in the `terraform.tfstate` file locally. However, if you would like to have Terraform store the state file in a GCS Bucket, you can edit the `backend.tf.sample` file, change the `bucket = ` line to your already created GCS bucket, and rename the file to `backend.tf`.
 
 Note: The GCS bucket does not have to exist in the same Google project as the Global Game but the account runnint terraform must have write & read access to the bucket.
 
-# Initialize Terraform & configure variables
+### Initialize Terraform & configure variables
 
 ```shell
 cd $GAME_DEMO_HOME/infrastructure
 terraform init
 cp terraform.tfvars.sample terraform.tfvars
 
-# Edit terraform.tfvars, especially <PROJECT_ID>
+### Edit terraform.tfvars, especially <PROJECT_ID>
 ```
 
-
-# Provision the infrastructure.
+### Provision the infrastructure.
 
 ```shell
 terraform apply
 ```
 
-#### Deploy Agones To Agones GKE Clusters
+### Deploy Agones To Agones GKE Clusters
 
 The Agones deployment is in two steps: The Initial Install and the Allocation Endpoint Patch.
 
 
-#### Initial Install
+### Initial Install
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy.
 
 ```shell
@@ -87,7 +86,7 @@ Continue the promotion until Agones has been deployed to all clusters.
 
 You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as OK, you can proceed to apply the Allocation Endpoint Patch.
 
-#### Deploy Open Match to Services GKE Cluster
+### Deploy Open Match to Services GKE Cluster
 
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Open Match using Cloud Deploy.
 
