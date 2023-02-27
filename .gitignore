@@ -16,6 +16,7 @@
 !.gitignore
 *.iml
 terraform.tfstate*
+backend.tf
 *.tfvars
 
 deploy/base/charts/
