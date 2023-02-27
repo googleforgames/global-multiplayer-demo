@@ -40,7 +40,13 @@ export GAME_DEMO_HOME=$(pwd)
 
 ### Provision
 
-Initialize Terraform & configure variables
+# Optional: GCS Backend
+
+Normally Terraform stores the current state in the `terraform.tfstate` file locally. However, if you would like to have Terraform store the state file in a GCS Bucket, you can edit the `backend.tf.sample` file, change the `bucket = ` line to your already created GCS bucket, and rename the file to `backend.tf`.
+
+Note: The GCS bucket does not have to exist in the same Google project as the Global Game but the account runnint terraform must have write & read access to the bucket.
+
+# Initialize Terraform & configure variables
 
 ```shell
 cd $GAME_DEMO_HOME/infrastructure
@@ -50,13 +56,8 @@ cp terraform.tfvars.sample terraform.tfvars
 # Edit terraform.tfvars, especially <PROJECT_ID>
 ```
 
-### Optional: GCS Backend
 
-Normally Terraform stores the current state in the `terraform.tfstate` file locally. However, if you would like to have Terraform store the state file in a GCS Bucket, you can edit the `backend.tf.sample` file, change the `bucket = ` line to your already created GCS bucket, and rename the file to `backend.tf`. 
-
-Note: The GCS bucket does not have to exist in the same Google project as the Global Game but the account runnint terraform must have write & read access to the bucket. 
-
-Provision the infrastructure.
+# Provision the infrastructure.
 
 ```shell
 terraform apply
