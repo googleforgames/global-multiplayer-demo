@@ -101,7 +101,19 @@ gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-
 
 ## Install Game Backend Services
 
-TODO: fill in once we have services.
+To install all the backend services, submit the following Cloud Build command, and replace the` _RELEASE_NAME` 
+substitution with a unique build name.
+
+```shell
+cd $GAME_DEMO_HOME/services
+gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
+```
+
+This will:
+
+* Build all the images required for all services.
+* Store those image in [Artifact Registry](https://cloud.google.com/artifact-registry)
+* Deploy them via Cloud Build to a Autopilot cluster.
 
 ## Game Client
 
