@@ -113,5 +113,10 @@ variable "allocation_endpoint" {
 
 variable "platform_directory" {
   type        = string
-  description = "Services Directory for outputed Cloud Deploy related files"
+  description = "Platform Directory for output to Cloud Deploy related files"
+}
+
+variable "services_directory" {
+  type        = string
+  description = "Services Directory for output to Cloud Deploy related files"
 }
