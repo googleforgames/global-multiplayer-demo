@@ -1,6 +1,6 @@
 # For Local development
 
-Please setup .env file with the following variables:
+Please create a .env file in the same with the following variables:
 
 ```bash
 CLIENT_ID=<CLIENT_ID>.apps.googleusercontent.com

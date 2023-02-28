@@ -53,7 +53,7 @@ func main() {
 	// Callback handling from the frontend api
 	http.HandleFunc("/callback", handleGoogleCallback)
 	go func() {
-		log.Println("Google for Games Launcher is listening for callbacks on :" + iniCfg.Section("").Key("callback_listen_port").String())
+		log.Printf("Google for Games Launcher is listening for callbacks on :%s", iniCfg.Section("").Key("callback_listen_port").String())
 		log.Println(http.ListenAndServe(":"+iniCfg.Section("").Key("callback_listen_port").String(), nil))
 	}()
 
@@ -89,7 +89,7 @@ func handleGoogleCallback(rw http.ResponseWriter, req *http.Request) {
 			rw.WriteHeader(http.StatusInternalServerError)
 
 			fmt.Fprintf(rw, "{\"error\": \"%s\"}", err)
-			log.Printf("panic occurred:", err)
+			log.Printf("panic occurred: %s", err)
 		}
 	}()
 
@@ -140,7 +140,7 @@ func handlePlay() {
 
 	// Get the binary file from the ini
 	cmd := exec.Command(iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
-	log.Printf("Launching: %s %s\n", iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
+	log.Printf("Launching: %s %s", iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
 
 	_, err := cmd.CombinedOutput()
 	if err != nil {
@@ -149,24 +149,24 @@ func handlePlay() {
 }
 
 func getPlayerName() string {
-	log.Printf("Getting player info\n")
+	log.Printf("Getting player info")
 
 	req, err := http.NewRequest("GET", iniCfg.Section("").Key("frontend_api").String()+"/profile", nil)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", myToken))
 
 	if err != nil {
-		panic("Unable to initiate request to game api. Connection issues?")
+		log.Fatal("Unable to initiate request to game api. Connection issues?")
 	}
 
 	client := &http.Client{}
 	response, err := client.Do(req)
 
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	if response.StatusCode != 200 {
-		panic("Unable to fetch user information. Expired token?")
+		log.Fatal("Unable to fetch user information. Expired token?")
 	}
 
 	defer response.Body.Close()
@@ -174,12 +174,12 @@ func getPlayerName() string {
 
 	data, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	var result map[string]interface{}
 	if err := json.Unmarshal(data, &result); err != nil {
-		panic(fmt.Sprintf("Unable to decode json: %s", err))
+		log.Fatalf("Unable to decode json: %s", err)
 	}
 
 	return result["player_name"].(string)
