@@ -27,15 +27,16 @@ type PingServer struct {
 	Region    string
 	Address   string
 	Protocol  string
+	Port      string
 }
 
-func FindMatchingServer(regions []string) OMServerResponse {
+func FindMatchingServer(region string) OMServerResponse {
 
 	// TODO: Query OpenMatch on `OMFrontendEndpoint` in a preferred region for a server
-	log.Printf("Looking for a server in the %s region.\n", regions[0])
+	log.Printf("Looking for a server in the %s region.\n", region)
 
 	IP := "127.0.0.1"
-	Port := 7777
+	Port := 6969
 
 	return OMServerResponse{
 		IP:   IP,

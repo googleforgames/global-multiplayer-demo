@@ -23,7 +23,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/googleforgames/global-multiplayer-demo/services/frontend-api/models"
@@ -212,9 +211,8 @@ func handlePingServers(id string, c *gin.Context) {
 	// TODO: fetch servers from some tbd endpoint
 
 	var pingServers []models.PingServer = []models.PingServer{
-		{Name: "agones-ping-udp-service", Namespace: "agones-system", Region: "asia-east1", Address: "104.155.211.151", Protocol: "UDP"},
-		{Name: "agones-ping-udp-service", Namespace: "agones-system", Region: "europe-west1", Address: "34.22.151.131", Protocol: "UDP"},
-		{Name: "agones-ping-udp-service", Namespace: "agones-system", Region: "us-central1", Address: "35.227.137.95", Protocol: "UDP"},
+		{Name: "agones-ping-udp-service", Namespace: "agones-system", Region: "asia-east1", Address: "127.0.0.1", Protocol: "UDP", Port: "8085"},
+		{Name: "agones-ping-udp-service", Namespace: "agones-system", Region: "europe-west1", Address: "localhost", Protocol: "UDP", Port: "8085"},
 	}
 
 	c.JSON(http.StatusOK, pingServers)
@@ -223,15 +221,11 @@ func handlePingServers(id string, c *gin.Context) {
 // WIP: Handles the play request from the game client
 func handlePlay(id string, c *gin.Context) {
 
-	// Get regions by preferred order
-	preferredRegions := strings.Split(c.Request.FormValue("preferred_regions"), ",")
-	for _, region := range preferredRegions {
-		log.Println(region)
-	}
+	preferredRegion := c.Request.FormValue("preferred_region")
 
 	// TODO #1: Get profile here (from Cloud Spanner via token/id??)
 	// TODO #2: Add profile parameter for finding the server (besides the preferred region)
-	c.JSON(http.StatusOK, models.FindMatchingServer(preferredRegions))
+	c.JSON(http.StatusOK, models.FindMatchingServer(preferredRegion))
 }
 
 // Function responsible for checking if profile is not yet created in our own profile service
