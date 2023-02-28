@@ -34,7 +34,8 @@ public class Droidshooter : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[] { 
 			"HTTP",
 			"Json", 
-			"JsonUtilities"
+			"JsonUtilities",
+			"Icmp"
 		});
 
 		// Uncomment if you are using Slate UI

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "DroidshooterServerPing.h"
 #include "DroidshooterIntroUserWidget.generated.h"
 
 /**
@@ -23,6 +24,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void FetchGameServer(const FString& accessToken);
+
+	UFUNCTION(BlueprintCallable)
+	void FindPreferredGameServerLocation(const FString& accessToken);
 
 	//void ProcessGenericJsonResponse(const FString& ResponseContent)
 	void ProcessGenericJsonResponse(const FString& ResponseContent, std::function<void(const TSharedPtr<FJsonObject>&)>& func);
@@ -54,5 +58,8 @@ public:
 	/** Saving token for further queries */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString ServerPortValue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	DroidshooterServerPing ServerPinger;
 
 };

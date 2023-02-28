@@ -14,7 +14,16 @@
 void UDroidshooterIntroUserWidget::NativePreConstruct() 
 {
     Super::NativePreConstruct();
-    //B_Auth->OnClicked.AddDynamic(this, &UDroidshooterIntroUserWidget::AuthenticateCall);
+    // B_Auth->OnClicked.AddDynamic(this, &UDroidshooterIntroUserWidget::AuthenticateCall);
+}
+
+void UDroidshooterIntroUserWidget::FindPreferredGameServerLocation(const FString& accessToken) 
+{
+    // Query game server list
+    // Ping each server
+    // Create timer to check if all values have been updated
+    // Save best region
+    // Query FetchGameServer 
 }
 
 void UDroidshooterIntroUserWidget::FetchGameServer(const FString& accessToken)
