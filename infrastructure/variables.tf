@@ -52,6 +52,14 @@ variable "clouddeploy_config" {
   })
 }
 
+### Artifact Registry Variables ###
+
+variable "artifact_registry_config" {
+  type = object({
+    location = string
+  })
+}
+
 ### Spanner Variables ###
 
 variable "spanner_config" {
@@ -64,6 +72,8 @@ variable "spanner_config" {
 
   description = "Configuration specs for Spanner"
 }
+
+### Services GKE Variables ###
 
 variable "services_gke_config" {
   type = object({
@@ -99,4 +109,14 @@ variable "allocation_endpoint" {
     agones_namespace = string
   })
   description = "Allocation Endpoint Configuration Variables"
+}
+
+variable "platform_directory" {
+  type        = string
+  description = "Platform Directory for output to Cloud Deploy related files"
+}
+
+variable "services_directory" {
+  type        = string
+  description = "Services Directory for output to Cloud Deploy related files"
 }
