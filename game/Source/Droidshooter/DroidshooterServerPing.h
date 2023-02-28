@@ -4,13 +4,14 @@
 
 #include <map>
 #include <vector>
+#include <algorithm>
 #include "CoreMinimal.h"
 #include "Icmp.h"
 
 /**
  * 
  */
-class DROIDSHOOTER_API DroidshooterServerPing
+class DroidshooterServerPing
 {
 public:
 	DroidshooterServerPing();
@@ -26,10 +27,13 @@ public:
 	/* Delegate called when we get a reply from our EC2 UDP server */
 	void OnServerCheckFinished(FIcmpEchoResult Result);
 
-private:
-	void QueuePing(FString ip);
-	void DequeuePing(FString ip);
+	void SetServersToValidate(uint16_t num);
+	bool AllServersValidated();
+	std::map<float, FString> GetPingedServers();
+	void ClearPingedServers();
 
+private:
 	std::map<float, FString> pingResponses;
-	std::vector<FString> pingQueue;
+	uint32_t serversToValidate;
+	static bool cmp(std::pair<float, FString>& a, std::pair<float, FString>& b);
 };

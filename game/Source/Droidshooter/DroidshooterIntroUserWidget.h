@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TimerManager.h" 
 #include "Blueprint/UserWidget.h"
 #include "DroidshooterServerPing.h"
 #include "DroidshooterIntroUserWidget.generated.h"
@@ -23,15 +24,17 @@ public:
 	void AuthenticateCall(const FString& accessToken);
 
 	UFUNCTION(BlueprintCallable)
-	void FetchGameServer(const FString& accessToken);
+	void FetchGameServer(const FString& accessToken, const FString preferredRegion);
 
 	UFUNCTION(BlueprintCallable)
 	void FindPreferredGameServerLocation(const FString& accessToken);
 
-	//void ProcessGenericJsonResponse(const FString& ResponseContent)
+	void ProcessProfileResponse(const FString& ResponseContent);
+	void ProcessGameserverResponse(const FString& ResponseContent);
+	void ProcessServersToPingResponse(const FString& ResponseContent);
 	void ProcessGenericJsonResponse(const FString& ResponseContent, std::function<void(const TSharedPtr<FJsonObject>&)>& func);
-	void ProcessProfileResponse(const TSharedPtr<FJsonObject>& JsonResponseObject);
-	void ProcessGameserverResponse(const TSharedPtr<FJsonObject>& JsonResponseObject);
+
+	void AllServersValidated();
 
 	// Server IP/Port editboxes
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
@@ -42,10 +45,6 @@ public:
 	/** Widget to display current user's name. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UTextBlock* NameTextBlock;
-
-	/* Button to handle auth */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	class UButton* B_Auth;
 
 	/** Saving token for further queries */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -59,7 +58,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString ServerPortValue;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+private:
+
+	FTimerHandle MemberTimerHandle;
 	DroidshooterServerPing ServerPinger;
 
 };

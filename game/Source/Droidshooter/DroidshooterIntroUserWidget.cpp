@@ -24,14 +24,11 @@ void UDroidshooterIntroUserWidget::FindPreferredGameServerLocation(const FString
     // Create timer to check if all values have been updated
     // Save best region
     // Query FetchGameServer 
-}
 
-void UDroidshooterIntroUserWidget::FetchGameServer(const FString& accessToken)
-{
-    UE_LOG(LogDroidshooter, Log, TEXT("Fetch server/ip call with token: %s"), *accessToken);
+    UE_LOG(LogDroidshooter, Log, TEXT("Fetch regions to ping with token: %s"), *accessToken);
 
     FString uriBase = "http://localhost:8081";
-    FString uriPlay = uriBase + TEXT("/play");
+    FString uriPlay = uriBase + TEXT("/ping");
 
     FHttpModule& httpModule = FHttpModule::Get();
     TSharedRef<IHttpRequest, ESPMode::ThreadSafe> pRequest = httpModule.CreateRequest();
@@ -42,18 +39,13 @@ void UDroidshooterIntroUserWidget::FetchGameServer(const FString& accessToken)
 
     // Set the callback, which will execute when the HTTP call is complete
     pRequest->OnProcessRequestComplete().BindLambda(
-        // Here, we "capture" the 'this' pointer (the "&"), so our lambda can call this
-        // class's methods in the callback.
         [&](
             FHttpRequestPtr pRequest,
             FHttpResponsePtr pResponse,
             bool connectedSuccessfully) mutable {
 
                 if (connectedSuccessfully) {
-                    std::function<void(const TSharedPtr<FJsonObject>&)> f = [=](const TSharedPtr<FJsonObject>& JsonResponseObject) {
-                        this->ProcessGameserverResponse(JsonResponseObject);
-                    };
-                    ProcessGenericJsonResponse(pResponse->GetContentAsString(), f);
+                    ProcessServersToPingResponse(pResponse->GetContentAsString());
                 }
                 else {
                     switch (pRequest->GetStatus()) {
@@ -77,50 +69,20 @@ void UDroidshooterIntroUserWidget::AuthenticateCall(const FString& accessToken)
 	FString uriProfile = uriBase + TEXT("/profile");
 
 	FHttpModule& httpModule = FHttpModule::Get();
-
-    // Create an http request
-        // The request will execute asynchronously, and call us back on the Lambda below
     TSharedRef<IHttpRequest, ESPMode::ThreadSafe> pRequest = httpModule.CreateRequest();
 
-    // This is where we set the HTTP method (GET, POST, etc)
-    // The Space-Track.org REST API exposes a "POST" method we can use to get
-    // general perturbations data about objects orbiting Earth
     pRequest->SetVerb(TEXT("GET"));
-
-    // Here we set auth JWT token
     pRequest->SetHeader("Authorization", "Bearer " + accessToken);
-
-    // We'll need to tell the server what type of content to expect in the POST data
-    // pRequest->SetHeader(TEXT("Content-Type"), TEXT("application/x-www-form-urlencoded"));
-
-    // FString RequestContent = TEXT("data=") + SomeValueVariable;
-    // Set the POST content, which contains:
-    // * Identity/password credentials for authentication
-    // * A REST API query
-    //   This allows us to login and get the results is a single call
-    //   Otherwise, we'd need to manage session cookies across multiple calls.
-    // pRequest->SetContentAsString(RequestContent);
-
-    // Set the http URL
     pRequest->SetURL(uriProfile);
 
-    // Set the callback, which will execute when the HTTP call is complete
     pRequest->OnProcessRequestComplete().BindLambda(
-        // Here, we "capture" the 'this' pointer (the "&"), so our lambda can call this
-        // class's methods in the callback.
         [&](
             FHttpRequestPtr pRequest,
             FHttpResponsePtr pResponse,
             bool connectedSuccessfully) mutable {
 
                 if (connectedSuccessfully) {
-
-                    // We should have a JSON response - attempt to process it.
-                    std::function<void(const TSharedPtr<FJsonObject>&)> f = [=](const TSharedPtr<FJsonObject>& JsonResponseObject) {
-                        this->ProcessProfileResponse(JsonResponseObject);
-                    };
-                        
-                    ProcessGenericJsonResponse(pResponse->GetContentAsString(), f);
+                    ProcessProfileResponse(pResponse->GetContentAsString());
                 }
                 else {
                     switch (pRequest->GetStatus()) {
@@ -136,6 +98,136 @@ void UDroidshooterIntroUserWidget::AuthenticateCall(const FString& accessToken)
     pRequest->ProcessRequest();
 }
 
+void UDroidshooterIntroUserWidget::FetchGameServer(const FString& accessToken, const FString preferredRegion)
+{
+    UE_LOG(LogDroidshooter, Log, TEXT("Fetch server/ip call with token: %s"), *accessToken);
+
+    FString uriBase = "http://localhost:8081";
+    FString uriPlay = uriBase + TEXT("/play?preferred_region=" + preferredRegion);
+
+    FHttpModule& httpModule = FHttpModule::Get();
+    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> pRequest = httpModule.CreateRequest();
+
+    pRequest->SetHeader("Authorization", "Bearer " + accessToken);
+    pRequest->SetVerb(TEXT("GET"));
+    pRequest->SetURL(uriPlay);
+
+    // Set the callback, which will execute when the HTTP call is complete
+    pRequest->OnProcessRequestComplete().BindLambda(
+        [&](
+            FHttpRequestPtr pRequest,
+            FHttpResponsePtr pResponse,
+            bool connectedSuccessfully) mutable {
+
+                if (connectedSuccessfully) {
+                    /*std::function<void(const TSharedPtr<FJsonObject>&)> f = [=](const TSharedPtr<FJsonObject>& JsonResponseObject) {
+                        // do stuff here or call a method
+                    };*/
+                    ProcessGameserverResponse(pResponse->GetContentAsString());
+                }
+                else {
+                    switch (pRequest->GetStatus()) {
+                    case EHttpRequestStatus::Failed_ConnectionError:
+                        UE_LOG(LogDroidshooter, Log, TEXT("Connection failed."));
+                    default:
+                        UE_LOG(LogDroidshooter, Log, TEXT("Request failed."));
+                    }
+                }
+        });
+
+    // Finally, submit the request for processing
+    pRequest->ProcessRequest();
+}
+
+void UDroidshooterIntroUserWidget::ProcessProfileResponse(const FString& ResponseContent)
+{
+    TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ResponseContent);
+    TSharedPtr<FJsonObject> JsonResponseObject;
+
+    if (FJsonSerializer::Deserialize(JsonReader, JsonResponseObject))
+    {
+        if (JsonResponseObject)
+        {
+            FString Name = JsonResponseObject->GetStringField(TEXT("player_name"));
+
+            if (Name.Len() != 0) {
+                //UE_LOG(LogDroidshooter, Log, TEXT("Logged in player is: %s"), "yes");
+                UE_LOG(LogDroidshooter, Log, TEXT("Logged in player is: %s"), *Name);
+
+                NameTextBlock->SetText(FText::FromString(Name));
+            }
+            else {
+                UE_LOG(LogDroidshooter, Log, TEXT("Unable to fetch player data. Timed out token?"));
+            }
+
+        }
+    }
+}
+
+void UDroidshooterIntroUserWidget::ProcessGameserverResponse(const FString& ResponseContent) 
+{
+    TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ResponseContent);
+    TSharedPtr<FJsonObject> JsonResponseObject;
+
+    if (FJsonSerializer::Deserialize(JsonReader, JsonResponseObject))
+    {
+        if (JsonResponseObject)
+        {
+            FString IP = JsonResponseObject->GetStringField(TEXT("IP"));
+            FString Port = JsonResponseObject->GetStringField(TEXT("Port"));
+
+            if (IP.Len() != 0 && Port.Len() != 0) {
+                // Set IP - Port variables!
+                ServerIPValue = IP;
+                ServerPortValue = Port;
+
+                ServerIPBox->SetText(FText::FromString(IP));
+                ServerPortBox->SetText(FText::FromString(Port));
+
+                UE_LOG(LogDroidshooter, Log, TEXT("Found game server at: %s %s"), *IP, *Port);
+
+            }
+            else {
+                UE_LOG(LogDroidshooter, Log, TEXT("Unable to server player data. Timed out token?"));
+            }
+        }
+    }
+}
+
+void UDroidshooterIntroUserWidget::ProcessServersToPingResponse(const FString& ResponseContent)
+{
+
+    TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ResponseContent);
+    TArray<TSharedPtr<FJsonValue>> JsonResponseArray;
+
+    if (FJsonSerializer::Deserialize(JsonReader, JsonResponseArray))
+    {
+        ServerPinger.SetServersToValidate(JsonResponseArray.Num());
+
+        for (int i = 0; i < JsonResponseArray.Num(); ++i)
+        {
+            TSharedPtr<FJsonObject> JsonResponseObject = JsonResponseArray[i]->AsObject();
+
+            if (JsonResponseObject)
+            {
+                FString Name = JsonResponseObject->GetStringField(TEXT("Name"));
+                FString Region = JsonResponseObject->GetStringField(TEXT("Region"));
+                FString Address = JsonResponseObject->GetStringField(TEXT("Address"));
+                FString Protocol = JsonResponseObject->GetStringField(TEXT("Protocol"));
+                FString Port = JsonResponseObject->GetStringField(TEXT("Port"));
+
+                UE_LOG(LogDroidshooter, Log, TEXT("Gonna ping: %s %s %s %s %s"), *Name, *Region, *Address, *Protocol, *Port);
+                ServerPinger.CheckIfServerIsOnline(Address, Port);
+            }
+        }
+    }
+
+    GetWorld()->GetTimerManager().SetTimer(MemberTimerHandle, this, &UDroidshooterIntroUserWidget::AllServersValidated, 1.0f, true, 2.0f);
+}
+
+/*
+* Generic handler for json that calls func() passed to it
+*/
 void UDroidshooterIntroUserWidget::ProcessGenericJsonResponse(const FString& ResponseContent, std::function<void(const TSharedPtr<FJsonObject>&)>& func)
 {
     TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ResponseContent);
@@ -147,46 +239,21 @@ void UDroidshooterIntroUserWidget::ProcessGenericJsonResponse(const FString& Res
     }
 }
 
-void UDroidshooterIntroUserWidget::ProcessProfileResponse(const TSharedPtr<FJsonObject>& JsonResponseObject) 
+void UDroidshooterIntroUserWidget::AllServersValidated()
 {
-    UE_LOG(LogDroidshooter, Log, TEXT("Processing json response for profile"));
-    if (JsonResponseObject)
-    {
-        FString Name = JsonResponseObject->GetStringField(TEXT("player_name"));
+    if (ServerPinger.AllServersValidated()) {
+        auto servers = ServerPinger.GetPingedServers();
 
-        if (Name.Len() != 0) {
-            //UE_LOG(LogDroidshooter, Log, TEXT("Logged in player is: %s"), "yes");
-            UE_LOG(LogDroidshooter, Log, TEXT("Logged in player is: %s"), *Name);
-
-            NameTextBlock->SetText(FText::FromString(Name));
-        }
-        else {
-            UE_LOG(LogDroidshooter, Log, TEXT("Unable to fetch player data. Timed out token?"));
+        for (auto it = servers.begin(); it != servers.end(); ++it)
+        {
+            // Sending the first one to request servers from openmatch via game frontend
+            if (it == servers.begin()) {
+                FetchGameServer(GlobalAccessToken, it->second);
+            }
+            UE_LOG(LogDroidshooter, Log, TEXT("Ping responses: %.2f %s "), it->first, *it->second);
         }
 
-    }
-}
-
-void UDroidshooterIntroUserWidget::ProcessGameserverResponse(const TSharedPtr<FJsonObject>& JsonResponseObject)
-{
-    if (JsonResponseObject)
-    {
-        FString IP = JsonResponseObject->GetStringField(TEXT("IP"));
-        FString Port = JsonResponseObject->GetStringField(TEXT("Port"));
-
-        if (IP.Len() != 0 && Port.Len() != 0) {
-            // Set IP - Port variables!
-            ServerIPValue = IP;
-            ServerPortValue = Port;
-
-            ServerIPBox->SetText(FText::FromString(IP));
-            ServerPortBox->SetText(FText::FromString(Port));
-
-            UE_LOG(LogDroidshooter, Log, TEXT("Found game server at: %s %s"), *IP, *Port);
-
-        }
-        else {
-            UE_LOG(LogDroidshooter, Log, TEXT("Unable to server player data. Timed out token?"));
-        }
+        ServerPinger.ClearPingedServers();
+        GetWorld()->GetTimerManager().ClearTimer(MemberTimerHandle);
     }
 }
