@@ -31,6 +31,10 @@ resource "google_container_cluster" "services-gke" {
     enable_private_endpoint = false
   }
 
+  resource_labels = {
+    "environment" = var.resource_env_label
+  }
+
   depends_on = [google_compute_subnetwork.subnet, google_project_service.project]
 }
 
