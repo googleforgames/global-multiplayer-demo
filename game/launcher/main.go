@@ -34,27 +34,11 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-type GoogleOauthToken struct {
-	AccessToken  string
-	RefreshToken string
-	Expiry       string
-	TokenType    string
-	IdToken      string
-}
-
-type UserInfo struct {
-	Id    string `json:"id"`
-	Sub   string `json:"sub"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
-
 var (
-	myToken        string
-	myRefreshToken string
-	myApp          fyne.App
-	myWindow       fyne.Window
-	iniCfg         *ini.File
+	myToken  string
+	myApp    fyne.App
+	myWindow fyne.Window
+	iniCfg   *ini.File
 )
 
 func main() {
@@ -62,15 +46,15 @@ func main() {
 	var err error
 	iniCfg, err = ini.Load("app.ini")
 	if err != nil {
-		fmt.Printf("Fail to read file: %v", err)
+		log.Fatalf("Fail to read file: %v", err)
 		os.Exit(1)
 	}
 
 	// Callback handling from the frontend api
 	http.HandleFunc("/callback", handleGoogleCallback)
 	go func() {
-		fmt.Println("Google for Games Launcher is listening for callbacks on :" + iniCfg.Section("").Key("callback_listen_port").String())
-		fmt.Println(http.ListenAndServe(":"+iniCfg.Section("").Key("callback_listen_port").String(), nil))
+		log.Printf("Google for Games Launcher is listening for callbacks on :%s", iniCfg.Section("").Key("callback_listen_port").String())
+		log.Println(http.ListenAndServe(":"+iniCfg.Section("").Key("callback_listen_port").String(), nil))
 	}()
 
 	// UI
@@ -105,30 +89,25 @@ func handleGoogleCallback(rw http.ResponseWriter, req *http.Request) {
 			rw.WriteHeader(http.StatusInternalServerError)
 
 			fmt.Fprintf(rw, "{\"error\": \"%s\"}", err)
-			log.Println("panic occurred:", err)
+			log.Printf("panic occurred: %s", err)
 		}
 	}()
 
 	// Save my token
-	myToken = req.FormValue("access_token")
+	myToken = req.FormValue("token")
 	if len(myToken) == 0 {
-		panic("No token received!")
-	}
-	myRefreshToken = req.FormValue("refresh_token")
-	if len(myRefreshToken) == 0 {
-		panic("No refresh received!")
+		log.Fatal("No token received!")
 	}
 
 	// Update UI with profile info and launch game button
-	myProfile := getProfileInfo()
-	fmt.Printf("My name is " + myProfile.Name)
+	playerName := getPlayerName()
 
 	image := canvas.NewImageFromFile("assets/header.png")
 	image.FillMode = canvas.ImageFillContain
 
-	label1 := widget.NewLabel(fmt.Sprintf("Welcome %s!", myProfile.Name))
+	label1 := widget.NewLabel(fmt.Sprintf("Welcome %s!", playerName))
 	label1.Alignment = fyne.TextAlignCenter
-	label2 := widget.NewLabel(fmt.Sprintf("Are you ready to play again?!"))
+	label2 := widget.NewLabel("Are you ready to play again?!")
 	label2.Alignment = fyne.TextAlignCenter
 
 	buttonPlay := widget.NewButtonWithIcon("Open Droidshooter", theme.MediaPlayIcon(), func() {
@@ -157,11 +136,11 @@ func handleGoogleCallback(rw http.ResponseWriter, req *http.Request) {
 }
 
 func handlePlay() {
-	params := fmt.Sprintf("-token=%s -refresh_token=%s", myToken, myRefreshToken)
+	params := fmt.Sprintf("-token=%s", myToken)
 
 	// Get the binary file from the ini
 	cmd := exec.Command(iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
-	fmt.Printf("Launching: %s %s\n", iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
+	log.Printf("Launching: %s %s", iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
 
 	_, err := cmd.CombinedOutput()
 	if err != nil {
@@ -169,12 +148,25 @@ func handlePlay() {
 	}
 }
 
-func getProfileInfo() UserInfo {
-	fmt.Printf("Getting profile info\n")
+func getPlayerName() string {
+	log.Printf("Getting player info")
 
-	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + myToken)
+	req, err := http.NewRequest("GET", iniCfg.Section("").Key("frontend_api").String()+"/profile", nil)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", myToken))
+
+	if err != nil {
+		log.Fatal("Unable to initiate request to game api. Connection issues?")
+	}
+
+	client := &http.Client{}
+	response, err := client.Do(req)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if response.StatusCode != 200 {
-		panic("Unable to fetch user information. Expired token?")
+		log.Fatal("Unable to fetch user information. Expired token?")
 	}
 
 	defer response.Body.Close()
@@ -182,15 +174,15 @@ func getProfileInfo() UserInfo {
 
 	data, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	var result UserInfo
+	var result map[string]interface{}
 	if err := json.Unmarshal(data, &result); err != nil {
-		panic(err)
+		log.Fatalf("Unable to decode json: %s", err)
 	}
 
-	return result
+	return result["player_name"].(string)
 }
 
 func openBrowser(url string) {

@@ -1,4 +1,4 @@
-# Copyright 2023 Google Inc. All Rights Reserved.
+# Copyright 2023 Google LLC All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-frontend_api = http://localhost:8081
-callback_listen_port = 8082
+BUILD_DIR=$(PWD)/build
+build:
+	echo "Building frontend api service"
+	mkdir -p ${BUILD_DIR} && GOOS=linux GOARCH=386 go build -o ${BUILD_DIR}/frontend-api main.go
 
-[windows]
-binary = DroidShooterClient.exe
+build-docker:
+	echo "Building docker container"
+	docker build . -t frontend-api
 
-[linux]
-binary = DroidShooterClient
+clean:
+	echo "Running cleanup"
+	rm -rf ${BUILD_DIR}/
+	docker rmi -f frontend-api
 
-[darwin]
-binary = DroidShooterClient
+.PHONY: build build-docker clean
