@@ -12,17 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT_ID}.iam.gserviceaccount.com
-steps:
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    entrypoint: gcloud
-    args:
-      [
-        "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "global-game-open-match",
-        "--region", "us-central1"
-      ]
-substitutions:
-  _RELEASE_NAME: rel-0002
-options:
-  logging: CLOUD_LOGGING_ONLY
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ping-discovery
+  annotations:
+    iam.gke.io/gcp-service-account: ${service_email}

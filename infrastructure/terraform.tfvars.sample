@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Project Specific Variables
 project = "PROJECT_ID"
 
 # Cloud Deploy Configuration
+platform_directory = "../platform" # Relative to Terraform directory
+services_directory = "../services" # Relative to Terraform directory
 clouddeploy_config = {
   "location" : "us-central1"
 }
@@ -37,21 +40,35 @@ vpc_regions = {
 
 # Game GKE Cluster Config Values
 ### NOTE: If you change the GKE Clusters, please make sure to change `cloudbuild.yaml` in 
-### `agones/install` & `deploy/agones/endpoint-patch/` as they are not dynamically created.  
+### `platform/agones/install` as they are not dynamically created.
 game_gke_clusters = {
   "global-game-us-central1-01" : {
+    "short_name" : "us-central1-01",
     "region" : "us-central1",
     "machine_type" : "e2-standard-4"
   },
   "global-game-us-central1-02" : {
+    "short_name" : "us-central1-02",
     "region" : "us-central1",
     "machine_type" : "e2-standard-4"
   },
   "global-game-eu-west1-01" : {
+    "short_name" : "europe-west1-01",
+    "region" : "europe-west1",
+    "machine_type" : "e2-standard-4"
+  },
+  "global-game-eu-west1-02" : {
+    "short_name" : "europe-west1-02",
     "region" : "europe-west1",
     "machine_type" : "e2-standard-4"
   },
   "global-game-asia-east1-01" : {
+    "short_name" : "asia-east1-01",
+    "region" : "asia-east1",
+    "machine_type" : "e2-standard-4"
+  },
+  "global-game-asia-east1-02" : {
+    "short_name" : "asia-east1-02",
     "region" : "asia-east1",
     "machine_type" : "e2-standard-4"
   }
@@ -87,6 +104,13 @@ services_gke_config = {
   resource_labels = {
     environment = "staging"
   }
+}
+
+# Artifact Registry variables
+### NOTE: If you change the Artifact registry location, please make sure to change `cloudbuild.yaml` in
+### `services/clouddeploy.yaml;` as it is not dynamically created.
+artifact_registry_config = {
+  location = "us"
 }
 
 # Agones Application Service Account Name

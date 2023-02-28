@@ -1,4 +1,5 @@
-# Copyright 2023 Google LLC All Rights Reserved.
+#
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,23 +12,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
-.*
-!.gitignore
-*.iml
-terraform.tfstate*
-backend.tf
-*.tfvars
+FROM golang:1.19 as build
 
-deploy/base/charts/
+WORKDIR /go/src/ping-discovery
+COPY . .
 
-# Ignore Terraform generated k8s manifest files
-patch-agones-allocator-*.yaml
+RUN go mod download
+RUN go vet -v
+RUN go test -v
 
-# Ignore Terraform generated skaffold files
-skaffold-global-game-*.yaml
-infrastructure/deploy/agones/install/skaffold.yaml
+RUN CGO_ENABLED=0 go build -o /go/bin/ping-discovery
 
-# Ignore Terraform generated kustomization files
-**/global-game-*/kustomization.yaml
-**/global-game-*/agones-system.yaml
+FROM gcr.io/distroless/static-debian11:nonroot
+
+COPY --from=build /go/bin/ping-discovery /
+
+ENV GIN_MODE=release
+USER nonroot:nonroot
+EXPOSE 8080
+CMD ["/ping-discovery"]
