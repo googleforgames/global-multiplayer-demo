@@ -23,7 +23,7 @@ resource "random_string" "endpoint_random_string" {
 }
 
 resource "google_endpoints_service" "endpoints_service" {
-  for_each     = var.game_gke_clusters
+  for_each     = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
   service_name = "${each.key}-${random_string.endpoint_random_string.result}.endpoints.${var.project}.cloud.goog"
   grpc_config = templatefile(
     "${path.module}/files/agones/api_config.yaml.tpl", {
@@ -35,7 +35,7 @@ resource "google_endpoints_service" "endpoints_service" {
 }
 
 resource "google_endpoints_service_iam_binding" "endpoints_service_binding" {
-  for_each = var.game_gke_clusters
+  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
 
   service_name = google_endpoints_service.endpoints_service[each.key].service_name
   role         = "roles/servicemanagement.serviceController"
@@ -53,7 +53,7 @@ resource "google_service_account_iam_binding" "workload-identity-binding" {
     "serviceAccount:${var.project}.svc.id.goog[${var.allocation_endpoint.agones_namespace}/agones-allocator]",
   ]
 
-  depends_on = [module.agones_gke_clusters]
+  depends_on = [module.agones_gke_standard_clusters, module.agones_gke_autopilot_clusters]
 }
 
 resource "google_service_account" "ae_sa" {
@@ -66,7 +66,7 @@ resource "google_service_account_key" "ae_sa_key" {
 }
 
 resource "google_cloud_run_service_iam_binding" "binding" {
-  for_each = var.game_gke_clusters
+  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
 
   service  = google_cloud_run_service.aep_cloud_run[each.key].name
   project  = google_cloud_run_service.aep_cloud_run[each.key].project
@@ -79,9 +79,8 @@ resource "google_cloud_run_service_iam_binding" "binding" {
   ]
 }
 
-
 resource "google_cloud_run_service" "aep_cloud_run" {
-  for_each = var.game_gke_clusters
+  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
 
   project  = var.project
   name     = "allocation-endpoint-proxy-${each.key}"
@@ -97,7 +96,7 @@ resource "google_cloud_run_service" "aep_cloud_run" {
           name = "CLUSTERS_INFO"
           value = templatefile(
             "${path.module}/files/agones/clusters_info.tpl", {
-              name      = data.google_container_cluster.game-demo-agones-gke[each.key].name
+              name      = data.google_container_cluster.game-demo-agones[each.key].name
               ip        = google_compute_address.allocation-endpoint[each.key].address
               weight    = var.allocation_endpoint.weight
               namespace = var.allocation_endpoint.agones_namespace
@@ -196,7 +195,7 @@ resource "google_secret_manager_secret_iam_member" "secret-access" {
 }
 
 resource "google_project_service" "allocator-service" {
-  for_each = var.game_gke_clusters
+  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
 
   service                    = google_endpoints_service.endpoints_service[each.key].id
   disable_dependent_services = true
@@ -204,7 +203,7 @@ resource "google_project_service" "allocator-service" {
 
 resource "google_compute_address" "allocation-endpoint" {
   project  = var.project
-  for_each = var.game_gke_clusters
+  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
   region   = each.value.region
   provider = google-beta
 
@@ -219,14 +218,14 @@ resource "google_compute_address" "allocation-endpoint" {
 resource "local_file" "agones-skaffold-file" {
   content = templatefile(
     "${path.module}/files/agones/skaffold.yaml.tpl", {
-      gke_clusters = var.game_gke_clusters
+      gke_clusters = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
   })
   filename = "${path.module}/${var.platform_directory}/agones/install/skaffold.yaml"
 }
 
 # Make cluster specific helm value for LB IP
 resource "local_file" "agones-ae-lb-file" {
-  for_each = var.game_gke_clusters
+  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
 
   content = templatefile(
     "${path.module}/files/agones/ae-lb-ip-patch.yaml.tpl", {
@@ -240,7 +239,7 @@ resource "local_file" "agones-ae-lb-file" {
 
 # Create agones-system ns manifest as resource referenced by kustomization.yaml
 resource "local_file" "agones-ns-file" {
-  for_each = var.game_gke_clusters
+  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
 
   content  = file("${path.module}/files/agones/agones-system.yaml")
   filename = "${path.module}/${var.platform_directory}/agones/install/${each.key}/agones-system.yaml"

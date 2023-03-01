@@ -17,13 +17,13 @@
 ##------------------------------##
 
 data "google_container_engine_versions" "regions" {
-  for_each = var.game_gke_clusters
+  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
 
   location = each.value.region
 }
 
-module "agones_gke_clusters" {
-  for_each = var.game_gke_clusters
+module "agones_gke_standard_clusters" {
+  for_each = var.game_gke_standard_clusters
 
   source = "git::https://github.com/googleforgames/agones.git//install/terraform/modules/gke/?ref=main"
 
@@ -46,13 +46,34 @@ module "agones_gke_clusters" {
   depends_on = [google_compute_subnetwork.subnet, google_project_service.project]
 }
 
-data "google_container_cluster" "game-demo-agones-gke" {
-  for_each = var.game_gke_clusters
+module "agones_gke_autopilot_clusters" {
+  for_each = var.game_gke_autopilot_clusters
+
+  source = "git::https://github.com/googleforgames/agones.git//install/terraform/modules/gke-autopilot/?ref=main"
+
+  cluster = {
+    name     = each.key
+    location = each.value.region
+    project  = var.project
+
+    # Install Current GKE default version
+    kubernetesVersion = data.google_container_engine_versions.regions[each.key].default_cluster_version
+
+    network    = google_compute_network.vpc.id
+    subnetwork = "global-game-${each.value.region}-subnet"
+  }
+  udpFirewall = false
+
+  depends_on = [google_compute_subnetwork.subnet, google_project_service.project]
+}
+
+data "google_container_cluster" "game-demo-agones" {
+  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
 
   name     = each.key
   location = each.value.region
 
-  depends_on = [module.agones_gke_clusters]
+  depends_on = [module.agones_gke_standard_clusters, module.agones_gke_autopilot_clusters]
 }
 
 resource "google_compute_firewall" "agones-gameservers" {
