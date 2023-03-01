@@ -12,11 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: skaffold/v2beta29
-kind: Config
-deploy:
-  kubectl:
-    manifests:
-      - ping-discovery/service-account.yaml
-      - ping-discovery/deployment.yaml
-      - frontend/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-service
+data:
+  CLIENT_ID: ${client_id}
+  CLIENT_SECRET: ${client_secret}
+  LISTEN_PORT: "8080"
+  CLIENT_LAUNCHER_PORT: "8082"
+  PROFILE_SERVICE: http://profile
+  PING_SERVICE: http://ping-discovery
+  JWT_KEY: ${jwt_key}

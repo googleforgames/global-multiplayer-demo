@@ -12,11 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: skaffold/v2beta29
-kind: Config
-deploy:
-  kubectl:
-    manifests:
-      - ping-discovery/service-account.yaml
-      - ping-discovery/deployment.yaml
-      - frontend/configmap.yaml
+configmap.yaml
