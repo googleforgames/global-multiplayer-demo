@@ -25,7 +25,7 @@ steps:
     dir: ping-discovery
   - name: gcr.io/cloud-builders/docker
     id: profile
-    args: ["build", ".", "-t", "${_REGISTRY}/profile:${BUILD_ID}"]
+    args: ["build", ".", "-t", "${_PROFILE_IMAGE}"]
     dir: profile
 
 #
@@ -41,7 +41,7 @@ steps:
         "--delivery-pipeline", "global-game-services",
         "--skaffold-file", "skaffold.yaml",
         "--skaffold-version", "1.39",
-        "--images", "ping-discovery=${_PING_IMAGE}",
+        "--images", "ping-discovery=${_PING_IMAGE},profile=${_PROFILE_IMAGE}",
         "--region", "us-central1"
       ]
 
@@ -51,6 +51,7 @@ artifacts:
     - ${_REGISTRY}/profile
 substitutions:
   _PING_IMAGE: ${_REGISTRY}/ping-discovery:${BUILD_ID}
+  _PROFILE_IMAGE: ${_REGISTRY}/profile:${BUILD_ID}
   _REGISTRY: us-docker.pkg.dev/${PROJECT_ID}/global-game-images
   _RELEASE_NAME: rel-01
 options:

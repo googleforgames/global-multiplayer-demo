@@ -12,13 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: skaffold/v2beta29
-kind: Config
-deploy:
-  kubectl:
-    manifests:
-      - ping-discovery/service-account.yaml
-      - ping-discovery/deployment.yaml
-      - profile/spanner_config.yaml
-      - profile/deployment.yaml
-      - frontend/configmap.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: profile
+  annotations:
+    iam.gke.io/gcp-service-account: ${service_email}
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spanner-config
+data:
+  spanner_project_id: ${project_id}
+  spanner_instance_id: ${instance_id}
+  spanner_database_id: ${database_id}
