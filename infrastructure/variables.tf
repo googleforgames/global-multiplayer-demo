@@ -25,6 +25,11 @@ variable "gcp_project_services" {
   default     = []
 }
 
+variable "resource_env_label" {
+  type        = string
+  description = "Label/Tag to apply to resources"
+}
+
 ### VPC Variables ###
 
 variable "vpc_name" {

@@ -17,4 +17,8 @@ resource "google_artifact_registry_repository" "container_registry" {
   location      = var.artifact_registry_config.location
   description   = "Repository for container images for the global game"
   format        = "Docker"
+
+  labels = {
+    "environment" = var.resource_env_label
+  }
 }

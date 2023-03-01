@@ -134,6 +134,9 @@ resource "google_cloud_run_service" "aep_cloud_run" {
         "autoscaling.knative.dev/maxScale" = "1000"
         "autoscaling.knative.dev/minScale" = "0"
       }
+      labels = {
+        "environment" = var.resource_env_label
+      }
     }
   }
 
@@ -172,6 +175,11 @@ resource "google_secret_manager_secret" "ae-sa-key" {
   replication {
     automatic = true
   }
+
+  labels = {
+    "environment" = var.resource_env_label
+  }
+
   depends_on = [google_project_service.project]
 }
 
@@ -195,10 +203,16 @@ resource "google_project_service" "allocator-service" {
 }
 
 resource "google_compute_address" "allocation-endpoint" {
+  project  = var.project
   for_each = var.game_gke_clusters
   region   = each.value.region
+  provider = google-beta
 
   name = "allocator-endpoint-ip-${each.key}"
+
+  labels = {
+    "environment" = var.resource_env_label
+  }
 }
 
 # Make Skaffold file for Cloud Deploy into each GKE Cluster

@@ -13,7 +13,8 @@
 # limitations under the License.
 
 # Project Specific Variables
-project = "PROJECT_ID"
+project            = "PROJECT_ID"
+resource_env_label = "demo-global-game"
 
 # Cloud Deploy Configuration
 platform_directory = "../platform" # Relative to Terraform directory

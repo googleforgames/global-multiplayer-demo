@@ -17,6 +17,10 @@ resource "google_spanner_instance" "global-game-spanner" {
   display_name = var.spanner_config.instance_name
   num_nodes    = var.spanner_config.num_nodes
 
+  labels = {
+    "environment" = var.resource_env_label
+  }
+
   depends_on = [google_project_service.project]
 }
 
