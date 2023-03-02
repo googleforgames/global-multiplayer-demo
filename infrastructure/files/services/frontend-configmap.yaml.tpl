@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2023 Google LLC All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,22 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-# Building the application.
-FROM golang:1.19 as build
-
-WORKDIR /go/src/app
-COPY . .
-# In case of local .env being present
-RUN rm  -rf .env
-
-RUN go mod download
-RUN go vet -v
-RUN go test -v
-RUN CGO_ENABLED=0 go build -o /go/bin/app
-
-# Copy bin into our base image.
-FROM gcr.io/distroless/static-debian11
-COPY --from=build /go/bin/app /
-CMD ["/app"]
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-service
+data:
+  CLIENT_ID: ${client_id}
+  CLIENT_SECRET: ${client_secret}
+  LISTEN_PORT: "8080"
+  CLIENT_LAUNCHER_PORT: "8082"
+  PROFILE_SERVICE: http://profile
+  PING_SERVICE: http://ping-discovery
+  JWT_KEY: ${jwt_key}

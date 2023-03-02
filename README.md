@@ -66,6 +66,16 @@ cp terraform.tfvars.sample terraform.tfvars
 terraform apply
 ```
 
+### OAuth Authentication
+
+Terraform is only able to make an [Internal Oauth consent screen](https://support.google.com/cloud/answer/10311615),
+which means that only users from your Google organisation will be able to authenticate against the project when 
+using logging in via the Game Launcher.
+
+You can manually move the consent screen to External (Testing), such that you can allow list accounts outside your 
+organisation to be able to authenticate against the project, but that has to be a manual step through the
+[OAuth Consent screen](https://console.cloud.google.com/apis/credentials/consent).
+
 ### Deploy Agones To Agones GKE Clusters
 
 The Agones deployment is in two steps: The Initial Install and the Allocation Endpoint Patch.
