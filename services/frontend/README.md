@@ -2,6 +2,8 @@
 
 CLIENT_ID and SECRET_ID need to be generated and fetched from https://console.cloud.google.com/apis/credentials (OAuth 2.0 Client IDs)
 
+For the JWT_KEY, this can be any arbitrary string, but has to be consistent between deployments.
+s
 # For Local development
 
 Please create a .env file in the same with the following variables:
@@ -15,6 +17,9 @@ PROFILE_SERVICE=http://localhost:8080
 PING_SERVICE=http://localhost:8083
 JWT_KEY=<JWT_KEY>
 ```
+
+* `LISTEN_PORT` is the local port for this Docker container
+* `CLIENT_LAUNCHER_PORT` is the port that the launcher uses. There shouldn't be any reason to change this value.
 
 # Building locally
 

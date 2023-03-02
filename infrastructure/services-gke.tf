@@ -115,3 +115,31 @@ resource "local_file" "services-ping-service-account" {
   })
   filename = "${path.module}/${var.services_directory}/ping-discovery/service-account.yaml"
 }
+
+#
+# OAuth Credentials for the Frontend Service
+#
+
+resource "google_iap_brand" "project_brand" {
+  support_email     = "agones-discuss@googlegroups.com"
+  application_title = "Global Game Demo"
+  project           = var.project
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_iap_client" "project_client" {
+  display_name = "Global Game Client"
+  brand        = google_iap_brand.project_brand.name
+}
+
+# Make the environment configmap for the front service
+resource "local_file" "services-frontend-config-map" {
+  content = templatefile(
+    "${path.module}/files/services/frontend-configmap.yaml.tpl", {
+      client_id     = google_iap_client.project_client.client_id
+      client_secret = google_iap_client.project_client.secret
+      jwt_key       = var.frontend-service.jwt_key
+  })
+  filename = "${path.module}/${var.services_directory}/frontend/configmap.yaml"
+}
