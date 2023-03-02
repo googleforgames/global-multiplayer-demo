@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -49,6 +50,8 @@ func main() {
 		log.Fatalf("Fail to read file: %v", err)
 		os.Exit(1)
 	}
+
+	myToken = ""
 
 	// Callback handling from the frontend api
 	http.HandleFunc("/callback", handleGoogleCallback)
@@ -78,6 +81,13 @@ func main() {
 	grid := container.New(layout.NewGridLayout(1), image, subGrid)
 
 	myWindow.SetContent(grid)
+
+	// If we have a valid token, let's use it and update the UI right away
+	if loadToken() {
+		playerName := getPlayerName()
+		updateUI(playerName)
+	}
+
 	myWindow.ShowAndRun()
 }
 
@@ -99,9 +109,24 @@ func handleGoogleCallback(rw http.ResponseWriter, req *http.Request) {
 		log.Fatal("No token received!")
 	}
 
+	saveToken(myToken)
+
 	// Update UI with profile info and launch game button
 	playerName := getPlayerName()
+	updateUI(playerName)
 
+	// Close the browser window
+	closeScript := `<script> 
+		setTimeout("window.close()",3000) 
+	</script>
+	<p>
+		<h2>Authenticated successfully. Please return to your application. This tab will close in 3 seconds.</h2>
+	</p>`
+	fmt.Fprintf(rw, closeScript)
+}
+
+func updateUI(playerName string) {
+	// Update UI with profile info and launch game button
 	image := canvas.NewImageFromFile("assets/header.png")
 	image.FillMode = canvas.ImageFillContain
 
@@ -124,15 +149,6 @@ func handleGoogleCallback(rw http.ResponseWriter, req *http.Request) {
 	subGrid := container.New(layout.NewGridLayout(1), infoGrid, buttonPlay, buttonExit)
 	grid := container.New(layout.NewGridLayout(1), image, subGrid)
 	myWindow.SetContent(grid)
-
-	// Close the browser window
-	closeScript := `<script> 
-		setTimeout("window.close()",3000) 
-	</script>
-	<p>
-		<h2>Authenticated successfully. Please return to your application. This tab will close in 3 seconds.</h2>
-	</p>`
-	fmt.Fprintf(rw, closeScript)
 }
 
 func handlePlay() {
@@ -201,4 +217,50 @@ func openBrowser(url string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func saveToken(token string) {
+	dirname, err := os.UserHomeDir()
+	filename := dirname + "/droidshooter.jwt"
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = os.WriteFile(filename, []byte(token), 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func loadToken() bool {
+	dirname, err := os.UserHomeDir()
+	filename := dirname + "/droidshooter.jwt"
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return false
+	}
+
+	file, err := os.Stat(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	modifiedtime := file.ModTime()
+	in30Days := time.Now().Add(24 * time.Hour * 30)
+
+	if modifiedtime.After(in30Days) {
+		log.Printf("Token is old. Deleting.")
+		os.Remove(filename)
+		return false
+	}
+
+	myToken = string(data)
+	log.Printf("Token loaded from file")
+	return true
 }
