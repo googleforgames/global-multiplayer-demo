@@ -26,6 +26,10 @@ resource "google_clouddeploy_target" "services_deploy_target" {
   project          = var.project
   require_approval = false
 
+  labels = {
+    "environment" = var.resource_env_label
+  }
+
   depends_on = [google_project_service.project]
 }
 
@@ -36,6 +40,10 @@ resource "google_clouddeploy_delivery_pipeline" "services_pipeline" {
   description = "Global Game: Backend Services Pipeline"
 
   project = var.project
+
+  labels = {
+    "environment" = var.resource_env_label
+  }
 
   serial_pipeline {
     stages {
@@ -66,9 +74,7 @@ resource "google_clouddeploy_target" "agones" {
   }
 
   labels = {
-    my_first_label = "global-game-demo"
-
-    my_second_label = "agones"
+    "environment" = var.resource_env_label
   }
 
   project          = var.project
@@ -90,9 +96,7 @@ resource "google_clouddeploy_delivery_pipeline" "agones" {
   description = "Global Game: Agones Deploy Pipeline"
 
   labels = {
-    my_first_label = "global-game-demo"
-
-    my_second_label = "agones"
+    "environment" = var.resource_env_label
   }
 
   project = var.project
@@ -120,6 +124,10 @@ resource "google_clouddeploy_target" "open-match-target" {
     cluster = data.google_container_cluster.services-gke.id
   }
 
+  labels = {
+    "environment" = var.resource_env_label
+  }
+
   project          = var.project
   require_approval = false
 
@@ -132,6 +140,10 @@ resource "google_clouddeploy_delivery_pipeline" "open-match" {
 
   description = "Global Game: Open Match Deploy Pipeline"
   project     = var.project
+
+  labels = {
+    "environment" = var.resource_env_label
+  }
 
   serial_pipeline {
     stages {

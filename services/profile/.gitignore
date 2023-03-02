@@ -2,3 +2,4 @@ config.yml
 test_data/***
 vendor/***
 bin/***
+spanner_config.yaml

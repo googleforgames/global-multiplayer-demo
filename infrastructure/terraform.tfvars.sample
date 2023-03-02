@@ -13,7 +13,8 @@
 # limitations under the License.
 
 # Project Specific Variables
-project = "PROJECT_ID"
+project            = "PROJECT_ID"
+resource_env_label = "demo-global-game"
 
 # Cloud Deploy Configuration
 platform_directory = "../platform" # Relative to Terraform directory
@@ -85,7 +86,8 @@ gcp_project_services = [
   "spanner.googleapis.com",
   "secretmanager.googleapis.com",
   "servicecontrol.googleapis.com",
-  "run.googleapis.com"
+  "run.googleapis.com",
+  "iap.googleapis.com"
 ]
 
 
@@ -104,6 +106,11 @@ services_gke_config = {
   resource_labels = {
     environment = "staging"
   }
+}
+
+# Frontend Service Config Values
+frontend-service = {
+  jwt_key = "r@nd0m$"
 }
 
 # Artifact Registry variables

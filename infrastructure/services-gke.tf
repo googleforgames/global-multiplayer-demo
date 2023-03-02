@@ -31,6 +31,10 @@ resource "google_container_cluster" "services-gke" {
     enable_private_endpoint = false
   }
 
+  resource_labels = {
+    "environment" = var.resource_env_label
+  }
+
   depends_on = [google_compute_subnetwork.subnet, google_project_service.project]
 }
 
@@ -53,7 +57,8 @@ data "google_iam_policy" "workload-id-policy" {
     members = [
       "serviceAccount:${var.project}.svc.id.goog[default/${var.k8s_service_account_id}]",
       "serviceAccount:${var.project}.svc.id.goog[${var.allocation_endpoint.agones_namespace}/agones-allocator]",
-      "serviceAccount:${var.project}.svc.id.goog[default/ping-discovery]"
+      "serviceAccount:${var.project}.svc.id.goog[default/ping-discovery]",
+      "serviceAccount:${var.project}.svc.id.goog[default/profile]"
     ]
   }
 
@@ -110,4 +115,32 @@ resource "local_file" "services-ping-service-account" {
       service_email = google_service_account.ping_discovery_sa.email
   })
   filename = "${path.module}/${var.services_directory}/ping-discovery/service-account.yaml"
+}
+
+#
+# OAuth Credentials for the Frontend Service
+#
+
+resource "google_iap_brand" "project_brand" {
+  support_email     = "agones-discuss@googlegroups.com"
+  application_title = "Global Game Demo"
+  project           = var.project
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_iap_client" "project_client" {
+  display_name = "Global Game Client"
+  brand        = google_iap_brand.project_brand.name
+}
+
+# Make the environment configmap for the front service
+resource "local_file" "services-frontend-config-map" {
+  content = templatefile(
+    "${path.module}/files/services/frontend-configmap.yaml.tpl", {
+      client_id     = google_iap_client.project_client.client_id
+      client_secret = google_iap_client.project_client.secret
+      jwt_key       = var.frontend-service.jwt_key
+  })
+  filename = "${path.module}/${var.services_directory}/frontend/configmap.yaml"
 }

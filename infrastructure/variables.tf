@@ -25,6 +25,11 @@ variable "gcp_project_services" {
   default     = []
 }
 
+variable "resource_env_label" {
+  type        = string
+  description = "Label/Tag to apply to resources"
+}
+
 ### VPC Variables ###
 
 variable "vpc_name" {
@@ -98,6 +103,15 @@ variable "k8s_service_account_id" {
   description = "The kubernetes service account that will impersonate the IAM service account to access Cloud Spanner. This account will be created."
 }
 
+### Frontend Service Variables ###
+
+variable "frontend-service" {
+  type = object({
+    jwt_key = string
+  })
+  description = "Configuration for the frontend service that provides oAuth authentications"
+}
+
 ### Allocation Endpoint Variables ###
 
 variable "allocation_endpoint" {
@@ -120,3 +134,4 @@ variable "services_directory" {
   type        = string
   description = "Services Directory for output to Cloud Deploy related files"
 }
+
