@@ -220,7 +220,7 @@ resource "local_file" "agones-skaffold-file" {
     "${path.module}/files/agones/skaffold.yaml.tpl", {
       gke_clusters = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
   })
-  filename = "${path.module}/${var.platform_directory}/agones/install/skaffold.yaml"
+  filename = "${path.module}/${var.platform_directory}/agones/skaffold.yaml"
 }
 
 # Make cluster specific helm value for LB IP
@@ -234,7 +234,7 @@ resource "local_file" "agones-ae-lb-file" {
       sa_email     = google_service_account.ae_sa.email
       location     = each.value.region
   })
-  filename = "${path.module}/${var.platform_directory}/agones/install/${each.key}/kustomization.yaml"
+  filename = "${path.module}/${var.platform_directory}/agones/${each.key}/kustomization.yaml"
 }
 
 # Create agones-system ns manifest as resource referenced by kustomization.yaml
@@ -242,5 +242,5 @@ resource "local_file" "agones-ns-file" {
   for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
 
   content  = file("${path.module}/files/agones/agones-system.yaml")
-  filename = "${path.module}/${var.platform_directory}/agones/install/${each.key}/agones-system.yaml"
+  filename = "${path.module}/${var.platform_directory}/agones/${each.key}/agones-system.yaml"
 }

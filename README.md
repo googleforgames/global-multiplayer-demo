@@ -75,7 +75,7 @@ The Agones deployment is in two steps: The Initial Install and the Allocation En
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy.
 
 ```shell
-cd $GAME_DEMO_HOME/platform/agones/install
+cd $GAME_DEMO_HOME/platform/agones/
 gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
