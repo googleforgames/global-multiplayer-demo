@@ -27,6 +27,10 @@ steps:
     id: profile
     args: ["build", ".", "-t", "${_PROFILE_IMAGE}"]
     dir: profile
+  - name: gcr.io/cloud-builders/docker
+    id: frontend
+    args: ["build", ".", "-t", "${_FRONTEND_IMAGE}"]
+    dir: frontend
 
 #
 # Deployment
@@ -41,7 +45,7 @@ steps:
         "--delivery-pipeline", "global-game-services",
         "--skaffold-file", "skaffold.yaml",
         "--skaffold-version", "1.39",
-        "--images", "ping-discovery=${_PING_IMAGE},profile=${_PROFILE_IMAGE}",
+        "--images", "ping-discovery=${_PING_IMAGE},profile=${_PROFILE_IMAGE},frontend=${_FRONTEND_IMAGE}",
         "--region", "us-central1"
       ]
 
@@ -49,9 +53,11 @@ artifacts:
   images:
     - ${_REGISTRY}/ping-discovery
     - ${_REGISTRY}/profile
+    - ${_REGISTRY}/frontend
 substitutions:
   _PING_IMAGE: ${_REGISTRY}/ping-discovery:${BUILD_ID}
   _PROFILE_IMAGE: ${_REGISTRY}/profile:${BUILD_ID}
+  _FRONTEND_IMAGE: ${_REGISTRY}/frontend:${BUILD_ID}
   _REGISTRY: us-docker.pkg.dev/${PROJECT_ID}/global-game-images
   _RELEASE_NAME: rel-01
 options:

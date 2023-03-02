@@ -28,5 +28,7 @@ RUN CGO_ENABLED=0 go build -o /go/bin/app
 
 # Copy bin into our base image.
 FROM gcr.io/distroless/static-debian11
+
+ENV GIN_MODE=release
 COPY --from=build /go/bin/app /
 CMD ["/app"]
