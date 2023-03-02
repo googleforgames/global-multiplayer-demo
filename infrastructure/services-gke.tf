@@ -57,7 +57,8 @@ data "google_iam_policy" "workload-id-policy" {
     members = [
       "serviceAccount:${var.project}.svc.id.goog[default/${var.k8s_service_account_id}]",
       "serviceAccount:${var.project}.svc.id.goog[${var.allocation_endpoint.agones_namespace}/agones-allocator]",
-      "serviceAccount:${var.project}.svc.id.goog[default/ping-discovery]"
+      "serviceAccount:${var.project}.svc.id.goog[default/ping-discovery]",
+      "serviceAccount:${var.project}.svc.id.goog[default/profile]"
     ]
   }
 
