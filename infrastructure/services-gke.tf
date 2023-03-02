@@ -143,3 +143,14 @@ resource "local_file" "services-frontend-config-map" {
   })
   filename = "${path.module}/${var.services_directory}/frontend/config.yaml"
 }
+
+resource "google_gke_hub_membership" "services-gke-membership" {
+  provider      = google-beta
+  project       = var.project
+  membership_id = "${var.services_gke_config.cluster_name}-membership"
+  endpoint {
+    gke_cluster {
+      resource_link = "//container.googleapis.com/${google_container_cluster.services-gke.id}"
+    }
+  }
+}

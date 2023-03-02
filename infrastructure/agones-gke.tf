@@ -76,6 +76,25 @@ data "google_container_cluster" "game-demo-agones" {
   depends_on = [module.agones_gke_standard_clusters, module.agones_gke_autopilot_clusters]
 }
 
+resource "google_gke_hub_membership" "membership" {
+  for_each            = var.game_gke_clusters
+  provider      = google-beta
+  project       = var.project
+  membership_id = "${each.key}-membership"
+  endpoint {
+    gke_cluster {
+      resource_link = "//container.googleapis.com/${data.google_container_cluster.game-demo-agones-gke[each.key].id}"
+    }
+  }
+}
+
+resource "google_gke_hub_feature" "mesh" {
+  name     = "servicemesh"
+  project  = var.project
+  location = "global"
+  provider = google-beta
+}
+
 resource "google_compute_firewall" "agones-gameservers" {
   name    = "agones-gameservers"
   project = var.project
