@@ -85,7 +85,9 @@ gcp_project_services = [
   "artifactregistry.googleapis.com",
   "spanner.googleapis.com",
   "secretmanager.googleapis.com",
+  "servicenetworking.googleapis.com",
   "servicecontrol.googleapis.com",
+  "redis.googleapis.com",
   "run.googleapis.com",
   "iap.googleapis.com"
 ]
