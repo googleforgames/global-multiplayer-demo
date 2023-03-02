@@ -24,7 +24,7 @@ public:
 	void AuthenticateCall(const FString& accessToken);
 
 	UFUNCTION(BlueprintCallable)
-	void FetchGameServer(const FString& accessToken, const FString preferredRegion);
+	void FetchGameServer(const FString& accessToken, const FString preferredRegion, const FString ping);
 
 	UFUNCTION(BlueprintCallable)
 	void FindPreferredGameServerLocation(const FString& accessToken);

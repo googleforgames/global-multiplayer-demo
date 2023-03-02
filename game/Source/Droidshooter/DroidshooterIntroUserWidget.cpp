@@ -98,12 +98,12 @@ void UDroidshooterIntroUserWidget::AuthenticateCall(const FString& accessToken)
     pRequest->ProcessRequest();
 }
 
-void UDroidshooterIntroUserWidget::FetchGameServer(const FString& accessToken, const FString preferredRegion)
+void UDroidshooterIntroUserWidget::FetchGameServer(const FString& accessToken, const FString preferredRegion, const FString ping)
 {
     UE_LOG(LogDroidshooter, Log, TEXT("Fetch server/ip call with token: %s"), *accessToken);
 
     FString uriBase = "http://localhost:8081";
-    FString uriPlay = uriBase + TEXT("/play?preferred_region=" + preferredRegion);
+    FString uriPlay = uriBase + TEXT("/play?preferred_region=" + preferredRegion + "&ping=" + ping);
 
     FHttpModule& httpModule = FHttpModule::Get();
     TSharedRef<IHttpRequest, ESPMode::ThreadSafe> pRequest = httpModule.CreateRequest();
@@ -246,9 +246,9 @@ void UDroidshooterIntroUserWidget::AllServersValidated()
 
         for (auto it = servers.begin(); it != servers.end(); ++it)
         {
-            // Sending the first one to request servers from openmatch via game frontend
+            // Sending the first result (best ping) to request servers from openmatch via game frontend
             if (it == servers.begin()) {
-                FetchGameServer(GlobalAccessToken, it->second);
+                FetchGameServer(GlobalAccessToken, it->second, FString::SanitizeFloat(it->first));
             }
             UE_LOG(LogDroidshooter, Log, TEXT("Ping responses: %.2f %s "), it->first, *it->second);
         }
