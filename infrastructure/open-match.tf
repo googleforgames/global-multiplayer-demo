@@ -26,8 +26,9 @@ resource "google_redis_instance" "open-match" {
   location_id             = "${var.services_gke_config.location}-a"
   alternative_location_id = "${var.services_gke_config.location}-f"
 
-  authorized_network = data.google_compute_network.vpc.id
-  connect_mode       = "PRIVATE_SERVICE_ACCESS"
+  authorized_network      = data.google_compute_network.vpc.id
+  transit_encryption_mode = "DISABLED"
+  connect_mode            = "PRIVATE_SERVICE_ACCESS"
 
   redis_version = "REDIS_6_X"
   display_name  = "Global Game Demo: Open Match"
