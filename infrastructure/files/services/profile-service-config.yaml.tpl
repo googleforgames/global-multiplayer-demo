@@ -26,6 +26,6 @@ kind: ConfigMap
 metadata:
   name: spanner-config
 data:
-  spanner_project_id: ${project_id}
-  spanner_instance_id: ${instance_id}
-  spanner_database_id: ${database_id}
+  SPANNER_PROJECT_ID: ${project_id}
+  SPANNER_INSTANCE_ID: ${instance_id}
+  SPANNER_DATABASE_ID: ${database_id}

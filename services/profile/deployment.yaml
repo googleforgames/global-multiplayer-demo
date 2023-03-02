@@ -44,22 +44,10 @@ spec:
         image: profile
         ports:
           - containerPort: 80
+        envFrom:
+          - configMapRef:
+              name: spanner-config
         env:
-          - name: SPANNER_PROJECT_ID
-            valueFrom:
-              configMapKeyRef:
-                name: spanner-config
-                key: spanner_project_id
-          - name: SPANNER_INSTANCE_ID
-            valueFrom:
-              configMapKeyRef:
-                name: spanner-config
-                key: spanner_instance_id
-          - name: SPANNER_DATABASE_ID
-            valueFrom:
-              configMapKeyRef:
-                name: spanner-config
-                key: spanner_database_id
           - name: SERVICE_HOST
             value: "0.0.0.0"
           - name: SERVICE_PORT
