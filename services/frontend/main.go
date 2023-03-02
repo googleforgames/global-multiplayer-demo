@@ -208,14 +208,47 @@ func handleUpdateStats(id string, c *gin.Context) {
 
 // WIP: Needs an endpoint to fetch the ping servers
 func handlePingServers(id string, c *gin.Context) {
-	// TODO: fetch servers from some tbd endpoint
-
-	var pingServers []models.PingServer = []models.PingServer{
-		{Name: "agones-ping-udp-service", Namespace: "agones-system", Region: "asia-east1", Address: "127.0.0.1", Protocol: "UDP", Port: "8085"},
-		{Name: "agones-ping-udp-service", Namespace: "agones-system", Region: "europe-west1", Address: "localhost", Protocol: "UDP", Port: "8085"},
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/list", os.Getenv("PING_SERVICE")), c.Request.Body)
+	if shared.HandleError(c, http.StatusInternalServerError, "fetch ping servers", err) {
+		return
 	}
 
-	c.JSON(http.StatusOK, pingServers)
+	response, err := client.Do(req)
+	if shared.HandleError(c, http.StatusInternalServerError, "fetch ping servers", err) {
+		return
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode == 200 {
+		var anyJson map[string]interface{}
+		var pingServers []models.PingServer
+		err := json.NewDecoder(response.Body).Decode(&anyJson)
+		if shared.HandleError(c, http.StatusInternalServerError, "decoding ping servers", err) {
+			return
+		}
+
+		for _, v := range anyJson {
+			pingServers = append(pingServers, models.PingServer{
+				Name:      v.(map[string]interface{})["Name"].(string),
+				Namespace: v.(map[string]interface{})["Namespace"].(string),
+				Region:    v.(map[string]interface{})["Region"].(string),
+				Address:   v.(map[string]interface{})["Address"].(string),
+				Protocol:  v.(map[string]interface{})["Protocol"].(string),
+				Port:      fmt.Sprintf("%.0f", v.(map[string]interface{})["Port"].(float64)),
+			})
+		}
+
+		c.JSON(http.StatusOK, pingServers)
+		return
+	} else {
+		err := fmt.Errorf("unable to update profile stats, error code: %d", response.StatusCode)
+		if shared.HandleError(c, http.StatusBadRequest, "stats update", err) {
+			return
+		}
+
+	}
 }
 
 // WIP: Handles the play request from the game client
