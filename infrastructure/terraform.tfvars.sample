@@ -18,8 +18,6 @@
 project            = "PROJECT_ID"
 resource_env_label = "demo-global-game"
 
-apply_org_policies = false
-
 # Cloud Deploy Configuration
 platform_directory = "../platform" # Relative to Terraform directory
 services_directory = "../services" # Relative to Terraform directory

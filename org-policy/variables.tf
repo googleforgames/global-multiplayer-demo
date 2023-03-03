@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-provider "google" {
-  project = var.project
-}
+### Project Variables ###
 
-data "google_client_config" "provider" {}
+variable "project" {
+  type        = string
+  description = "GCP Project Name"
+}
