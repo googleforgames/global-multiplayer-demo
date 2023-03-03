@@ -12,6 +12,7 @@ Please create a .env file in the same with the following variables:
 CLIENT_ID=<CLIENT_ID>.apps.googleusercontent.com
 CLIENT_SECRET=<CLIENT_SECRET>
 LISTEN_PORT=8081
+CALLBACK_HOSTNAME=http://localhost:8081/callback
 CLIENT_LAUNCHER_PORT=8082
 PROFILE_SERVICE=http://localhost:8080
 PING_SERVICE=http://localhost:8083
@@ -19,6 +20,7 @@ JWT_KEY=<JWT_KEY>
 ```
 
 * `LISTEN_PORT` is the local port for this Docker container
+* `CALLBACK_HOSTNAME` is the full URL to which authentication provider will redirect to. Should be a hostname registered in the https://console.cloud.google.com/apis/credentials (OAuth 2.0 Client IDs) or similar. Points back to this application
 * `CLIENT_LAUNCHER_PORT` is the port that the launcher uses. There shouldn't be any reason to change this value.
 
 # Building locally

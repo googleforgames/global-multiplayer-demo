@@ -51,7 +51,7 @@ func main() {
 	// Oauth config from env vars
 	googleOauthConfig.ClientID = os.Getenv("CLIENT_ID")
 	googleOauthConfig.ClientSecret = os.Getenv("CLIENT_SECRET")
-	googleOauthConfig.RedirectURL = "http://localhost:" + os.Getenv("LISTEN_PORT") + "/callback"
+	googleOauthConfig.RedirectURL = os.Getenv("CALLBACK_HOSTNAME")
 
 	r := gin.Default()
 
@@ -223,22 +223,10 @@ func handlePingServers(id string, c *gin.Context) {
 	defer response.Body.Close()
 
 	if response.StatusCode == 200 {
-		var anyJson map[string]interface{}
-		var pingServers []models.PingServer
-		err := json.NewDecoder(response.Body).Decode(&anyJson)
+		var pingServers map[string]models.PingServer
+		err := json.NewDecoder(response.Body).Decode(&pingServers)
 		if shared.HandleError(c, http.StatusInternalServerError, "decoding ping servers", err) {
 			return
-		}
-
-		for _, v := range anyJson {
-			pingServers = append(pingServers, models.PingServer{
-				Name:      v.(map[string]interface{})["Name"].(string),
-				Namespace: v.(map[string]interface{})["Namespace"].(string),
-				Region:    v.(map[string]interface{})["Region"].(string),
-				Address:   v.(map[string]interface{})["Address"].(string),
-				Protocol:  v.(map[string]interface{})["Protocol"].(string),
-				Port:      fmt.Sprintf("%.0f", v.(map[string]interface{})["Port"].(float64)),
-			})
 		}
 
 		c.JSON(http.StatusOK, pingServers)
