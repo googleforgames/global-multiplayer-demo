@@ -12,9 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 # Project Specific Variables
+
 project            = "PROJECT_ID"
 resource_env_label = "demo-global-game"
+
+apply_org_policies = false
 
 # Cloud Deploy Configuration
 platform_directory = "../platform" # Relative to Terraform directory
@@ -75,6 +79,7 @@ game_gke_autopilot_clusters = {
   }
 }
 
+
 # GCP APIs to Enable
 gcp_project_services = [
   "clouddeploy.googleapis.com",
@@ -87,11 +92,12 @@ gcp_project_services = [
   "secretmanager.googleapis.com",
   "servicenetworking.googleapis.com",
   "servicecontrol.googleapis.com",
+  "run.googleapis.com",
+  "orgpolicy.googleapis.com"、
   "redis.googleapis.com",
   "run.googleapis.com",
   "iap.googleapis.com"
 ]
-
 
 # Spanner DB Config Values
 spanner_config = {
@@ -128,10 +134,8 @@ app_service_account_config = {
   description = "Global Multiplayer Game service account"
 }
 
-
 # Agones GKE Service Account Name
 k8s_service_account_id = "k8s-service-account"
-
 
 # Agones Allocation Endpoint Config Values
 allocation_endpoint = {
