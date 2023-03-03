@@ -77,7 +77,7 @@ data "google_container_cluster" "game-demo-agones" {
 }
 
 resource "google_gke_hub_membership" "membership" {
-  for_each            = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
+  for_each      = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
   provider      = google-beta
   project       = var.project
   membership_id = "${each.key}-membership"
@@ -124,8 +124,8 @@ resource "local_file" "agones-ae-lb-file" {
 
   content = templatefile(
     "${path.module}/files/agones/ae-lb-ip-patch.yaml.tpl", {
-      sa_email     = google_service_account.ae_sa.email
-      location     = each.value.region
+      sa_email = google_service_account.ae_sa.email
+      location = each.value.region
   })
   filename = "${path.module}/${var.platform_directory}/agones/${each.key}/kustomization.yaml"
 }
