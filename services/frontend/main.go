@@ -51,7 +51,7 @@ func main() {
 	// Oauth config from env vars
 	googleOauthConfig.ClientID = os.Getenv("CLIENT_ID")
 	googleOauthConfig.ClientSecret = os.Getenv("CLIENT_SECRET")
-	googleOauthConfig.RedirectURL = "http://localhost:" + os.Getenv("LISTEN_PORT") + "/callback"
+	googleOauthConfig.RedirectURL = os.Getenv("CALLBACK_HOSTNAME")
 
 	r := gin.Default()
 
@@ -209,15 +209,35 @@ func handleUpdateStats(id string, c *gin.Context) {
 
 // WIP: Needs an endpoint to fetch the ping servers
 func handlePingServers(id string, c *gin.Context) {
-	// TODO: fetch servers from some tbd endpoint
-
-	var pingServers []models.PingServer = []models.PingServer{
-		{Name: "agones-ping-udp-service", Namespace: "agones-system", Region: "asia-east1", Address: "104.155.211.151", Protocol: "UDP"},
-		{Name: "agones-ping-udp-service", Namespace: "agones-system", Region: "europe-west1", Address: "34.22.151.131", Protocol: "UDP"},
-		{Name: "agones-ping-udp-service", Namespace: "agones-system", Region: "us-central1", Address: "35.227.137.95", Protocol: "UDP"},
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/list", os.Getenv("PING_SERVICE")), c.Request.Body)
+	if shared.HandleError(c, http.StatusInternalServerError, "fetch ping servers", err) {
+		return
 	}
 
-	c.JSON(http.StatusOK, pingServers)
+	response, err := client.Do(req)
+	if shared.HandleError(c, http.StatusInternalServerError, "fetch ping servers", err) {
+		return
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode == 200 {
+		var pingServers map[string]models.PingServer
+		err := json.NewDecoder(response.Body).Decode(&pingServers)
+		if shared.HandleError(c, http.StatusInternalServerError, "decoding ping servers", err) {
+			return
+		}
+
+		c.JSON(http.StatusOK, pingServers)
+		return
+	} else {
+		err := fmt.Errorf("unable to update profile stats, error code: %d", response.StatusCode)
+		if shared.HandleError(c, http.StatusBadRequest, "stats update", err) {
+			return
+		}
+
+	}
 }
 
 // WIP: Handles the play request from the game client
