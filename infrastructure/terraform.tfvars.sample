@@ -78,23 +78,23 @@ game_gke_autopilot_clusters = {
 gcp_project_services = [
   "anthos.googleapis.com",
   "artifactregistry.googleapis.com",
-  "cloudbuild.googleapis.com",
   "clouddeploy.googleapis.com",
+  "cloudbuild.googleapis.com",
   "compute.googleapis.com",
   "container.googleapis.com",
   "gameservices.googleapis.com",
   "gkehub.googleapis.com",
   "meshca.googleapis.com",
   "meshconfig.googleapis.com",
+  "spanner.googleapis.com",
   "secretmanager.googleapis.com",
   "servicenetworking.googleapis.com",
   "servicecontrol.googleapis.com",
   "run.googleapis.com",
+  "orgpolicy.googleapis.com",
   "redis.googleapis.com",
   "run.googleapis.com",
   "iap.googleapis.com"
-  "spanner.googleapis.com",
-  "run.googleapis.com"
 ]
 
 # Spanner DB Config Values

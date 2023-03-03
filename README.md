@@ -88,6 +88,13 @@ experimenting.
 terraform apply
 ```
 
+### Configure Anthos Service Mesh
+
+```shell
+cd $GAME_DEMO_HOME/infrastructure/asm
+gcloud builds submit --config=cloudbuild.yaml
+```
+
 ### OAuth Authentication
 
 We now need to update our OAuth authentication configuration with the address of our authenticating frontend API.

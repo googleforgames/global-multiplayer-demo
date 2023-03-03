@@ -14,33 +14,17 @@ helmCharts:
           disableTLS: true
           service:
             serviceType: ClusterIP
-          http:
-            port: 443
-            targetPort: 9443
-          grpc:
-            enabled: false
-            loadBalancerIP: "${lb_ip}"
+            http:
+              port: 8000
+              targetPort: 8000
+              portName: http-alloc
+            grpc:
+              enabled: false
 
 resources:
   - agones-system.yaml
 
 patches:
-  - target:
-      kind: Service
-      name: agones-allocator
-    patch: |-
-      apiVersion: v1
-      kind: Service
-      metadata:
-        name: agones-allocator
-        namespace: agones-system
-      spec:
-        ports:
-        - name: https
-          port: 443
-          targetPort: 9443
-        selector:
-          $patch: replace
   - target:
       kind: ServiceAccount
       name: agones-allocator
@@ -67,16 +51,3 @@ patches:
             labels:
               istio.io/rev: asm-managed  #ASM managed dataplane channel
               region: ${location}        #Region to identify the POD and send traffic
-          spec:
-            containers:
-            - args:
-              - --listener_port=9443
-              - --generate_self_signed_cert
-              - --backend=grpc://127.0.0.1:8443
-              - --service=${service_name}
-              - --rollout_strategy=managed
-              image: gcr.io/endpoints-release/endpoints-runtime:2
-              imagePullPolicy: IfNotPresent
-              name: esp
-              ports:
-              - containerPort: 9443

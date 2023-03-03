@@ -2,8 +2,9 @@ apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   name: agones-allocator-dr
+  # namespace: open-match
 spec:
-  host: agones.agones-system
+  host: agones-allocator.agones-system
   subsets:
   - name: us-central1
     labels:
@@ -20,6 +21,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: agones-allocator-vs
+  # namespace: open-match
 spec:
   http:
   - match:
@@ -28,7 +30,7 @@ spec:
           exact: us-central1
     route:
     - destination:
-        host: agones.agones-system
+        host: agones-allocator.agones-system
         subset: us-central1
   - match:
     - headers:
@@ -36,7 +38,7 @@ spec:
           exact: eu-west1
     route:
     - destination:
-        host: agones.agones-system
+        host: agones-allocator.agones-system
         subset: eu-west1
   - match:
     - headers:
@@ -44,6 +46,29 @@ spec:
           exact: asia-east1
     route:
     - destination:
-        host: agones.agones-system
+        host: agones-allocator.agones-system
         subset: asia-east1
+
+---
+
+# Create resolvable entity for initial dns resolution
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agones-system
+
+---
+
+# Create resolvable entity for initial dns resolution
+apiVersion: v1
+kind: Service
+metadata:
+  name: agones-allocator
+  namespace: agones-system
+spec:
+  selector:
+    app: agones
+  ports:
+  - port: 8000
+    targetPort: 8000
 

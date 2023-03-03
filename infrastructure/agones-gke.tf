@@ -77,13 +77,13 @@ data "google_container_cluster" "game-demo-agones" {
 }
 
 resource "google_gke_hub_membership" "membership" {
-  for_each            = var.game_gke_clusters
+  for_each            = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
   provider      = google-beta
   project       = var.project
   membership_id = "${each.key}-membership"
   endpoint {
     gke_cluster {
-      resource_link = "//container.googleapis.com/${data.google_container_cluster.game-demo-agones-gke[each.key].id}"
+      resource_link = "//container.googleapis.com/${data.google_container_cluster.game-demo-agones[each.key].id}"
     }
   }
 }
