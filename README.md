@@ -86,11 +86,9 @@ experimenting.
 
 ```shell
 terraform apply
-```
 
-### Configure Anthos Service Mesh
-
-```shell
+## This cloud build step sets up managed Anthos Service Mesh using the fleet feature API. Unfortunately, there is no
+## terraform support yet, so it's an additional step which must be performed anytime new clusters are provisioned.
 cd $GAME_DEMO_HOME/infrastructure/asm
 gcloud builds submit --config=cloudbuild.yaml
 ```
