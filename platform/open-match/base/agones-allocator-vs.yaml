@@ -1,0 +1,49 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: agones-allocator-dr
+spec:
+  host: agones.agones-system
+  subsets:
+  - name: us-central1
+    labels:
+      region: us-central1
+  - name: eu-west1
+    labels:
+      region: eu-west1
+  - name: asia-east1
+    labels:
+      region: asia-east1
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: agones-allocator-vs
+spec:
+  http:
+  - match:
+    - headers:
+        region:
+          exact: us-central1
+    route:
+    - destination:
+        host: agones.agones-system
+        subset: us-central1
+  - match:
+    - headers:
+        region:
+          exact: eu-west1
+    route:
+    - destination:
+        host: agones.agones-system
+        subset: eu-west1
+  - match:
+    - headers:
+        region:
+          exact: asia-east1
+    route:
+    - destination:
+        host: agones.agones-system
+        subset: asia-east1
+
