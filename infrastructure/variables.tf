@@ -119,7 +119,9 @@ variable "k8s_service_account_id" {
 
 variable "frontend-service" {
   type = object({
-    jwt_key = string
+    client_id     = string
+    client_secret = string
+    jwt_key       = string
   })
   description = "Configuration for the frontend service that provides oAuth authentications"
 }
