@@ -124,7 +124,6 @@ resource "local_file" "agones-ae-lb-file" {
 
   content = templatefile(
     "${path.module}/files/agones/agones-install.yaml.tpl", {
-      sa_email = google_service_account.ae_sa.email
       location = each.value.region
   })
   filename = "${path.module}/${var.platform_directory}/agones/${each.key}/kustomization.yaml"

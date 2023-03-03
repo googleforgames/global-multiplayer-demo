@@ -26,17 +26,6 @@ resources:
 
 patches:
   - target:
-      kind: ServiceAccount
-      name: agones-allocator
-    patch: |-
-      apiVersion: v1
-      kind: ServiceAccount
-      metadata:
-        annotations:
-          iam.gke.io/gcp-service-account: ${sa_email}
-        name: agones-allocator
-        namespace: agones-system
-  - target:
       kind: Deployment
       name: agones-allocator
     patch: |-
