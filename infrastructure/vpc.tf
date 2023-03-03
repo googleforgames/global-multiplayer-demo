@@ -60,10 +60,6 @@ resource "google_compute_firewall" "asm-multicluster-pods" {
   }
 
   allow {
-    protocol = "udp"
-  }
-
-  allow {
     protocol = "icmp"
   }
 
