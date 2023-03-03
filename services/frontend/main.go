@@ -227,7 +227,13 @@ func handlePingServers(id string, c *gin.Context) {
 		if shared.HandleError(c, http.StatusInternalServerError, "decoding ping servers", err) {
 			return
 		}
-		c.JSON(http.StatusOK, pingServers)
+
+		var servers []models.PingServer
+		for _, element := range pingServers {
+			servers = append(servers, element)
+		}
+
+		c.JSON(http.StatusOK, servers)
 		return
 	} else {
 		err := fmt.Errorf("unable to update profile stats, error code: %d", response.StatusCode)

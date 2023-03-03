@@ -21,13 +21,13 @@ public:
 	void NativePreConstruct();
 
 	UFUNCTION(BlueprintCallable)
-	void AuthenticateCall(const FString& accessToken);
+	void AuthenticateCall(const FString& frontendApi, const FString& accessToken);
 
 	UFUNCTION(BlueprintCallable)
-	void FetchGameServer(const FString& accessToken, const FString preferredRegion, const FString ping);
+	void FetchGameServer(const FString& frontendApi, const FString& accessToken, const FString preferredRegion, const FString ping);
 
 	UFUNCTION(BlueprintCallable)
-	void FindPreferredGameServerLocation(const FString& accessToken);
+	void FindPreferredGameServerLocation(const FString& frontendApi, const FString& accessToken);
 
 	void ProcessProfileResponse(const FString& ResponseContent);
 	void ProcessGameserverResponse(const FString& ResponseContent);
@@ -49,6 +49,10 @@ public:
 	/** Saving token for further queries */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString GlobalAccessToken;
+
+	/** Saving token for further queries */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString FrontendApi;
 
 	/** Saving token for further queries */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
