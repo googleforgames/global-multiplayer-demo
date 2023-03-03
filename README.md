@@ -60,6 +60,7 @@ cp terraform.tfvars.sample terraform.tfvars
 
 # Edit terraform.tfvars as needed, especially <PROJECT_ID>.
 # Setting `apply_org_policies = true` will also apply any neccessary GCP Org Policies as part of the provioning process.
+```
 
 ### Provision the infrastructure.
 
