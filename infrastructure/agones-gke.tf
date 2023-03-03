@@ -123,7 +123,7 @@ resource "local_file" "agones-ae-lb-file" {
   for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
 
   content = templatefile(
-    "${path.module}/files/agones/ae-lb-ip-patch.yaml.tpl", {
+    "${path.module}/files/agones/agones-install.yaml.tpl", {
       sa_email = google_service_account.ae_sa.email
       location = each.value.region
   })
