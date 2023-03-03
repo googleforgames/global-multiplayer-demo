@@ -24,6 +24,7 @@ steps:
         "--skaffold-version", "1.39",
         "--region", "us-central1"
       ]
+    timeout: 1800s
 
 substitutions:
   _RELEASE_NAME: rel-0001

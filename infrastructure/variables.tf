@@ -44,9 +44,14 @@ variable "vpc_regions" {
 
 ### Agones Variables ###
 
-variable "game_gke_clusters" {
+variable "game_gke_standard_clusters" {
   type        = map(any)
-  description = "GKE gameclusters & associated values"
+  description = "GKE Standard Game Clusters & Associated values"
+}
+
+variable "game_gke_autopilot_clusters" {
+  type        = map(any)
+  description = "GKE Autopilot Game Clusters & Associated values"
 }
 
 ### Cloud Deploy Variables ###

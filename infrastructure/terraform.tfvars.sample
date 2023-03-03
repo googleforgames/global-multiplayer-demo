@@ -42,14 +42,9 @@ vpc_regions = {
 # Game GKE Cluster Config Values
 ### NOTE: If you change the GKE Clusters, please make sure to change `cloudbuild.yaml` in 
 ### `platform/agones/install` as they are not dynamically created.
-game_gke_clusters = {
+game_gke_standard_clusters = {
   "global-game-us-central1-01" : {
     "short_name" : "us-central1-01",
-    "region" : "us-central1",
-    "machine_type" : "e2-standard-4"
-  },
-  "global-game-us-central1-02" : {
-    "short_name" : "us-central1-02",
     "region" : "us-central1",
     "machine_type" : "e2-standard-4"
   },
@@ -58,20 +53,25 @@ game_gke_clusters = {
     "region" : "europe-west1",
     "machine_type" : "e2-standard-4"
   },
-  "global-game-eu-west1-02" : {
-    "short_name" : "europe-west1-02",
-    "region" : "europe-west1",
-    "machine_type" : "e2-standard-4"
-  },
   "global-game-asia-east1-01" : {
     "short_name" : "asia-east1-01",
     "region" : "asia-east1",
     "machine_type" : "e2-standard-4"
+  }
+}
+
+game_gke_autopilot_clusters = {
+  "global-game-us-central1-02" : {
+    "short_name" : "us-central1-02",
+    "region" : "us-central1",
+  },
+  "global-game-eu-west1-02" : {
+    "short_name" : "europe-west1-02",
+    "region" : "europe-west1",
   },
   "global-game-asia-east1-02" : {
     "short_name" : "asia-east1-02",
     "region" : "asia-east1",
-    "machine_type" : "e2-standard-4"
   }
 }
 
