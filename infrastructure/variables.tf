@@ -119,19 +119,6 @@ variable "frontend-service" {
   description = "Configuration for the frontend service that provides oAuth authentications"
 }
 
-### Allocation Endpoint Variables ###
-
-variable "allocation_endpoint" {
-  type = object({
-    name             = string
-    proxy_image      = string
-    weight           = number
-    namespace        = string
-    agones_namespace = string
-  })
-  description = "Allocation Endpoint Configuration Variables"
-}
-
 variable "platform_directory" {
   type        = string
   description = "Platform Directory for output to Cloud Deploy related files"
