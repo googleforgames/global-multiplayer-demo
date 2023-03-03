@@ -64,9 +64,9 @@ resource "local_file" "services-profile-config" {
   content = templatefile(
     "${path.module}/files/services/profile-service-config.yaml.tpl", {
       service_email = google_service_account.spanner-sa.email
-      project_id = var.project
-      instance_id = google_spanner_instance.global-game-spanner.name
-      database_id = google_spanner_database.spanner-database.name
+      project_id    = var.project
+      instance_id   = google_spanner_instance.global-game-spanner.name
+      database_id   = google_spanner_database.spanner-database.name
   })
   filename = "${path.module}/${var.services_directory}/profile/spanner_config.yaml"
 }

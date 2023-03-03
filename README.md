@@ -18,16 +18,17 @@ You can also click on the following icon to open this repository in a 'batteries
 
 ### Google Cloud Auth
 
-Once you have Google Cloud CLI installed, you will need to authenticate against Google Cloud:
+Once you have Google Cloud CLI installed, you will need to set your [GCP Project ID](https://support.google.com/googleapi/answer/7014113?hl=en#:~:text=The%20project%20ID%20is%20a,ID%20or%20create%20your%20own.):
 
 ```shell
-gcloud auth application-default login
+export PROJECT_ID=<PROJECT_ID>
+gcloud config set project ${PROJECT_ID}
 ```
 
-and then set your Google Cloud Project to name/PROJECT_ID:
-
+and then authenticate to generate [Application Default Credentials (ADC)](https://cloud.google.com/docs/authentication/application-default-credentials) that can be leveraged by Terraform
 ```shell
-gcloud config set project <PROJECT_ID>
+gcloud auth application-default login
+gcloud auth application-default set-quota-project ${PROJECT_ID}
 ```
 
 Clone this directory locally and, we'll also set an environment variable to it's root directory, for easy navigation:
@@ -57,7 +58,8 @@ cd $GAME_DEMO_HOME/infrastructure
 terraform init
 cp terraform.tfvars.sample terraform.tfvars
 
-### Edit terraform.tfvars, especially <PROJECT_ID>
+# Edit terraform.tfvars as needed, especially <PROJECT_ID>.
+# Setting `apply_org_policies = true` will also apply any neccessary GCP Org Policies as part of the provioning process.
 ```
 
 ### Provision the infrastructure.
@@ -85,7 +87,7 @@ The Agones deployment is in two steps: The Initial Install and the Allocation En
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy.
 
 ```shell
-cd $GAME_DEMO_HOME/platform/agones/install
+cd $GAME_DEMO_HOME/platform/agones/
 gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
@@ -93,7 +95,7 @@ Navigate to the [agones-deploy-pipeline](https://console.cloud.google.com/deploy
 
 ```shell
 # Replace RELEASE_NAME with the unique build name
-$ gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=agones-deploy-pipeline --region=us-central1`
+gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=agones-deploy-pipeline --region=us-central1`
 ```
 
 Continue the promotion until Agones has been deployed to all clusters. 

@@ -12,9 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 # Project Specific Variables
+
 project            = "PROJECT_ID"
 resource_env_label = "demo-global-game"
+
+apply_org_policies = false
 
 # Cloud Deploy Configuration
 platform_directory = "../platform" # Relative to Terraform directory
@@ -42,14 +46,9 @@ vpc_regions = {
 # Game GKE Cluster Config Values
 ### NOTE: If you change the GKE Clusters, please make sure to change `cloudbuild.yaml` in 
 ### `platform/agones/install` as they are not dynamically created.
-game_gke_clusters = {
+game_gke_standard_clusters = {
   "global-game-us-central1-01" : {
     "short_name" : "us-central1-01",
-    "region" : "us-central1",
-    "machine_type" : "e2-standard-4"
-  },
-  "global-game-us-central1-02" : {
-    "short_name" : "us-central1-02",
     "region" : "us-central1",
     "machine_type" : "e2-standard-4"
   },
@@ -58,22 +57,28 @@ game_gke_clusters = {
     "region" : "europe-west1",
     "machine_type" : "e2-standard-4"
   },
-  "global-game-eu-west1-02" : {
-    "short_name" : "europe-west1-02",
-    "region" : "europe-west1",
-    "machine_type" : "e2-standard-4"
-  },
   "global-game-asia-east1-01" : {
     "short_name" : "asia-east1-01",
     "region" : "asia-east1",
     "machine_type" : "e2-standard-4"
+  }
+}
+
+game_gke_autopilot_clusters = {
+  "global-game-us-central1-02" : {
+    "short_name" : "us-central1-02",
+    "region" : "us-central1",
+  },
+  "global-game-eu-west1-02" : {
+    "short_name" : "europe-west1-02",
+    "region" : "europe-west1",
   },
   "global-game-asia-east1-02" : {
     "short_name" : "asia-east1-02",
     "region" : "asia-east1",
-    "machine_type" : "e2-standard-4"
   }
 }
+
 
 # GCP APIs to Enable
 gcp_project_services = [
@@ -85,11 +90,14 @@ gcp_project_services = [
   "artifactregistry.googleapis.com",
   "spanner.googleapis.com",
   "secretmanager.googleapis.com",
+  "servicenetworking.googleapis.com",
   "servicecontrol.googleapis.com",
+  "run.googleapis.com",
+  "orgpolicy.googleapis.com",
+  "redis.googleapis.com",
   "run.googleapis.com",
   "iap.googleapis.com"
 ]
-
 
 # Spanner DB Config Values
 spanner_config = {
@@ -126,10 +134,8 @@ app_service_account_config = {
   description = "Global Multiplayer Game service account"
 }
 
-
 # Agones GKE Service Account Name
 k8s_service_account_id = "k8s-service-account"
-
 
 # Agones Allocation Endpoint Config Values
 allocation_endpoint = {

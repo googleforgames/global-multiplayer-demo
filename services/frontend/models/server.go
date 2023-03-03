@@ -27,7 +27,7 @@ type PingServer struct {
 	Region    string
 	Address   string
 	Protocol  string
-	Port      string
+	Port      uint64
 }
 
 func FindMatchingServer(region string) OMServerResponse {

@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+### Organziation Variables ###
+
+variable "apply_org_policies" {
+  type        = bool
+  description = "Boolean used to determine whether GCP Org Policies are applied"
+}
+
 ### Project Variables ###
 
 variable "project" {
@@ -44,9 +51,14 @@ variable "vpc_regions" {
 
 ### Agones Variables ###
 
-variable "game_gke_clusters" {
+variable "game_gke_standard_clusters" {
   type        = map(any)
-  description = "GKE gameclusters & associated values"
+  description = "GKE Standard Game Clusters & Associated values"
+}
+
+variable "game_gke_autopilot_clusters" {
+  type        = map(any)
+  description = "GKE Autopilot Game Clusters & Associated values"
 }
 
 ### Cloud Deploy Variables ###
