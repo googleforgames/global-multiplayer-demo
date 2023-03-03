@@ -18,7 +18,7 @@ steps:
     entrypoint: gcloud
     args:
       [
-        "deploy", "releases", "create", "agones-${_RELEASE_NAME}",
+        "deploy", "releases", "create", "${_RELEASE_NAME}",
         "--delivery-pipeline", "agones-deploy-pipeline",
         "--skaffold-file", "skaffold.yaml",
         "--skaffold-version", "1.39",
@@ -27,6 +27,6 @@ steps:
     timeout: 1800s
 
 substitutions:
-  _RELEASE_NAME: agones-rel-0001
+  _RELEASE_NAME: rel-0001
 options:
   logging: CLOUD_LOGGING_ONLY

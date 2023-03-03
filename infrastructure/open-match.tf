@@ -13,10 +13,6 @@
 // limitations under the License.
 
 
-data "google_compute_network" "vpc" {
-  name = var.vpc_name
-}
-
 resource "google_redis_instance" "open-match" {
   name           = "global-game-open-match"
   tier           = "STANDARD_HA"
@@ -26,7 +22,7 @@ resource "google_redis_instance" "open-match" {
   location_id             = "${var.services_gke_config.location}-a"
   alternative_location_id = "${var.services_gke_config.location}-f"
 
-  authorized_network      = data.google_compute_network.vpc.id
+  authorized_network      = google_compute_network.vpc.id
   transit_encryption_mode = "DISABLED"
   connect_mode            = "PRIVATE_SERVICE_ACCESS"
 
@@ -45,13 +41,13 @@ resource "google_compute_global_address" "private_service_range" {
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   prefix_length = 16
-  network       = data.google_compute_network.vpc.id
+  network       = google_compute_network.vpc.id
 
   depends_on = [google_project_service.project]
 }
 
 resource "google_service_networking_connection" "private_service_connection" {
-  network                 = data.google_compute_network.vpc.id
+  network                 = google_compute_network.vpc.id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_service_range.name]
 
