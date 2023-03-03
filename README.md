@@ -39,9 +39,19 @@ cd global-multiplayer-demo
 export GAME_DEMO_HOME=$(pwd)
 ```
 
-### Provision
+## Provision
 
-Initialize Terraform & configure variables
+### Optional: GCS Backend
+
+Normally Terraform stores the current state in the `terraform.tfstate` file locally. However, if you would like to have Terraform store the state file in a GCS Bucket, you can:
+
+- [ ] Edit `backend.tf.sample`
+- [ ] Change the `bucket =` line to an already created GCS bucket
+- [ ] Rename `backend.tf.sample` to `backend.tf`.
+
+NOTE: The GCS bucket does not have to exist in the same Google project as the Global Game but the Google user/service account running Terraform must have write & read access to that bucket.
+
+### Initialize Terraform & configure variables
 
 ```shell
 cd $GAME_DEMO_HOME/infrastructure
@@ -50,24 +60,33 @@ cp terraform.tfvars.sample terraform.tfvars
 
 # Edit terraform.tfvars as needed, especially <PROJECT_ID>.
 # Setting `apply_org_policies = true` will also apply any neccessary GCP Org Policies as part of the provioning process.
-```
 
-Provision the infrastructure.
+### Provision the infrastructure.
 
 ```shell
 terraform apply
 ```
 
-#### Deploy Agones To Agones GKE Clusters
+### OAuth Authentication
+
+Terraform is only able to make an [Internal Oauth consent screen](https://support.google.com/cloud/answer/10311615),
+which means that only users from your Google organisation will be able to authenticate against the project when 
+using logging in via the Game Launcher.
+
+You can manually move the consent screen to External (Testing), such that you can allow list accounts outside your 
+organisation to be able to authenticate against the project, but that has to be a manual step through the
+[OAuth Consent screen](https://console.cloud.google.com/apis/credentials/consent).
+
+### Deploy Agones To Agones GKE Clusters
 
 The Agones deployment is in two steps: The Initial Install and the Allocation Endpoint Patch.
 
 
-#### Initial Install
+### Initial Install
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy.
 
 ```shell
-cd $GAME_DEMO_HOME/platform/agones/install
+cd $GAME_DEMO_HOME/platform/agones/
 gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
@@ -82,7 +101,7 @@ Continue the promotion until Agones has been deployed to all clusters.
 
 You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as OK, you can proceed to apply the Allocation Endpoint Patch.
 
-#### Deploy Open Match to Services GKE Cluster
+### Deploy Open Match to Services GKE Cluster
 
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Open Match using Cloud Deploy.
 
@@ -93,7 +112,19 @@ gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-
 
 ## Install Game Backend Services
 
-TODO: fill in once we have services.
+To install all the backend services, submit the following Cloud Build command, and replace the` _RELEASE_NAME` 
+substitution with a unique build name.
+
+```shell
+cd $GAME_DEMO_HOME/services
+gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
+```
+
+This will:
+
+* Build all the images required for all services.
+* Store those image in [Artifact Registry](https://cloud.google.com/artifact-registry)
+* Deploy them via Cloud Build to a Autopilot cluster.
 
 ## Game Client
 

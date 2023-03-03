@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC All Rights Reserved.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,23 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
-.*
-!.gitignore
-*.iml
-terraform.tfstate*
-backend.tf
-*.tfvars
+# Building the application.
+FROM golang:1.19 as build
 
-deploy/base/charts/
+WORKDIR /go/src/app
+COPY . .
+# In case of local .env being present
+RUN rm  -rf .env
 
-# Ignore Terraform generated k8s manifest files
-patch-agones-allocator-*.yaml
+RUN go mod download
+RUN go vet -v
+RUN go test -v
+RUN CGO_ENABLED=0 go build -o /go/bin/app
 
-# Ignore Terraform generated skaffold files
-skaffold-global-game-*.yaml
-infrastructure/deploy/agones/install/skaffold.yaml
+# Copy bin into our base image.
+FROM gcr.io/distroless/static-debian11
 
-# Ignore Terraform generated kustomization files
-**/global-game-*/kustomization.yaml
-**/global-game-*/agones-system.yaml
+ENV GIN_MODE=release
+COPY --from=build /go/bin/app /
+CMD ["/app"]

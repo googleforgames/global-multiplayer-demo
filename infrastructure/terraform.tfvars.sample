@@ -15,12 +15,14 @@
 
 # Project Specific Variables
 
-project = "PROJECT_ID"
+project            = "PROJECT_ID"
+resource_env_label = "demo-global-game"
 
 apply_org_policies = false
 
 # Cloud Deploy Configuration
 platform_directory = "../platform" # Relative to Terraform directory
+services_directory = "../services" # Relative to Terraform directory
 clouddeploy_config = {
   "location" : "us-central1"
 }
@@ -43,15 +45,10 @@ vpc_regions = {
 
 # Game GKE Cluster Config Values
 ### NOTE: If you change the GKE Clusters, please make sure to change `cloudbuild.yaml` in 
-### `agones/install` & `deploy/agones/endpoint-patch/` as they are not dynamically created.  
-game_gke_clusters = {
+### `platform/agones/install` as they are not dynamically created.
+game_gke_standard_clusters = {
   "global-game-us-central1-01" : {
     "short_name" : "us-central1-01",
-    "region" : "us-central1",
-    "machine_type" : "e2-standard-4"
-  },
-  "global-game-us-central1-02" : {
-    "short_name" : "us-central1-02",
     "region" : "us-central1",
     "machine_type" : "e2-standard-4"
   },
@@ -60,20 +57,25 @@ game_gke_clusters = {
     "region" : "europe-west1",
     "machine_type" : "e2-standard-4"
   },
-  "global-game-eu-west1-02" : {
-    "short_name" : "europe-west1-02",
-    "region" : "europe-west1",
-    "machine_type" : "e2-standard-4"
-  },
   "global-game-asia-east1-01" : {
     "short_name" : "asia-east1-01",
     "region" : "asia-east1",
     "machine_type" : "e2-standard-4"
+  }
+}
+
+game_gke_autopilot_clusters = {
+  "global-game-us-central1-02" : {
+    "short_name" : "us-central1-02",
+    "region" : "us-central1",
+  },
+  "global-game-eu-west1-02" : {
+    "short_name" : "europe-west1-02",
+    "region" : "europe-west1",
   },
   "global-game-asia-east1-02" : {
     "short_name" : "asia-east1-02",
     "region" : "asia-east1",
-    "machine_type" : "e2-standard-4"
   }
 }
 
@@ -88,9 +90,13 @@ gcp_project_services = [
   "artifactregistry.googleapis.com",
   "spanner.googleapis.com",
   "secretmanager.googleapis.com",
+  "servicenetworking.googleapis.com",
   "servicecontrol.googleapis.com",
   "run.googleapis.com",
-  "orgpolicy.googleapis.com"
+  "orgpolicy.googleapis.com"、
+  "redis.googleapis.com",
+  "run.googleapis.com",
+  "iap.googleapis.com"
 ]
 
 # Spanner DB Config Values
@@ -108,6 +114,18 @@ services_gke_config = {
   resource_labels = {
     environment = "staging"
   }
+}
+
+# Frontend Service Config Values
+frontend-service = {
+  jwt_key = "r@nd0m$"
+}
+
+# Artifact Registry variables
+### NOTE: If you change the Artifact registry location, please make sure to change `cloudbuild.yaml` in
+### `services/clouddeploy.yaml;` as it is not dynamically created.
+artifact_registry_config = {
+  location = "us"
 }
 
 # Agones Application Service Account Name

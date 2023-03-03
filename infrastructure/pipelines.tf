@@ -26,6 +26,10 @@ resource "google_clouddeploy_target" "services_deploy_target" {
   project          = var.project
   require_approval = false
 
+  labels = {
+    "environment" = var.resource_env_label
+  }
+
   depends_on = [google_project_service.project]
 }
 
@@ -37,6 +41,10 @@ resource "google_clouddeploy_delivery_pipeline" "services_pipeline" {
 
   project = var.project
 
+  labels = {
+    "environment" = var.resource_env_label
+  }
+
   serial_pipeline {
     stages {
       target_id = google_clouddeploy_target.services_deploy_target.target_id
@@ -46,8 +54,8 @@ resource "google_clouddeploy_delivery_pipeline" "services_pipeline" {
 
 ##### Agones Pipelines #####
 
-resource "google_clouddeploy_target" "agones" {
-  for_each = var.game_gke_clusters
+resource "google_clouddeploy_target" "agones-gke" {
+  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
 
   location = var.clouddeploy_config.location
   name     = "${each.value.short_name}-agones-deploy"
@@ -62,13 +70,11 @@ resource "google_clouddeploy_target" "agones" {
   description = "Global Game: Agones Deploy Target - ${each.key}"
 
   gke {
-    cluster = data.google_container_cluster.game-demo-agones-gke[each.key].id
+    cluster = data.google_container_cluster.game-demo-agones[each.key].id
   }
 
   labels = {
-    my_first_label = "global-game-demo"
-
-    my_second_label = "agones"
+    "environment" = var.resource_env_label
   }
 
   project          = var.project
@@ -77,7 +83,7 @@ resource "google_clouddeploy_target" "agones" {
   depends_on = [google_project_service.project]
 }
 
-resource "google_clouddeploy_delivery_pipeline" "agones" {
+resource "google_clouddeploy_delivery_pipeline" "agones-gke" {
   location = var.clouddeploy_config.location
   name     = "agones-deploy-pipeline"
 
@@ -90,18 +96,16 @@ resource "google_clouddeploy_delivery_pipeline" "agones" {
   description = "Global Game: Agones Deploy Pipeline"
 
   labels = {
-    my_first_label = "global-game-demo"
-
-    my_second_label = "agones"
+    "environment" = var.resource_env_label
   }
 
   project = var.project
 
   serial_pipeline {
     dynamic "stages" {
-      for_each = var.game_gke_clusters
+      for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
       content {
-        target_id = google_clouddeploy_target.agones[stages.key].target_id
+        target_id = google_clouddeploy_target.agones-gke[stages.key].target_id
         profiles  = [stages.key]
       }
     }
@@ -120,6 +124,10 @@ resource "google_clouddeploy_target" "open-match-target" {
     cluster = data.google_container_cluster.services-gke.id
   }
 
+  labels = {
+    "environment" = var.resource_env_label
+  }
+
   project          = var.project
   require_approval = false
 
@@ -132,6 +140,10 @@ resource "google_clouddeploy_delivery_pipeline" "open-match" {
 
   description = "Global Game: Open Match Deploy Pipeline"
   project     = var.project
+
+  labels = {
+    "environment" = var.resource_env_label
+  }
 
   serial_pipeline {
     stages {

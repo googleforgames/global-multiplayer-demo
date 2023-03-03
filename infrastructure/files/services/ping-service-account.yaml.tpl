@@ -12,22 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.*
-!.gitignore
-*.iml
-terraform.tfstate*
-backend.tf
-*.tfvars
-
-deploy/base/charts/
-
-# Ignore Terraform generated k8s manifest files
-patch-agones-allocator-*.yaml
-
-# Ignore Terraform generated skaffold files
-skaffold-global-game-*.yaml
-infrastructure/deploy/agones/install/skaffold.yaml
-
-# Ignore Terraform generated kustomization files
-**/global-game-*/kustomization.yaml
-**/global-game-*/agones-system.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ping-discovery
+  annotations:
+    iam.gke.io/gcp-service-account: ${service_email}

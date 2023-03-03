@@ -17,6 +17,10 @@ resource "google_spanner_instance" "global-game-spanner" {
   display_name = var.spanner_config.instance_name
   num_nodes    = var.spanner_config.num_nodes
 
+  labels = {
+    "environment" = var.resource_env_label
+  }
+
   depends_on = [google_project_service.project]
 }
 
@@ -25,6 +29,18 @@ resource "google_spanner_database" "spanner-database" {
   name                     = var.spanner_config.db_name
   version_retention_period = "3d"
   deletion_protection      = false
+}
+
+
+resource "google_service_account_iam_binding" "spanner-workload-identity-binding" {
+  service_account_id = google_service_account.spanner-sa.name
+  role               = "roles/iam.workloadIdentityUser"
+
+  members = [
+    "serviceAccount:${var.project}.svc.id.goog[default/profile]"
+  ]
+
+  depends_on = [google_container_cluster.services-gke]
 }
 
 resource "google_service_account" "spanner-sa" {
@@ -37,4 +53,20 @@ resource "google_project_iam_member" "spanner-sa" {
   project = var.project
   role    = "roles/spanner.databaseUser"
   member  = "serviceAccount:${google_service_account.spanner-sa.email}"
+}
+
+
+
+
+
+# Make Config file for deploy with Cloud Deploy
+resource "local_file" "services-profile-config" {
+  content = templatefile(
+    "${path.module}/files/services/profile-service-config.yaml.tpl", {
+      service_email = google_service_account.spanner-sa.email
+      project_id    = var.project
+      instance_id   = google_spanner_instance.global-game-spanner.name
+      database_id   = google_spanner_database.spanner-database.name
+  })
+  filename = "${path.module}/${var.services_directory}/profile/spanner_config.yaml"
 }

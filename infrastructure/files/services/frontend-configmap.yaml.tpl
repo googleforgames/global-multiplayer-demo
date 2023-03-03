@@ -12,20 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT_ID}.iam.gserviceaccount.com
-steps:
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    entrypoint: gcloud
-    args:
-      [
-        "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "agones-deploy-pipeline",
-        "--skaffold-file", "skaffold.yaml",
-        "--skaffold-version", "1.39",
-        "--region", "us-central1"
-      ]
-
-substitutions:
-  _RELEASE_NAME: rel-0001
-options:
-  logging: CLOUD_LOGGING_ONLY
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-service
+data:
+  CLIENT_ID: ${client_id}
+  CLIENT_SECRET: ${client_secret}
+  LISTEN_PORT: "8080"
+  CLIENT_LAUNCHER_PORT: "8082"
+  PROFILE_SERVICE: http://profile
+  PING_SERVICE: http://ping-discovery
+  JWT_KEY: ${jwt_key}

@@ -12,22 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.*
-!.gitignore
-*.iml
-terraform.tfstate*
-backend.tf
-*.tfvars
+BUILD_DIR=$(PWD)/build
+build:
+	echo "Building frontend api service"
+	mkdir -p ${BUILD_DIR} && GOOS=linux GOARCH=386 go build -o ${BUILD_DIR}/frontend-api main.go
 
-deploy/base/charts/
+build-docker:
+	echo "Building docker container"
+	docker build . -t frontend-api
 
-# Ignore Terraform generated k8s manifest files
-patch-agones-allocator-*.yaml
+clean:
+	echo "Running cleanup"
+	rm -rf ${BUILD_DIR}/
+	docker rmi -f frontend-api
 
-# Ignore Terraform generated skaffold files
-skaffold-global-game-*.yaml
-infrastructure/deploy/agones/install/skaffold.yaml
-
-# Ignore Terraform generated kustomization files
-**/global-game-*/kustomization.yaml
-**/global-game-*/agones-system.yaml
+.PHONY: build build-docker clean

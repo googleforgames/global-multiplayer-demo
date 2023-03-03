@@ -31,6 +31,10 @@ resource "google_container_cluster" "services-gke" {
     enable_private_endpoint = false
   }
 
+  resource_labels = {
+    "environment" = var.resource_env_label
+  }
+
   depends_on = [google_compute_subnetwork.subnet, google_project_service.project]
 }
 
@@ -52,7 +56,9 @@ data "google_iam_policy" "workload-id-policy" {
     role = "roles/iam.workloadIdentityUser"
     members = [
       "serviceAccount:${var.project}.svc.id.goog[default/${var.k8s_service_account_id}]",
-      "serviceAccount:${var.project}.svc.id.goog[${var.allocation_endpoint.agones_namespace}/agones-allocator]"
+      "serviceAccount:${var.project}.svc.id.goog[${var.allocation_endpoint.agones_namespace}/agones-allocator]",
+      "serviceAccount:${var.project}.svc.id.goog[default/ping-discovery]",
+      "serviceAccount:${var.project}.svc.id.goog[default/profile]"
     ]
   }
 
@@ -64,4 +70,77 @@ resource "google_service_account_iam_policy" "app-service-account-iam" {
   policy_data        = data.google_iam_policy.workload-id-policy.policy_data
 
   depends_on = [google_project_service.project, google_container_cluster.services-gke]
+}
+
+#
+# IAM for Ping Discovery Service
+#
+
+resource "google_project_iam_custom_role" "ping_discovery_role" {
+  role_id     = "globalGame.pingDiscovery"
+  title       = "Global Game: Ping Discovery Service"
+  description = "Allows querying of forwarding rules to dynamically discover ping endpoints"
+  permissions = [
+    "compute.forwardingRules.list",
+  ]
+}
+
+resource "google_service_account_iam_binding" "ping-discovery-workload-identity-binding" {
+  service_account_id = google_service_account.ping_discovery_sa.name
+  role               = "roles/iam.workloadIdentityUser"
+
+  members = [
+    "serviceAccount:${var.project}.svc.id.goog[default/ping-discovery]"
+  ]
+
+  depends_on = [google_container_cluster.services-gke]
+}
+
+resource "google_service_account" "ping_discovery_sa" {
+  project      = var.project
+  account_id   = "ping-sa"
+  display_name = "Ping Discovery Service Account"
+}
+
+resource "google_project_iam_member" "ping_discovery_sa" {
+  project = var.project
+  role    = google_project_iam_custom_role.ping_discovery_role.id
+  member  = "serviceAccount:${google_service_account.ping_discovery_sa.email}"
+}
+
+# Make Service Account file for deploy with Cloud Deploy
+resource "local_file" "services-ping-service-account" {
+  content = templatefile(
+    "${path.module}/files/services/ping-service-account.yaml.tpl", {
+      service_email = google_service_account.ping_discovery_sa.email
+  })
+  filename = "${path.module}/${var.services_directory}/ping-discovery/service-account.yaml"
+}
+
+#
+# OAuth Credentials for the Frontend Service
+#
+
+resource "google_iap_brand" "project_brand" {
+  support_email     = "agones-discuss@googlegroups.com"
+  application_title = "Global Game Demo"
+  project           = var.project
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_iap_client" "project_client" {
+  display_name = "Global Game Client"
+  brand        = google_iap_brand.project_brand.name
+}
+
+# Make the environment configmap for the front service
+resource "local_file" "services-frontend-config-map" {
+  content = templatefile(
+    "${path.module}/files/services/frontend-configmap.yaml.tpl", {
+      client_id     = google_iap_client.project_client.client_id
+      client_secret = google_iap_client.project_client.secret
+      jwt_key       = var.frontend-service.jwt_key
+  })
+  filename = "${path.module}/${var.services_directory}/frontend/configmap.yaml"
 }
