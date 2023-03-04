@@ -28,7 +28,6 @@ gcloud config set project ${PROJECT_ID}
 and then authenticate to generate [Application Default Credentials (ADC)](https://cloud.google.com/docs/authentication/application-default-credentials) that can be leveraged by Terraform
 ```shell
 gcloud auth application-default login
-gcloud auth application-default set-quota-project ${PROJECT_ID}
 ```
 
 Clone this directory locally and, we'll also set an environment variable to it's root directory, for easy navigation:
@@ -59,7 +58,6 @@ terraform init
 cp terraform.tfvars.sample terraform.tfvars
 
 # Edit terraform.tfvars as needed, especially <PROJECT_ID>.
-# Setting `apply_org_policies = true` will also apply any neccessary GCP Org Policies as part of the provioning process.
 ```
 
 ### Provision the infrastructure.
