@@ -17,7 +17,6 @@
 
 project            = "PROJECT_ID"
 resource_env_label = "demo-global-game"
-
 apply_org_policies = false
 
 # Cloud Deploy Configuration
@@ -28,9 +27,7 @@ clouddeploy_config = {
 }
 
 # VPC Regions & associated subnet CIDRs Values
-
 vpc_name = "global-game-vpc"
-
 vpc_regions = {
   "us-central1" : {
     "vpc_subnet_cidr" : "10.1.0.0/16"
@@ -44,8 +41,6 @@ vpc_regions = {
 }
 
 # Game GKE Cluster Config Values
-### NOTE: If you change the GKE Clusters, please make sure to change `cloudbuild.yaml` in 
-### `platform/agones/install` as they are not dynamically created.
 game_gke_standard_clusters = {
   "global-game-us-central1-01" : {
     "short_name" : "us-central1-01",
