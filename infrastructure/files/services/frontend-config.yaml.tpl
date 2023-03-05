@@ -20,7 +20,21 @@ data:
   CLIENT_ID: ${client_id}
   CLIENT_SECRET: ${client_secret}
   LISTEN_PORT: "8080"
+  CALLBACK_HOSTNAME: http://${service_address}.sslip.io/callback
   CLIENT_LAUNCHER_PORT: "8082"
   PROFILE_SERVICE: http://profile
   PING_SERVICE: http://ping-discovery
   JWT_KEY: ${jwt_key}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  type: LoadBalancer
+  selector:
+    app: frontend
+  ports:
+    - port: 80
+      targetPort: 8080
+  loadBalancerIP: ${service_address}

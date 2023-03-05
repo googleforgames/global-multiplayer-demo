@@ -113,7 +113,9 @@ services_gke_config = {
 
 # Frontend Service Config Values
 frontend-service = {
-  jwt_key = "r@nd0m$"
+  client_id     = "CLIENT_ID"
+  client_secret = "CLIENT_SECRET"
+  jwt_key       = "r@nd0m$"
 }
 
 # Artifact Registry variables
