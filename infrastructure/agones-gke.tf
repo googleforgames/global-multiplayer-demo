@@ -86,6 +86,8 @@ resource "google_gke_hub_membership" "membership" {
       resource_link = "//container.googleapis.com/${data.google_container_cluster.game-demo-agones[each.key].id}"
     }
   }
+
+  depends_on = [google_project_service.project]
 }
 
 resource "google_gke_hub_feature" "mesh" {
@@ -93,6 +95,8 @@ resource "google_gke_hub_feature" "mesh" {
   project  = var.project
   location = "global"
   provider = google-beta
+
+  depends_on = [google_project_service.project]
 }
 
 resource "google_compute_firewall" "agones-gameservers" {

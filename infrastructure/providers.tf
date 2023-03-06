@@ -13,7 +13,7 @@
 # limitations under the License.
 
 provider "google" {
-  project                             = var.project
+  project = var.project
 }
 
 provider "google-beta" {
