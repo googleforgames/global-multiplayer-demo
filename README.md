@@ -78,8 +78,6 @@ You will need to now edit `terraform.tfvars`
 
 * Update <PROJECT_ID> with the ID of your Google Cloud Project, 
 * Updated <CLIENT_ID> and <CLIENT_SECRET> with the Client ID and Client secret created in the above step.
-* Setting `apply_org_policies = true` will also apply any necessary GCP Org Policies as part of the provisioning 
-  process.
 
 You can edit other variables in this file, but we recommend leaving the default values for your first run before 
 experimenting.
