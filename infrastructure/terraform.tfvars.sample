@@ -137,3 +137,6 @@ app_service_account_config = {
 
 # Agones GKE Service Account Name
 k8s_service_account_id = "k8s-service-account"
+
+# Github Personal Access Token
+github_pat = "<GITHUB_PAT>"
