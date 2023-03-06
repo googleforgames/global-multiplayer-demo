@@ -84,6 +84,11 @@ experimenting.
 
 ### Provision the infrastructure.
 
+> **Warning**  
+> This demo in its default state creates multiple Kubernetes clusters around the world, 
+> Spanner instances, and more. Running this demo for an extended amount of time may incur significant costs.
+
+
 ```shell
 terraform apply
 ```
