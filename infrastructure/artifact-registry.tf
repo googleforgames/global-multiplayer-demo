@@ -21,4 +21,6 @@ resource "google_artifact_registry_repository" "container_registry" {
   labels = {
     "environment" = var.resource_env_label
   }
+
+  depends_on = [google_project_service.project]
 }

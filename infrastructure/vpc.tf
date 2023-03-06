@@ -49,3 +49,19 @@ resource "google_compute_router_nat" "vpc_nat" {
     filter = "ERRORS_ONLY"
   }
 }
+
+resource "google_compute_firewall" "asm-multicluster-pods" {
+  name    = "asm-multicluster-pods"
+  project = var.project
+  network = google_compute_network.vpc.id
+
+  allow {
+    protocol = "tcp"
+  }
+
+  allow {
+    protocol = "icmp"
+  }
+
+  source_ranges = ["10.0.0.0/8"]
+}
