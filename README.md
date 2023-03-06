@@ -106,35 +106,28 @@ This should give you back an IP, such as `35.202.107.204`.
 
 Since OAuth needs a domain to authenticate against, we'll use [sslip.io](https://sslip.io) for development purposes. 
 
-### Deploy Agones To Agones GKE Clusters
+### Deploy Platform Components
+Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy
 
-### Initial Install
-Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy. Cloudbuild also deploys Anthos Service Mesh (ASM) to all clusters using the fleet feature API. Since there is no terraform support for ASM at cluster creation time, this step is performed with Agones deployments so newly added game server clusters are configured with ASM.
+- Anthos Service Mesh (ASM) to all clusters using the fleet feature API
+- Agones using Cloud Deploy
+- Open Match using Cloud Deploy
 
 ```shell
-cd $GAME_DEMO_HOME/platform/agones/
+cd $GAME_DEMO_HOME/platform/
 gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
-Navigate to the [agones-deploy-pipeline](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/agones-deploy-pipeline) delivery pipeline to review the rollout status. Cloudbuild will create a Cloud Deploy release which automatically deploys Agones to the first game server cluster. Agones can be deployed to subsequent clusters by clicking on the `promote` button within the Pipeline visualization or by running the following gcloud command:
+Navigate to the [agones-deploy-pipeline](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/agones-deploy-pipeline) delivery pipeline to review the rollout status. Cloudbuild will create a Cloud Deploy release which automatically deploys Agones the first game server cluster. Agones can be deployed to subsequent clusters by clicking on the `promote` button within the Pipeline visualization or by running the following gcloud command:
 
 ```shell
 # Replace RELEASE_NAME with the unique build name
 gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=agones-deploy-pipeline --region=us-central1`
 ```
 
-Continue the promotion until Agones has been deployed to all clusters. 
+Continue the promotion until Agones has been deployed to all clusters. You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Worloads panel in the GCP Console.
 
-You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as OK, you can proceed to apply the Allocation Endpoint Patch.
-
-### Deploy Open Match to Services GKE Cluster
-
-Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Open Match using Cloud Deploy.
-
-```shell
-cd $GAME_DEMO_HOME/platform/open-match/
-gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
-```
+Open Match rollout status can be viewed by navigating to the [global-game-open-match](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/global-game-open-match) delivery pipeline. Since open match is deployed onto a single services GKE cluster, deployments are automatically rolled out with no need for manual promotion.
 
 ## Install Game Backend Services
 
