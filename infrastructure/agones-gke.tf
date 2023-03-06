@@ -76,6 +76,25 @@ data "google_container_cluster" "game-demo-agones" {
   depends_on = [module.agones_gke_standard_clusters, module.agones_gke_autopilot_clusters]
 }
 
+resource "google_gke_hub_membership" "membership" {
+  for_each      = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
+  provider      = google-beta
+  project       = var.project
+  membership_id = "${each.key}-membership"
+  endpoint {
+    gke_cluster {
+      resource_link = "//container.googleapis.com/${data.google_container_cluster.game-demo-agones[each.key].id}"
+    }
+  }
+}
+
+resource "google_gke_hub_feature" "mesh" {
+  name     = "servicemesh"
+  project  = var.project
+  location = "global"
+  provider = google-beta
+}
+
 resource "google_compute_firewall" "agones-gameservers" {
   name    = "agones-gameservers"
   project = var.project
@@ -89,3 +108,32 @@ resource "google_compute_firewall" "agones-gameservers" {
   target_tags   = ["game-server"]
   source_ranges = ["0.0.0.0/0"]
 }
+
+# Make Skaffold file for Cloud Deploy into each GKE Cluster
+resource "local_file" "agones-skaffold-file" {
+  content = templatefile(
+    "${path.module}/files/agones/skaffold.yaml.tpl", {
+      gke_clusters = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
+  })
+  filename = "${path.module}/${var.platform_directory}/agones/skaffold.yaml"
+}
+
+# Make cluster specific helm value for LB IP
+resource "local_file" "agones-ae-lb-file" {
+  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
+
+  content = templatefile(
+    "${path.module}/files/agones/agones-install.yaml.tpl", {
+      location = each.value.region
+  })
+  filename = "${path.module}/${var.platform_directory}/agones/${each.key}/kustomization.yaml"
+}
+
+# Create agones-system ns manifest as resource referenced by kustomization.yaml
+resource "local_file" "agones-ns-file" {
+  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
+
+  content  = file("${path.module}/files/agones/agones-system.yaml")
+  filename = "${path.module}/${var.platform_directory}/agones/${each.key}/agones-system.yaml"
+}
+

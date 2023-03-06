@@ -76,17 +76,23 @@ game_gke_autopilot_clusters = {
 
 # GCP APIs to Enable
 gcp_project_services = [
+  "anthos.googleapis.com",
+  "artifactregistry.googleapis.com",
   "clouddeploy.googleapis.com",
   "cloudbuild.googleapis.com",
+  "cloudresourcemanager.googleapis.com",
   "compute.googleapis.com",
   "container.googleapis.com",
   "gameservices.googleapis.com",
-  "artifactregistry.googleapis.com",
+  "gkehub.googleapis.com",
+  "meshca.googleapis.com",
+  "meshconfig.googleapis.com",
   "spanner.googleapis.com",
   "secretmanager.googleapis.com",
   "servicenetworking.googleapis.com",
   "servicecontrol.googleapis.com",
   "run.googleapis.com",
+  "orgpolicy.googleapis.com",
   "redis.googleapis.com",
   "run.googleapis.com",
   "iap.googleapis.com"
@@ -131,12 +137,3 @@ app_service_account_config = {
 
 # Agones GKE Service Account Name
 k8s_service_account_id = "k8s-service-account"
-
-# Agones Allocation Endpoint Config Values
-allocation_endpoint = {
-  name             = "agones-allocation-endpoint"
-  proxy_image      = "us-docker.pkg.dev/agones-images/examples/allocation-endpoint-proxy:0.3"
-  weight           = 100
-  namespace        = "default"
-  agones_namespace = "agones-system"
-}

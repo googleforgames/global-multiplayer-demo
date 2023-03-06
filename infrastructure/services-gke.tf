@@ -56,7 +56,6 @@ data "google_iam_policy" "workload-id-policy" {
     role = "roles/iam.workloadIdentityUser"
     members = [
       "serviceAccount:${var.project}.svc.id.goog[default/${var.k8s_service_account_id}]",
-      "serviceAccount:${var.project}.svc.id.goog[${var.allocation_endpoint.agones_namespace}/agones-allocator]",
       "serviceAccount:${var.project}.svc.id.goog[default/ping-discovery]",
       "serviceAccount:${var.project}.svc.id.goog[default/profile]"
     ]
@@ -142,4 +141,15 @@ resource "local_file" "services-frontend-config-map" {
       jwt_key         = var.frontend-service.jwt_key
   })
   filename = "${path.module}/${var.services_directory}/frontend/config.yaml"
+}
+
+resource "google_gke_hub_membership" "services-gke-membership" {
+  provider      = google-beta
+  project       = var.project
+  membership_id = "${var.services_gke_config.cluster_name}-membership"
+  endpoint {
+    gke_cluster {
+      resource_link = "//container.googleapis.com/${google_container_cluster.services-gke.id}"
+    }
+  }
 }
