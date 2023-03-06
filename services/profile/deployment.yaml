@@ -17,7 +17,7 @@ kind: Service
 metadata:
   name: profile
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: profile
   ports:

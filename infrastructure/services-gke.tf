@@ -118,29 +118,28 @@ resource "local_file" "services-ping-service-account" {
 }
 
 #
-# OAuth Credentials for the Frontend Service
+# Frontend Service
 #
 
-resource "google_iap_brand" "project_brand" {
-  support_email     = "agones-discuss@googlegroups.com"
-  application_title = "Global Game Demo"
-  project           = var.project
+resource "google_compute_address" "frontend-service" {
+  project  = var.project
+  provider = google-beta # so we can do labels
 
-  depends_on = [google_project_service.project]
+  region = var.services_gke_config.location
+  name   = "frontend-service"
+
+  labels = {
+    "environment" = var.resource_env_label
+  }
 }
 
-resource "google_iap_client" "project_client" {
-  display_name = "Global Game Client"
-  brand        = google_iap_brand.project_brand.name
-}
-
-# Make the environment configmap for the front service
 resource "local_file" "services-frontend-config-map" {
   content = templatefile(
-    "${path.module}/files/services/frontend-configmap.yaml.tpl", {
-      client_id     = google_iap_client.project_client.client_id
-      client_secret = google_iap_client.project_client.secret
-      jwt_key       = var.frontend-service.jwt_key
+    "${path.module}/files/services/frontend-config.yaml.tpl", {
+      service_address = google_compute_address.frontend-service.address
+      client_id       = var.frontend-service.client_id
+      client_secret   = var.frontend-service.client_secret
+      jwt_key         = var.frontend-service.jwt_key
   })
-  filename = "${path.module}/${var.services_directory}/frontend/configmap.yaml"
+  filename = "${path.module}/${var.services_directory}/frontend/config.yaml"
 }

@@ -17,7 +17,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -63,7 +63,9 @@ func main() {
 	// UI
 	myApp = app.New()
 	myWindow = myApp.NewWindow("Google for Games Launcher")
+	myWindow.SetFixedSize(true)
 	myWindow.Resize(fyne.NewSize(320, 260))
+	myWindow.CenterOnScreen()
 
 	image := canvas.NewImageFromFile("assets/header.png")
 	image.FillMode = canvas.ImageFillContain
@@ -180,17 +182,14 @@ func getPlayerName() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	if response.StatusCode != 200 {
-		log.Fatal("Unable to fetch user information. Expired token?")
-	}
-
 	defer response.Body.Close()
-	// Use response.Body to get user information.
-
-	data, err := ioutil.ReadAll(response.Body)
+	data, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if response.StatusCode != 200 {
+		log.Fatalf("Unable to fetch user information. Expired token?: %s", data)
 	}
 
 	var result map[string]interface{}
