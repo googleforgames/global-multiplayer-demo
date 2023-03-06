@@ -17,7 +17,6 @@
 
 project            = "PROJECT_ID"
 resource_env_label = "demo-global-game"
-apply_org_policies = false
 
 # Cloud Deploy Configuration
 platform_directory = "../platform" # Relative to Terraform directory
@@ -88,7 +87,6 @@ gcp_project_services = [
   "servicenetworking.googleapis.com",
   "servicecontrol.googleapis.com",
   "run.googleapis.com",
-  "orgpolicy.googleapis.com",
   "redis.googleapis.com",
   "run.googleapis.com",
   "iap.googleapis.com"
