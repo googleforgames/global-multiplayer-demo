@@ -15,6 +15,15 @@
 serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT_ID}.iam.gserviceaccount.com
 steps:
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: bash
+    args:
+    - '-c'
+    - |
+        MEMBERSHIPS=$(gcloud container fleet memberships list --format="value(name)" | xargs | sed 's/ /,/g')
+
+        gcloud container fleet mesh update --management automatic --memberships $$MEMBERSHIPS
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args:
       [

@@ -86,11 +86,6 @@ experimenting.
 
 ```shell
 terraform apply
-
-## This cloud build step sets up managed Anthos Service Mesh using the fleet feature API. Unfortunately, there is no
-## terraform support yet, so it's an additional step which must be performed anytime new clusters are provisioned.
-cd $GAME_DEMO_HOME/infrastructure/asm
-gcloud builds submit --config=cloudbuild.yaml
 ```
 
 ### OAuth Authentication
@@ -113,10 +108,8 @@ Since OAuth needs a domain to authenticate against, we'll use [sslip.io](https:/
 
 ### Deploy Agones To Agones GKE Clusters
 
-The Agones deployment is in two steps: The Initial Install and the Allocation Endpoint Patch.
-
 ### Initial Install
-Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy.
+Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy. Cloudbuild also deploys Anthos Service Mesh (ASM) to all clusters using the fleet feature API. Since there is no terraform support for ASM at cluster creation time, this step is performed with Agones deployments so newly added game server clusters are configured with ASM.
 
 ```shell
 cd $GAME_DEMO_HOME/platform/agones/
