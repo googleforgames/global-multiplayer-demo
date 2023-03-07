@@ -1,4 +1,4 @@
-module ping-discovery
+module github.com/googleforgames/global-multiplayer-demo/services/ping-discovery
 
 go 1.19
 
