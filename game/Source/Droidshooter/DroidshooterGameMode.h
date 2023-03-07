@@ -36,6 +36,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAgonesComponent* AgonesSDK;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ApiKey;
 private:
 	TArray<class APlayerStart*> FreePlayerStarts;
 };

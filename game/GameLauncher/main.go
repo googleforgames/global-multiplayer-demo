@@ -154,10 +154,10 @@ func updateUI(playerName string) {
 }
 
 func handlePlay() {
-	params := fmt.Sprintf("-token=%s", myToken)
-
+	params := []string{fmt.Sprintf("-token=%s", myToken), fmt.Sprintf("-frontend_api=%s", iniCfg.Section("").Key("frontend_api").String())}
+	
 	// Get the binary file from the ini
-	cmd := exec.Command(iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
+	cmd := exec.Command(iniCfg.Section(runtime.GOOS).Key("binary").String(), params...)
 	log.Printf("Launching: %s %s", iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
 
 	_, err := cmd.CombinedOutput()
