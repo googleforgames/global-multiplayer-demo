@@ -129,3 +129,9 @@ variable "services_directory" {
   description = "Services Directory for output to Cloud Deploy related files"
 }
 
+### Dedicated Game Server Variables
+
+variable "github_pat" {
+  type        = string
+  description = "A GitHub personal access token (classic) with at least read:packages scope"
+}

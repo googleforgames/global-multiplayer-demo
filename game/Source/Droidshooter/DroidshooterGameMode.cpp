@@ -25,12 +25,14 @@
 
 ADroidshooterGameMode::ADroidshooterGameMode()
 {
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBlueprint(TEXT("/Game/Player/PlayerPawnBlueprint"));
+	// Causes the editor to hang. Loading classname during runtime is much better, check respawn function.
+	/*static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBlueprint(TEXT("/Game/Player/DS_PlayerPawnBP.DS_PlayerPawnBP_C"));
 	if (PlayerPawnBlueprint.Class != NULL) {
 		DefaultPawnClass = PlayerPawnBlueprint.Class;
-	}
+	}*/
 
 	AgonesSDK = CreateDefaultSubobject<UAgonesComponent>(TEXT("AgonesSDK"));
+	ApiKey = FWindowsPlatformMisc::GetEnvironmentVariable(*FString("DS_FE_API_KEY"));
 }
 
 void ADroidshooterGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -102,8 +104,15 @@ void ADroidshooterGameMode::Respawn(AController* Controller)
 			std::mt19937 gen(rd()); // seed the generator
 			std::uniform_int_distribution<> distr(-10000, 10000); // define the range
 
+			FString TheClassPath = "Class'/Game/Player/DS_PlayerPawnBP.DS_PlayerPawnBP_C'";
+			const TCHAR* TheClass = *TheClassPath;
+			UClass* PlayerPawnBlueprintClass = LoadObject<UClass>(nullptr, TheClass);
+
+			if (PlayerPawnBlueprintClass == NULL)
+				return;
+
 			FVector Location = FVector(distr(gen), distr(gen), 0);
-			if (ADroidshooterPlayerPawn* Pawn = GetWorld()->SpawnActor<ADroidshooterPlayerPawn>(DefaultPawnClass, Location, FRotator::ZeroRotator)) {
+			if (ADroidshooterPlayerPawn* Pawn = GetWorld()->SpawnActor<ADroidshooterPlayerPawn>(PlayerPawnBlueprintClass, Location, FRotator::ZeroRotator)) {
 				Controller->Possess(Pawn);
 				ADroidshooterPlayerState* PlayerState = Cast< ADroidshooterPlayerState>(Pawn->GetPlayerState());
 

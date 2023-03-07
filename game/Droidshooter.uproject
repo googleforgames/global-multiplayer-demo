@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{5C3B4018-4CD1-8E97-940E-36B7C3CCB0C8}",
+	"EngineAssociation": "{3D778D7F-47CA-B084-BA54-C0848789AF10}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -9,7 +9,8 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
-				"Engine"
+				"Engine",
+				"UMG"
 			]
 		}
 	],
@@ -22,6 +23,5 @@
 			"Enabled": true,
 			"Name": "Agones"
 		}
-
 	]
 }
