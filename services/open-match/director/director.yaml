@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC All Rights Reserved.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: skaffold/v2beta29
-kind: Config
-deploy:
-  kubectl:
-    manifests:
-      - ping-discovery/service-account.yaml
-      - ping-discovery/deployment.yaml
-      - profile/spanner_config.yaml
-      - profile/deployment.yaml
-      - frontend/config.yaml
-      - frontend/deployment.yaml
-      - open-match/director/director.yaml
-      - open-match/matchfunction/matchfunction.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-match-director
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-match-director
+  template:
+    metadata:
+      labels:
+        app: open-match-director
+    spec:
+      containers:
+        - name: open-match-director
+          image: open-match-director
