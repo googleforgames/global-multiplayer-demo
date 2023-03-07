@@ -3,12 +3,28 @@
 This multiplayer demo is a cloud first implementation of a global scale, realtime multiplayer game utilising
 dedicated game servers, utlising both Google Cloud's products and open source gaming solutions.
 
+## OAuth Authentication
+
+We need to manually set up the OAuth authentication, as unfortunately this cannot be automated.
+
+The details, such as name and email address of both of these steps don't matter, so feel free to use something
+arbitrary for any part not specified.
+
+Open the [Google OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent) for your project,
+and create an "External" App, and allowlist any users you wish to be able to login to your deployment of this game.
+
+Open the [Google Credentials](https://console.cloud.google.com/apis/credentials) screen for your project, and click 
+"+ CREATE CREDENTIALS", and create an "OAuth Client ID" of type "Web Application".
+
+Leave this page open, as we'll need the Client ID and Client secret of the ID you just created shortly. 
+
 ## Infrastructure and Services
 
 ### Prerequisites
 
 To run the Game Demo install, you will need the following applications installed on your workstation:
 
+* A Google Cloud Project
 * [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
 * [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
 
@@ -28,7 +44,6 @@ gcloud config set project ${PROJECT_ID}
 and then authenticate to generate [Application Default Credentials (ADC)](https://cloud.google.com/docs/authentication/application-default-credentials) that can be leveraged by Terraform
 ```shell
 gcloud auth application-default login
-gcloud auth application-default set-quota-project ${PROJECT_ID}
 ```
 
 Clone this directory locally and, we'll also set an environment variable to it's root directory, for easy navigation:
@@ -57,12 +72,22 @@ NOTE: The GCS bucket does not have to exist in the same Google project as the Gl
 cd $GAME_DEMO_HOME/infrastructure
 terraform init
 cp terraform.tfvars.sample terraform.tfvars
-
-# Edit terraform.tfvars as needed, especially <PROJECT_ID>.
-# Setting `apply_org_policies = true` will also apply any neccessary GCP Org Policies as part of the provioning process.
 ```
 
+You will need to now edit `terraform.tfvars`
+
+* Update <PROJECT_ID> with the ID of your Google Cloud Project, 
+* Updated <CLIENT_ID> and <CLIENT_SECRET> with the Client ID and Client secret created in the above step.
+
+You can edit other variables in this file, but we recommend leaving the default values for your first run before 
+experimenting.
+
 ### Provision the infrastructure.
+
+> **Warning**  
+> This demo in its default state creates multiple Kubernetes clusters around the world, 
+> Spanner instances, and more. Running this demo for an extended amount of time may incur significant costs.
+
 
 ```shell
 terraform apply
@@ -70,46 +95,44 @@ terraform apply
 
 ### OAuth Authentication
 
-Terraform is only able to make an [Internal Oauth consent screen](https://support.google.com/cloud/answer/10311615),
-which means that only users from your Google organisation will be able to authenticate against the project when 
-using logging in via the Game Launcher.
+We now need to update our OAuth authentication configuration with the address of our authenticating frontend API.
 
-You can manually move the consent screen to External (Testing), such that you can allow list accounts outside your 
-organisation to be able to authenticate against the project, but that has to be a manual step through the
-[OAuth Consent screen](https://console.cloud.google.com/apis/credentials/consent).
-
-### Deploy Agones To Agones GKE Clusters
-
-The Agones deployment is in two steps: The Initial Install and the Allocation Endpoint Patch.
-
-
-### Initial Install
-Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Agones using Cloud Deploy.
+Let's grab the IP for that API, by running:
 
 ```shell
-cd $GAME_DEMO_HOME/platform/agones/
+gcloud compute addresses list --filter=name=frontend-service --format="value(address)"
+```
+
+This should give you back an IP, such as `35.202.107.204`.
+
+1. Click "+ ADD URI" under "Authorised JavaScript origins" and add "http://[IP_ADDRESS].sslip.io".
+2. Click "+ ADD URI" under "Authorised redirect URIs" and add "http://[IP_ADDRESS].sslip.io/callback"
+3. Click "Save".
+
+Since OAuth needs a domain to authenticate against, we'll use [sslip.io](https://sslip.io) for development purposes. 
+
+### Deploy Platform Components
+Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy
+
+- Anthos Service Mesh (ASM) to all clusters using the fleet feature API
+- Agones using Cloud Deploy
+- Open Match using Cloud Deploy
+
+```shell
+cd $GAME_DEMO_HOME/platform/
 gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
-Navigate to the [agones-deploy-pipeline](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/agones-deploy-pipeline) delivery pipeline to review the rollout status. Cloudbuild will create a Cloud Deploy release which automatically deploys Agones to the first game server cluster. Agones can be deployed to subsequent clusters by clicking on the `promote` button within the Pipeline visualization or by running the following gcloud command:
+Navigate to the [agones-deploy-pipeline](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/agones-deploy-pipeline) delivery pipeline to review the rollout status. Cloudbuild will create a Cloud Deploy release which automatically deploys Agones the first game server cluster. Agones can be deployed to subsequent clusters by clicking on the `promote` button within the Pipeline visualization or by running the following gcloud command:
 
 ```shell
 # Replace RELEASE_NAME with the unique build name
 gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=agones-deploy-pipeline --region=us-central1`
 ```
 
-Continue the promotion until Agones has been deployed to all clusters. 
+Continue the promotion until Agones has been deployed to all clusters. You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Worloads panel in the GCP Console.
 
-You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Worloads panel in the GCP Console. Once the Worloads have been marked as OK, you can proceed to apply the Allocation Endpoint Patch.
-
-### Deploy Open Match to Services GKE Cluster
-
-Replace the` _RELEASE_NAME` substitution with a unique build name. Cloudbuild will deploy Open Match using Cloud Deploy.
-
-```shell
-cd $GAME_DEMO_HOME/platform/open-match/
-gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
-```
+Open Match rollout status can be viewed by navigating to the [global-game-open-match](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/global-game-open-match) delivery pipeline. Since open match is deployed onto a single services GKE cluster, deployments are automatically rolled out with no need for manual promotion.
 
 ## Install Game Backend Services
 
@@ -136,6 +159,25 @@ To build the Game Client for your host machine, you will need:
 Open the [`game`](./game) folder in Unreal Engine. Once finished opening, you can run the game client directly within 
 the editor (Hit the ▶️ button), or we can package the project via: Platforms > {your host platform} > Package Project,
 and execute the resultant package.
+
+## Run the Game Launcher
+
+{TODO: still requires more details}
+
+```shell
+cd $GAME_DEMO_HOME/game/GameLauncher
+
+# Grab the IP Address again of our frontend service, so we can use it
+gcloud compute addresses list --filter=name=frontend-service --format="value(address)"
+```
+
+Edit the app.ini, and replace the `frontend_api` value with http://[IP_ADDRESS].sslip.io
+
+The run:
+
+```shell
+go run main.go
+```
 
 ### Troubleshooting
 

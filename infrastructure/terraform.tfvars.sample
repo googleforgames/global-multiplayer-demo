@@ -18,8 +18,6 @@
 project            = "PROJECT_ID"
 resource_env_label = "demo-global-game"
 
-apply_org_policies = false
-
 # Cloud Deploy Configuration
 platform_directory = "../platform" # Relative to Terraform directory
 services_directory = "../services" # Relative to Terraform directory
@@ -28,9 +26,7 @@ clouddeploy_config = {
 }
 
 # VPC Regions & associated subnet CIDRs Values
-
 vpc_name = "global-game-vpc"
-
 vpc_regions = {
   "us-central1" : {
     "vpc_subnet_cidr" : "10.1.0.0/16"
@@ -44,8 +40,6 @@ vpc_regions = {
 }
 
 # Game GKE Cluster Config Values
-### NOTE: If you change the GKE Clusters, please make sure to change `cloudbuild.yaml` in 
-### `platform/agones/install` as they are not dynamically created.
 game_gke_standard_clusters = {
   "global-game-us-central1-01" : {
     "short_name" : "us-central1-01",
@@ -82,12 +76,17 @@ game_gke_autopilot_clusters = {
 
 # GCP APIs to Enable
 gcp_project_services = [
+  "anthos.googleapis.com",
+  "artifactregistry.googleapis.com",
   "clouddeploy.googleapis.com",
   "cloudbuild.googleapis.com",
+  "cloudresourcemanager.googleapis.com",
   "compute.googleapis.com",
   "container.googleapis.com",
   "gameservices.googleapis.com",
-  "artifactregistry.googleapis.com",
+  "gkehub.googleapis.com",
+  "meshca.googleapis.com",
+  "meshconfig.googleapis.com",
   "spanner.googleapis.com",
   "secretmanager.googleapis.com",
   "servicenetworking.googleapis.com",
@@ -118,7 +117,9 @@ services_gke_config = {
 
 # Frontend Service Config Values
 frontend-service = {
-  jwt_key = "r@nd0m$"
+  client_id     = "CLIENT_ID"
+  client_secret = "CLIENT_SECRET"
+  jwt_key       = "r@nd0m$"
 }
 
 # Artifact Registry variables
@@ -136,12 +137,3 @@ app_service_account_config = {
 
 # Agones GKE Service Account Name
 k8s_service_account_id = "k8s-service-account"
-
-# Agones Allocation Endpoint Config Values
-allocation_endpoint = {
-  name             = "agones-allocation-endpoint"
-  proxy_image      = "us-docker.pkg.dev/agones-images/examples/allocation-endpoint-proxy:0.3"
-  weight           = 100
-  namespace        = "default"
-  agones_namespace = "agones-system"
-}

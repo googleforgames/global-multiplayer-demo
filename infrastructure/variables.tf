@@ -12,13 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-### Organziation Variables ###
-
-variable "apply_org_policies" {
-  type        = bool
-  description = "Boolean used to determine whether GCP Org Policies are applied"
-}
-
 ### Project Variables ###
 
 variable "project" {
@@ -119,22 +112,11 @@ variable "k8s_service_account_id" {
 
 variable "frontend-service" {
   type = object({
-    jwt_key = string
+    client_id     = string
+    client_secret = string
+    jwt_key       = string
   })
   description = "Configuration for the frontend service that provides oAuth authentications"
-}
-
-### Allocation Endpoint Variables ###
-
-variable "allocation_endpoint" {
-  type = object({
-    name             = string
-    proxy_image      = string
-    weight           = number
-    namespace        = string
-    agones_namespace = string
-  })
-  description = "Allocation Endpoint Configuration Variables"
 }
 
 variable "platform_directory" {

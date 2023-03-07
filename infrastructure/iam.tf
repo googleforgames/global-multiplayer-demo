@@ -38,7 +38,8 @@ resource "google_project_iam_member" "cloudbuild-sa-cloudbuild-roles" {
     "roles/cloudbuild.builds.builder",
     "roles/container.admin",
     "roles/storage.admin",
-    "roles/iam.serviceAccountUser"
+    "roles/iam.serviceAccountUser",
+    "roles/gkehub.editor"
   ])
   role   = each.key
   member = "serviceAccount:${google_service_account.cloudbuild-sa.email}"

@@ -14,7 +14,10 @@
 
 provider "google" {
   project = var.project
-  user_project_override = true
+}
+
+provider "google-beta" {
+  project = var.project
 }
 
 data "google_client_config" "provider" {}

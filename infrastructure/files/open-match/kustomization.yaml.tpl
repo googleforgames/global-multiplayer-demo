@@ -41,3 +41,4 @@ helmCharts:
 
 resources:
   - open-match.yaml
+  - agones-allocator-vs.yaml
