@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-match-director
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-match-director
+  template:
+    metadata:
+      labels:
+        app: open-match-director
+    spec:
+      containers:
+        - name: open-match-director
+          image: open-match-director

@@ -23,14 +23,27 @@ steps:
     id: ping-discovery
     args: ["build", ".", "-t", "${_PING_IMAGE}"]
     dir: ping-discovery
+    waitFor: ['-']
   - name: gcr.io/cloud-builders/docker
     id: profile
     args: ["build", ".", "-t", "${_PROFILE_IMAGE}"]
     dir: profile
+    waitFor: ['-']
   - name: gcr.io/cloud-builders/docker
     id: frontend
     args: ["build", ".", "-t", "${_FRONTEND_IMAGE}"]
     dir: frontend
+    waitFor: ['-']
+  - name: gcr.io/cloud-builders/docker
+    id: open-match-director
+    args: ["build", ".", "-t", "${_OPEN_MATCH_DIRECTOR_IMAGE}"]
+    dir: open-match/director
+    waitFor: ['-']
+  - name: gcr.io/cloud-builders/docker
+    id: open-match-matchfunction
+    args: ["build", ".", "-t", "${_OPEN_MATCH_MATCHFUNCTION_IMAGE}"]
+    dir: open-match/matchfunction
+    waitFor: ['-']
 
 #
 # Deployment
@@ -45,7 +58,7 @@ steps:
         "--delivery-pipeline", "global-game-services",
         "--skaffold-file", "skaffold.yaml",
         "--skaffold-version", "1.39",
-        "--images", "ping-discovery=${_PING_IMAGE},profile=${_PROFILE_IMAGE},frontend=${_FRONTEND_IMAGE}",
+        "--images", "ping-discovery=${_PING_IMAGE},profile=${_PROFILE_IMAGE},frontend=${_FRONTEND_IMAGE},open-match-director=${_OPEN_MATCH_DIRECTOR_IMAGE},open-match-matchfunction=${_OPEN_MATCH_MATCHFUNCTION_IMAGE}",
         "--region", "us-central1"
       ]
 
@@ -54,10 +67,14 @@ artifacts:
     - ${_REGISTRY}/ping-discovery
     - ${_REGISTRY}/profile
     - ${_REGISTRY}/frontend
+    - ${_REGISTRY}/open-match-director
+    - ${_REGISTRY}/open-match-matchfunction
 substitutions:
   _PING_IMAGE: ${_REGISTRY}/ping-discovery:${BUILD_ID}
   _PROFILE_IMAGE: ${_REGISTRY}/profile:${BUILD_ID}
   _FRONTEND_IMAGE: ${_REGISTRY}/frontend:${BUILD_ID}
+  _OPEN_MATCH_DIRECTOR_IMAGE: ${_REGISTRY}/open-match-director:${BUILD_ID}
+  _OPEN_MATCH_MATCHFUNCTION_IMAGE: ${_REGISTRY}/open-match-matchfunction:${BUILD_ID}
   _REGISTRY: us-docker.pkg.dev/${PROJECT_ID}/global-game-images
   _RELEASE_NAME: rel-01
 options:
