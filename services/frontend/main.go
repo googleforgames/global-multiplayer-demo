@@ -23,7 +23,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/googleforgames/global-multiplayer-demo/services/frontend-api/models"
@@ -229,7 +228,12 @@ func handlePingServers(id string, c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, pingServers)
+		var servers []models.PingServer
+		for _, element := range pingServers {
+			servers = append(servers, element)
+		}
+
+		c.JSON(http.StatusOK, servers)
 		return
 	} else {
 		err := fmt.Errorf("unable to update profile stats, error code: %d", response.StatusCode)
@@ -243,15 +247,11 @@ func handlePingServers(id string, c *gin.Context) {
 // WIP: Handles the play request from the game client
 func handlePlay(id string, c *gin.Context) {
 
-	// Get regions by preferred order
-	preferredRegions := strings.Split(c.Request.FormValue("preferred_regions"), ",")
-	for _, region := range preferredRegions {
-		log.Println(region)
-	}
+	preferredRegion := c.Request.FormValue("preferred_region")
 
 	// TODO #1: Get profile here (from Cloud Spanner via token/id??)
 	// TODO #2: Add profile parameter for finding the server (besides the preferred region)
-	c.JSON(http.StatusOK, models.FindMatchingServer(preferredRegions))
+	c.JSON(http.StatusOK, models.FindMatchingServer(preferredRegion))
 }
 
 // Function responsible for checking if profile is not yet created in our own profile service
