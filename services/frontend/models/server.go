@@ -36,7 +36,7 @@ func FindMatchingServer(region string) OMServerResponse {
 	log.Printf("Looking for a server in the %s region.\n", region)
 
 	IP := "127.0.0.1"
-	Port := 6969
+	Port := 7777
 
 	return OMServerResponse{
 		IP:   IP,

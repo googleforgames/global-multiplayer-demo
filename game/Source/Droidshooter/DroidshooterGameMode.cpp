@@ -32,6 +32,7 @@ ADroidshooterGameMode::ADroidshooterGameMode()
 	}*/
 
 	AgonesSDK = CreateDefaultSubobject<UAgonesComponent>(TEXT("AgonesSDK"));
+	ApiKey = FWindowsPlatformMisc::GetEnvironmentVariable(*FString("DS_FE_API_KEY"));
 }
 
 void ADroidshooterGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
