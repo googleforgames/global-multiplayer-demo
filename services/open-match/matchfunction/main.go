@@ -19,9 +19,7 @@
 // matchmaking logic in this function based on your game's requirements.
 package main
 
-import (
-	"open-match.dev/open-match/tutorials/matchmaker101/matchfunction/mmf"
-)
+import "github.com/googleforgames/global-multiplayer-demo/services/open-match/matchfunction/mmf"
 
 // This tutorial implenents a basic Match Function that is hosted in the below
 // configured port. You can also configure the Open Match QueryService endpoint
