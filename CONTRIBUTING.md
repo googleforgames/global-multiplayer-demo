@@ -28,8 +28,6 @@ Participation in this project comes under the [Contributor Covenant Code of Cond
 - For large bodies of work, we recommend creating an issue outlining the feature that you wish to build, and describing how it will be implemented. This gives a chance for review to happen early, and ensures no wasted effort occurs.
 - It is strongly recommended that new API design follows the [Google AIPs](https://google.aip.dev/) design guidelines.  
 - All submissions, including submissions by project members, will require review before being merged.
-- Once review has occurred, please rebase your PR down to a single commit. This will ensure a nice clean Git history.
-- If you are unable to access build errors from your PR, make sure that you have joined the [agones-discuss mailing list](https://groups.google.com/forum/#!forum/agones-discuss).
 - Please follow the code formatting instructions below.
 
 ## Formatting
@@ -40,8 +38,5 @@ When submitting pull requests, make sure to do the following:
 - Format all Go code with [gofmt](https://golang.org/cmd/gofmt/). Many people
   use [goimports](https://pkg.go.dev/golang.org/x/tools/cmd/goimports) which
   fixes import statements and formats code in the same style of `gofmt`.
-- C++ code should follow the [Google C++ Style
-  Guide](https://google.github.io/styleguide/cppguide.html), which can be
-  applied automatically using the
 - Remove trailing whitespace. Many editors will do this automatically.
 - Ensure any new files have [a trailing newline](https://stackoverflow.com/questions/5813311/no-newline-at-end-of-file)
