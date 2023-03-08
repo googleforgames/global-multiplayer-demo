@@ -21,16 +21,11 @@ Participation in this project comes under the [Contributor Covenant Code of Cond
 
 ## Submitting code via Pull Requests
 
-*Thank you* for considering submitting code to Agones!
+*Thank you* for considering submitting code to the Global Scale Demo!
 
 - We follow the [GitHub Pull Request Model](https://help.github.com/articles/about-pull-requests/) for
   all contributions.
-- For large bodies of work, we recommend creating an issue and labelling it
-  "[kind/design](https://github.com/googleprivate/agones/issues?q=is%3Aissue+is%3Aopen+label%3Akind%2Fdesign)"
-  outlining the feature that you wish to build, and describing how it will be implemented. This gives a chance
-  for review to happen early, and ensures no wasted effort occurs.
-- For new features, documentation *must* be included. Review the [Documentation Editing and Contribution](https://agones.dev/site/docs/contribute/)
-  guide for details.
+- For large bodies of work, we recommend creating an issue outlining the feature that you wish to build, and describing how it will be implemented. This gives a chance for review to happen early, and ensures no wasted effort occurs.
 - It is strongly recommended that new API design follows the [Google AIPs](https://google.aip.dev/) design guidelines.  
 - All submissions, including submissions by project members, will require review before being merged.
 - Once review has occurred, please rebase your PR down to a single commit. This will ensure a nice clean Git history.
@@ -50,14 +45,3 @@ When submitting pull requests, make sure to do the following:
   applied automatically using the
 - Remove trailing whitespace. Many editors will do this automatically.
 - Ensure any new files have [a trailing newline](https://stackoverflow.com/questions/5813311/no-newline-at-end-of-file)
-
-## Feature Stages
-
-Often, new features will need to go through experimental stages so that we can gather feedback and adjust as necessary.
-
-You can see this project's [feature stage documentation](https://agones.dev/site/docs/guides/feature-stages/) on the Agones
-website.
-
-If you are working on a new feature, you may need to take feature stages into account. This should be discussed on a
- design ticket prior to commencement of work. 
-
