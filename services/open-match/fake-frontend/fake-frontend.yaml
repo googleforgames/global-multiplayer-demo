@@ -1,0 +1,52 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-match-fake-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-match-fake-frontend
+  template:
+    metadata:
+      labels:
+        app: open-match-fake-frontend
+    spec:
+      containers:
+        - name: open-match-fake-frontend
+          image: open-match-fake-frontend
+          env:
+            - name: FAKE_FRONTEND_PERIOD
+              valueFrom:
+                configMapKeyRef:
+                  name: open-match-fake-frontend
+                  key: period
+            - name: FAKE_FRONTEND_TICKETS_PER_PERIOD
+              valueFrom:
+                configMapKeyRef:
+                  name: open-match-fake-frontend
+                  key: tickets_per_period
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: open-match-fake-frontend
+data:
+  # fake-frontend will create `tickets_per_period` fake tickets every `period` seconds.
+  # fake-frontend is disabled if either `period` or `tickets_per_period` is 0 or can't be parsed.
+  period: "0"  
+  tickets_per_period: "20"
