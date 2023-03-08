@@ -12,43 +12,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: skaffold/v2beta29
+apiVersion: skaffold/v4beta1
 kind: Config
-deploy:
+manifests:
   kustomize:
     paths:
-      - "./path_to_cluster_specific_skaffold"
-    buildArgs: ["--enable-helm"]
+      - ./path_to_cluster_specific_skaffold
+    buildArgs:
+      - --enable-helm
+deploy:
+  kubectl:
     flags:
-      apply: ['--server-side'] # Avoid the "Too long: must have at most 262144 bytes" problem
+      apply:
+        - --server-side # Avoid the "Too long: must have at most 262144 bytes" problem
+  tolerateFailuresUntilDeadline: true # Fixes startup timeouts
 profiles:
-- name: global-game-asia-east1-01
-  patches:
-  - op: replace
-    path: /deploy/kustomize/paths/0
-    value: "./global-game-asia-east1-01"
-- name: global-game-asia-east1-02
-  patches:
-  - op: replace
-    path: /deploy/kustomize/paths/0
-    value: "./global-game-asia-east1-02"
-- name: global-game-eu-west1-01
-  patches:
-  - op: replace
-    path: /deploy/kustomize/paths/0
-    value: "./global-game-eu-west1-01"
-- name: global-game-eu-west1-02
-  patches:
-  - op: replace
-    path: /deploy/kustomize/paths/0
-    value: "./global-game-eu-west1-02"
-- name: global-game-us-central1-01
-  patches:
-  - op: replace
-    path: /deploy/kustomize/paths/0
-    value: "./global-game-us-central1-01"
-- name: global-game-us-central1-02
-  patches:
-  - op: replace
-    path: /deploy/kustomize/paths/0
-    value: "./global-game-us-central1-02"
+  - name: global-game-asia-east1-01
+    patches:
+      - op: replace
+        path: /manifests/kustomize/paths/0
+        value: "./global-game-asia-east1-01"
+  - name: global-game-asia-east1-02
+    patches:
+      - op: replace
+        path: /manifests/kustomize/paths/0
+        value: "./global-game-asia-east1-02"
+  - name: global-game-eu-west1-01
+    patches:
+      - op: replace
+        path: /manifests/kustomize/paths/0
+        value: "./global-game-eu-west1-01"
+  - name: global-game-eu-west1-02
+    patches:
+      - op: replace
+        path: /manifests/kustomize/paths/0
+        value: "./global-game-eu-west1-02"
+  - name: global-game-us-central1-01
+    patches:
+      - op: replace
+        path: /manifests/kustomize/paths/0
+        value: "./global-game-us-central1-01"
+  - name: global-game-us-central1-02
+    patches:
+      - op: replace
+        path: /manifests/kustomize/paths/0
+        value: "./global-game-us-central1-02"
