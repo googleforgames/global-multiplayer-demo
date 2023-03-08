@@ -12,13 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-terraform {
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "4.56.0"
-    }
-  }
-
-  required_version = ">= 1.3"
-}
+apiVersion: "agones.dev/v1"
+kind: Fleet
+metadata:
+  name: droidshooter
+spec:
+  replicas: 3
+  template:
+    spec:
+      ports:
+        - name: default
+          containerPort: 7777
+      health:
+        initialDelaySeconds: 30
+        periodSeconds: 60
+      template:
+        spec:
+          containers:
+            - name: droidshooter
+              image: us-docker.pkg.dev/mark-world-scale/global-game-images/droidshooter-server:f3a6bb7e-d11d-489c-b2eb-23f9a5b8af1b

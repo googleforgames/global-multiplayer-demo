@@ -60,13 +60,6 @@ resource "google_clouddeploy_target" "agones-gke" {
   location = var.clouddeploy_config.location
   name     = "${each.value.short_name}-agones-deploy"
 
-
-  annotations = {
-    my_first_annotation = "agones-annotation-1"
-
-    my_second_annotation = "agones-annotation-2"
-  }
-
   description = "Global Game: Agones Deploy Target - ${each.key}"
 
   gke {
@@ -84,15 +77,8 @@ resource "google_clouddeploy_target" "agones-gke" {
 }
 
 resource "google_clouddeploy_delivery_pipeline" "agones-gke" {
-  location = var.clouddeploy_config.location
-  name     = "agones-deploy-pipeline"
-
-  annotations = {
-    my_first_annotation = "agones-annotation-1"
-
-    my_second_annotation = "agones-annotation-2"
-  }
-
+  location    = var.clouddeploy_config.location
+  name        = "agones-deploy-pipeline"
   description = "Global Game: Agones Deploy Pipeline"
 
   labels = {
@@ -111,6 +97,61 @@ resource "google_clouddeploy_delivery_pipeline" "agones-gke" {
     }
   }
 }
+
+##### Game Server Pipeline
+
+# Sort as a map of regions, with a list of Cloud Deploy targets within them.
+# Amusingly, it comes out in exactly the order we want, so no need to get extra fancy.
+locals {
+  targets_by_region = {
+    for name, cluster in merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters) : cluster.region =>
+    google_clouddeploy_target.agones-gke[name].target_id...
+  }
+}
+
+resource "google_clouddeploy_target" "agones_regional_targets" {
+  for_each = local.targets_by_region
+  provider = google-beta
+  name     = each.key
+
+  location    = var.clouddeploy_config.location
+  description = "Global Game: Agones Game Servers - ${each.key}"
+  labels = {
+    "environment" = var.resource_env_label
+  }
+
+  project          = var.project
+  require_approval = false
+
+  multi_target {
+    target_ids = local.targets_by_region[each.key]
+  }
+
+  depends_on = [google_project_service.project]
+}
+
+resource "google_clouddeploy_delivery_pipeline" "gameservers_gke" {
+  location    = var.clouddeploy_config.location
+  name        = "global-game-servers"
+  description = "Global Game: Agones GameServer Deploy Pipeline"
+  provider    = google-beta
+
+  labels = {
+    "environment" = var.resource_env_label
+  }
+
+  project = var.project
+
+  serial_pipeline {
+    dynamic "stages" {
+      for_each = local.targets_by_region
+      content {
+        target_id = google_clouddeploy_target.agones_regional_targets[stages.key].target_id
+      }
+    }
+  }
+}
+
 
 ##### Open Match Pipelines #####
 
