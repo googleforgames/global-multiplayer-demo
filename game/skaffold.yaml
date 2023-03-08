@@ -12,22 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: "agones.dev/v1"
-kind: Fleet
+apiVersion: skaffold/v4beta1
+kind: Config
 metadata:
-  name: droidshooter
-spec:
-  replicas: 3
-  template:
-    spec:
-      ports:
-        - name: default
-          containerPort: 7777
-      health:
-        initialDelaySeconds: 30
-        periodSeconds: 60
-      template:
-        spec:
-          containers:
-            - name: droidshooter
-              image: droidshooter-server
+  name: game
+manifests:
+  rawYaml:
+    - fleet.yaml

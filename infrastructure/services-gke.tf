@@ -152,4 +152,6 @@ resource "google_gke_hub_membership" "services-gke-membership" {
       resource_link = "//container.googleapis.com/${google_container_cluster.services-gke.id}"
     }
   }
+
+  depends_on = [google_project_service.project]
 }
