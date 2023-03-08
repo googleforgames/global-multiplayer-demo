@@ -32,3 +32,7 @@ platform/agones/skaffold.yaml
 **/global-game-*/kustomization.yaml
 **/global-game-*/agones-system.yaml
 platform/open-match/base/kustomization.yaml
+
+# Ignore go.work, go.work.sum (results of `go work`)
+go.work
+go.work.sum
