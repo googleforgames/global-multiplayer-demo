@@ -39,6 +39,9 @@ const (
 	functionPort     int32 = 50502
 )
 
+// TODO: This should be an environment variable.
+var regions = []string{"us-central1", "europe-west1", "asia-east1"}
+
 func main() {
 	// Connect to Open Match Backend.
 	conn, err := grpc.Dial(omBackendEndpoint, grpc.WithInsecure())
@@ -139,4 +142,17 @@ func assign(be pb.BackendServiceClient, matches []*pb.Match) error {
 	}
 
 	return nil
+}
+
+func generateProfiles() []*pb.MatchProfile {
+	var profiles []*pb.MatchProfile
+	for _, region := range regions {
+		profiles = append(profiles, &pb.MatchProfile{
+			Name: region,
+			Pools: []*pb.Pool{{
+				Name: region,
+			}},
+		})
+	}
+	return profiles
 }
