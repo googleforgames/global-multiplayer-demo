@@ -136,13 +136,15 @@ cd $GAME_DEMO_HOME/platform/
 gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
-Navigate to the [agones-deploy-pipeline](https://console.cloud.google.
-com/deploy/delivery-pipelines/us-central1/agones-deploy-pipeline) delivery pipeline to review the rollout status. 
-Cloud Build will create a Cloud Deploy release which automatically deploys Agones the first game server cluster. Agones can be deployed to subsequent clusters by clicking on the `promote` button within the Pipeline visualization or by running the following gcloud command:
+Navigate to the 
+[agones-deploy-pipeline](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/agones-deploy-pipeline)
+delivery pipeline to review the rollout status. Cloud Build will create a Cloud Deploy release which automatically 
+deploys Agones the first game server cluster. Agones can be deployed to subsequent clusters by clicking on the 
+`promote` button within the Pipeline visualization or by running the following gcloud command:
 
 ```shell
 # Replace RELEASE_NAME with the unique build name
-gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=agones-deploy-pipeline --region=us-central1`
+gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=agones-deploy-pipeline --region=us-central1
 ```
 
 Continue the promotion until Agones has been deployed to all clusters. You can monitor the status of the deployment 
@@ -168,17 +170,33 @@ This will:
 
 ## Dedicated Game Server
 
-To build the Unreal dedicated game server image, run the following command: 
+To build the Unreal dedicated game server image, run the following command, and replace the` _RELEASE_NAME` 
+substitution with a unique build name.
 
 ```shell
 cd $GAME_DEMO_HOME/game
-gcloud builds submit --config=cloudbuild.yaml
+gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
-This will:
+Cloud Build will deploy:
 
 * Build the image for the dedicated game server.
-* Store those image in [Artifact Registry](https://cloud.google.com/artifact-registry).
+* Store the image in [Artifact Registry](https://cloud.google.com/artifact-registry).
+* Start the staged rollout of the Agones Fleet to each regional set of clusters.
+
+> This will take ~20 minutes or so, so feel free to grab a cup of ☕
+
+Navigate to the
+[agones-deploy-pipeline](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/global-game-agones-gameservers)
+delivery pipeline to review the rollout status. Cloud Build will create a Cloud Deploy release which automatically
+deploys the game server Agones Fleet to the `asia-east1` region first.
+The Fleet can be deployed to the next region in the queue via pressing the
+`promote` button within the Pipeline visualization or by running the following gcloud command:
+
+```shell
+# Replace RELEASE_NAME with the unique build name
+gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=global-game-agones-gameservers --region=us-central1
+```
 
 ## Game Client
 

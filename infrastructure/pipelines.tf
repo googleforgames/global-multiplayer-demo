@@ -132,7 +132,7 @@ resource "google_clouddeploy_target" "agones_regional_targets" {
 
 resource "google_clouddeploy_delivery_pipeline" "gameservers_gke" {
   location    = var.clouddeploy_config.location
-  name        = "global-game-servers"
+  name        = "global-game-agones-gameservers"
   description = "Global Game: Agones GameServer Deploy Pipeline"
   provider    = google-beta
 
