@@ -64,6 +64,8 @@ spec:
     - destination:
         host: agones-allocator.agones-system.svc.cluster.local
         subset: asia-east1
+  - redirect:
+      uri: /missing/region/invalid # If no region is matched, then go to invalid endpoint to surface the error
 
 ---
 
