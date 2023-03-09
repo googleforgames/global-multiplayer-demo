@@ -59,9 +59,9 @@ resource "google_project_iam_member" "spanner-sa" {
 resource "local_file" "liquibase-properties" {
   content = templatefile(
     "${path.module}/files/spanner/liquibase.properties.tpl", {
-      project_id    = var.project
-      instance_id   = google_spanner_instance.global-game-spanner.name
-      database_id   = google_spanner_database.spanner-database.name
+      project_id  = var.project
+      instance_id = google_spanner_instance.global-game-spanner.name
+      database_id = google_spanner_database.spanner-database.name
   })
   filename = "${path.module}/${var.schema_directory}/liquibase.properties"
 }

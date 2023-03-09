@@ -15,46 +15,21 @@
 serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT_ID}.iam.gserviceaccount.com
 steps:
 
-#
-# Building of schema image
-#
+  #
+  # Building of schema image
+  #
 
   - name: gcr.io/cloud-builders/docker
     id: schema image build
-    args: ["build", ".", "-t", "${_SCHEMA_IMAGE}"]
+    args: [ "build", ".", "-t", "spanner-migration" ]
 
-  - name: gcr.io/cloud-builders/docker
-    id: schema image push
-    args: ["push", "${_SCHEMA_IMAGE}"]
+  #
+  # Running migration
+  #
 
-#
-# Create schema job
-#
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
-    id: schema migrate create
-    entrypoint: gcloud
-    args: ["beta", "run", "jobs", "create",  "${_RUN_JOB}",
-           "--image", "${_SCHEMA_IMAGE}", "--region", "${_REGION}"]
-
-#
-# Running schema migration
-#
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+  - name: spanner-migration
     id: schema migrate execute
-    entrypoint: gcloud
-    args: ["beta", "run", "jobs", "execute",  "${_RUN_JOB}",
-           "--region", "${_REGION}", "--wait"]
-
-# artifacts:
-#   images:
-#     - ${_REGISTRY}/schema
-substitutions:
-  _SCHEMA_IMAGE: ${_REGISTRY}/schema:${BUILD_ID}
-  _RUN_JOB: migrate-database-${BUILD_ID}
-  _REGISTRY: us-docker.pkg.dev/${PROJECT_ID}/global-game-images
-  _REGION: us-central1
+    dir: /liquibase
 
 options:
-  dynamic_substitutions: true
-  machineType: E2_HIGHCPU_8
   logging: CLOUD_LOGGING_ONLY
