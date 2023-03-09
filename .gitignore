@@ -33,6 +33,9 @@ platform/agones/skaffold.yaml
 **/global-game-*/agones-system.yaml
 platform/open-match/base/kustomization.yaml
 
+# Ignore Terraform generated liquibase files
+infrastructure/schema/liquibase.properties
+
 # Ignore go.work, go.work.sum (results of `go work`)
 go.work
 go.work.sum

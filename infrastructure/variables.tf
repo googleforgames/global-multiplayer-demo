@@ -83,6 +83,11 @@ variable "spanner_config" {
   description = "Configuration specs for Spanner"
 }
 
+variable "schema_directory" {
+  type        = string
+  description = "Schema directory where schema definition is found"
+}
+
 ### Services GKE Variables ###
 
 variable "services_gke_config" {

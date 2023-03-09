@@ -2,6 +2,122 @@
 
 The Profile Service provides a REST API to interact with Cloud Spanner to manage Player Profiles. The service runs on GKE Autopilot.
 
+## API
+
+<table>
+    <thead>
+        <td>Endpoint</td>
+        <td>Input</td>
+        <td>Return</td>
+        <td>Description</td>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>GET /players/:player_id:</code></td>
+            <td> None </td>
+            <td>
+                <pre>{
+"player_google_id": "[string]",
+"player_name": "[string]",
+"profile_image": "[string]",
+"region": "[string]"
+}</pre>
+            </td>
+            <td>
+                Retrieve information about the player
+            </td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td><code>GET /players/:player_id:/stats</code></td>
+            <td> None </td>
+            <td>
+                <pre>{
+"player_google_id": "[string]",
+"stats": "[json]",
+"skill_level": [int64],
+"tier": "[string]" # currently unused
+}</pre>
+            </td>
+            <td>
+                Retrieve stats and skill info about the player
+            </td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td><code>POST /players</code></td>
+            <td>
+                <pre>{
+"player_google_id": "[string]",
+"player_name": "[string]",
+"profile_image": "default", # Currently unused
+"region": "[amer,eur,apac]"
+}</pre>
+            </td>
+            <td>
+                <pre>
+                    "[player_google_id]"
+                </pre>
+            </td>
+            <td>
+                Create a new player
+            </td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td><code>PUT /players</code></td>
+            <td>
+                <pre>{
+"player_google_id": "[string]",
+"player_name": "[string]",
+"profile_image": "default", # Currently unused
+"region": "[amer,eur,apac]"
+}</pre>
+            </td>
+            <td>
+                <pre>{
+"player_google_id": "[string]",
+"player_name": "[string]",
+"profile_image": "[string]",
+"region": "[string]"
+}</pre>
+            </td>
+            <td>
+                Update player information
+            </td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td><code>PUT /players/:player_id:/stats</code></td>
+            <td>
+                <pre>{
+"won": [true, false],
+"score": [int64],
+"kills": [int64],
+"deaths": [int64]
+}</pre>
+            </td>
+            <td>
+                <pre>{
+"player_google_id": "[string]",
+"stats": "[json]",
+"skill_level": [int64],
+"tier": "[string]" # currently unused
+}</pre>
+            </td>
+            <td>
+                Update player stats
+            </td>
+        </tr>
+    </tbody>
+
+
+</table>
+
 ## Prerequisites
 Cloud Spanner must be set up using the infrastructure steps before this service will work.
 
@@ -9,25 +125,7 @@ Local testing requires Docker to be installed.
 
 ## Schema management
 
-This service uses the [wrench migration tool](https://github.com/cloudspannerecosystem/wrench) to perform Cloud Spanner schema migrations.
-
-Basic usage is as follows.
-
-- Create the database with the initial schema:
-
-```
-export SPANNER_PROJECT_ID=your-project-id
-export SPANNER_INSTANCE_ID=your-instance-id
-export SPANNER_DATABASE_ID=your-database-id
-
-wrench create --directory ../../infrastructure/schema
-```
-
-- Apply migrations
-
-```
-wrench migrate up --directory ../../infrastructure/schema
-```
+This service uses the [Liquibase Spanner extension](https://github.com/cloudspannerecosystem/liquibase-spanner) to perform Cloud Spanner schema migrations.
 
 ## Local deployment
 
