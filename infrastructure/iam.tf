@@ -39,6 +39,8 @@ resource "google_project_iam_member" "cloudbuild-sa-cloudbuild-roles" {
     "roles/container.admin",
     "roles/storage.admin",
     "roles/iam.serviceAccountUser",
+    "roles/run.developer",
+    "roles/spanner.databaseUser",
     "roles/gkehub.editor"
   ])
   role   = each.key
