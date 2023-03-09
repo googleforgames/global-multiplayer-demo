@@ -19,10 +19,10 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"sync"
 	"time"
 
+	allocation "github.com/googleforgames/global-multiplayer-demo/services/open-match/director/agones/swagger"
 	"google.golang.org/grpc"
 	"open-match.dev/open-match/pkg/pb"
 )
@@ -37,12 +37,20 @@ const (
 	// The Host and Port for the Match Function service endpoint.
 	functionHostName       = "open-match-matchfunction.default.svc.cluster.local"
 	functionPort     int32 = 50502
+
+	// Agones Allocation Service base path
+	agonesAllocationService = "http://agones-allocator.agones-system:8000"
+
+	// Namespace to allocate from
+	gameNamespace = "default"
 )
 
 // TODO: This should be an environment variable.
 var regions = []string{"us-central1", "europe-west1", "asia-east1"}
 
 func main() {
+	ctx := context.Background()
+
 	// Connect to Open Match Backend.
 	conn, err := grpc.Dial(omBackendEndpoint, grpc.WithInsecure())
 	if err != nil {
@@ -51,6 +59,18 @@ func main() {
 
 	defer conn.Close()
 	be := pb.NewBackendServiceClient(conn)
+
+	// Create a client per region, using "region" header to route via the ASM
+	// VirtualService. (Each of these clients is accessing the same endpoint,
+	// but using a different header.)
+	aas := make(map[string]*allocation.APIClient)
+	for _, region := range regions {
+		aas[region] = allocation.NewAPIClient(&allocation.Configuration{
+			BasePath:      agonesAllocationService,
+			DefaultHeader: map[string]string{"region": region},
+			UserAgent:     "global-multiplayer-demo/open-match/director",
+		})
+	}
 
 	// Generate the profiles to fetch matches for.
 	profiles := generateProfiles()
@@ -71,9 +91,8 @@ func main() {
 				}
 
 				log.Printf("Generated %v matches for profile %v", len(matches), p.GetName())
-				if err := assign(be, matches); err != nil {
-					log.Printf("Failed to assign servers to matches, got %s", err.Error())
-					return
+				for _, match := range matches {
+					assignMatch(ctx, be, aas[match.GetMatchProfile()], match)
 				}
 			}(&wg, p)
 		}
@@ -115,33 +134,51 @@ func fetch(be pb.BackendServiceClient, p *pb.MatchProfile) ([]*pb.Match, error) 
 	return result, nil
 }
 
-func assign(be pb.BackendServiceClient, matches []*pb.Match) error {
-	for _, match := range matches {
-		ticketIDs := []string{}
-		for _, t := range match.GetTickets() {
-			ticketIDs = append(ticketIDs, t.Id)
+// assignMatch assigns `match`. If we fail, abandon the tickets - we'll catch it next loop.
+func assignMatch(ctx context.Context, be pb.BackendServiceClient, aas *allocation.APIClient, match *pb.Match) {
+	aar, _, err := aas.AllocationServiceApi.Allocate(ctx, allocation.AllocationAllocationRequest{Namespace: gameNamespace})
+	if err != nil {
+		if swErr, ok := err.(allocation.GenericSwaggerError); ok {
+			log.Printf("Could not allocate game server from Agones: %s: %s", swErr.Error(), swErr.Body())
+		} else {
+			log.Printf("Could not allocate game server from Agones (generic error): %v", err)
 		}
+		return
+	}
+	if len(aar.Ports) < 1 {
+		log.Printf("Expecting at least one port from Agones allocation. Response: %v", aar)
+		return
+	}
+	// blindly assume port[0] is the one we want
+	conn := fmt.Sprintf("%s:%d", aar.Address, aar.Ports[0].Port)
+	log.Printf("Allocated %s for match %s. Payload: %v", conn, match.GetMatchId(), aar)
 
-		conn := fmt.Sprintf("%d.%d.%d.%d:2222", rand.Intn(256), rand.Intn(256), rand.Intn(256), rand.Intn(256))
-		req := &pb.AssignTicketsRequest{
-			Assignments: []*pb.AssignmentGroup{
-				{
-					TicketIds: ticketIDs,
-					Assignment: &pb.Assignment{
-						Connection: conn,
-					},
-				},
-			},
-		}
-
-		if _, err := be.AssignTickets(context.Background(), req); err != nil {
-			return fmt.Errorf("AssignTickets failed for match %v, got %w", match.GetMatchId(), err)
-		}
-
-		log.Printf("Assigned server %v to match %v", conn, match.GetMatchId())
+	if err := assignConnToTickets(be, conn, match.GetTickets()); err != nil {
+		log.Printf("Could not assign connection %s to match %s: %v", conn, match.GetMatchId(), err)
 	}
 
-	return nil
+	log.Printf("Assigned %s to match %s", conn, match.GetMatchId())
+}
+
+func assignConnToTickets(be pb.BackendServiceClient, conn string, tickets []*pb.Ticket) error {
+	ticketIDs := []string{}
+	for _, t := range tickets {
+		ticketIDs = append(ticketIDs, t.Id)
+	}
+
+	req := &pb.AssignTicketsRequest{
+		Assignments: []*pb.AssignmentGroup{
+			{
+				TicketIds: ticketIDs,
+				Assignment: &pb.Assignment{
+					Connection: conn,
+				},
+			},
+		},
+	}
+
+	_, err := be.AssignTickets(context.Background(), req)
+	return err
 }
 
 func generateProfiles() []*pb.MatchProfile {

@@ -25,6 +25,7 @@ spec:
     metadata:
       labels:
         app: open-match-director
+        istio.io/rev: asm-managed
     spec:
       containers:
         - name: open-match-director
