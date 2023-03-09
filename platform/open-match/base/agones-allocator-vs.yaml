@@ -18,7 +18,7 @@ metadata:
   name: agones-destination-rule
   namespace: open-match
 spec:
-  host: agones-allocator.agones-system.svc
+  host: agones-allocator.agones-system.svc.cluster.local
   subsets:
   - name: us-central1
     labels:
@@ -38,7 +38,7 @@ metadata:
   namespace: open-match
 spec:
   hosts:
-  - agones-allocator.agones-system.svc
+  - agones-allocator.agones-system.svc.cluster.local
   http:
   - match:
     - headers:
@@ -46,7 +46,7 @@ spec:
           exact: us-central1
     route:
     - destination:
-        host: agones-allocator.agones-system.svc
+        host: agones-allocator.agones-system.svc.cluster.local
         subset: us-central1
   - match:
     - headers:
@@ -54,7 +54,7 @@ spec:
           exact: eu-west1
     route:
     - destination:
-        host: agones-allocator.agones-system.svc
+        host: agones-allocator.agones-system.svc.cluster.local
         subset: eu-west1
   - match:
     - headers:
@@ -62,7 +62,7 @@ spec:
           exact: asia-east1
     route:
     - destination:
-        host: agones-allocator.agones-system.svc
+        host: agones-allocator.agones-system.svc.cluster.local
         subset: asia-east1
 
 ---
