@@ -19,6 +19,9 @@
 #include "Droidshooter.h"
 #include "EngineUtils.h"
 #include "GameFramework/PlayerStart.h"
+#include "HttpModule.h"
+#include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
 #include "AgonesComponent.h"
 #include "Classes.h"
 #include <random>
@@ -32,7 +35,7 @@ ADroidshooterGameMode::ADroidshooterGameMode()
 	}*/
 
 	AgonesSDK = CreateDefaultSubobject<UAgonesComponent>(TEXT("AgonesSDK"));
-	ApiKey = FGenericPlatformMisc::GetEnvironmentVariable(*FString("DS_FE_API_KEY"));
+	ApiKey = FPlatformMisc::GetEnvironmentVariable(TEXT("DS_FE_API_KEY"));
 }
 
 void ADroidshooterGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -129,4 +132,43 @@ void ADroidshooterGameMode::PlayerHit() {
 		UE_LOG(LogDroidshooter, Log, TEXT("Player was hit (in DroidshooterGameMode)"));
 		GS->PlayerHit();
 	}
+}
+
+void ADroidshooterGameMode::DumpStats(FString token, const FString gameId, const int kills, const int deaths)
+{
+	UE_LOG(LogDroidshooter, Log, TEXT("--- Sending stats for user with token: %s"), *token);
+
+	FString uriPlay = FrontendApi + TEXT("/endgame_stats?game_id="+gameId+"&token=" + token + "&kills=" + FString::FromInt(kills) + "&deaths=" + FString::FromInt(deaths));
+
+	FHttpModule& httpModule = FHttpModule::Get();
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> pRequest = httpModule.CreateRequest();
+
+	pRequest->SetHeader("Authorization", "Basic " + ApiKey);
+	pRequest->SetVerb(TEXT("GET"));
+	pRequest->SetURL(uriPlay);
+
+	// Set the callback, which will execute when the HTTP call is complete
+	pRequest->OnProcessRequestComplete().BindLambda(
+		[&](
+			FHttpRequestPtr pRequest,
+			FHttpResponsePtr pResponse,
+			bool connectedSuccessfully) mutable {
+
+				if (connectedSuccessfully) {
+					/* Eventual check for error codes & retry */
+					UE_LOG(LogDroidshooter, Log, TEXT("Stats data sent for one player."));
+				}
+				else {
+					switch (pRequest->GetStatus()) {
+					case EHttpRequestStatus::Failed_ConnectionError:
+						UE_LOG(LogDroidshooter, Log, TEXT("Connection failed."));
+					default:
+						UE_LOG(LogDroidshooter, Log, TEXT("Request failed."));
+					}
+				}
+		});
+
+	// Finally, submit the request for processing
+	pRequest->ProcessRequest();
+
 }

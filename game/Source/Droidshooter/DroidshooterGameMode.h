@@ -33,9 +33,18 @@ public:
 	void Respawn(AController* Controller);
 	void PlayerHit();
 
+
+	UFUNCTION(BlueprintCallable)
+	void DumpStats(FString token, const FString gameId, const int kills, const int deaths);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAgonesComponent* AgonesSDK;
 
+	/** Frontend api endpoint */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString FrontendApi;
+
+	/** Frontend api endpoint access key - server only */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString ApiKey;
 private:
