@@ -23,9 +23,9 @@ spec:
   - name: us-central1
     labels:
       region: us-central1
-  - name: eu-west1
+  - name: europe-west1
     labels:
-      region: eu-west1
+      region: europe-west1
   - name: asia-east1
     labels:
       region: asia-east1
@@ -51,11 +51,11 @@ spec:
   - match:
     - headers:
         region:
-          exact: eu-west1
+          exact: europe-west1
     route:
     - destination:
         host: agones-allocator.agones-system.svc.cluster.local
-        subset: eu-west1
+        subset: europe-west1
   - match:
     - headers:
         region:
