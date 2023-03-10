@@ -10,6 +10,10 @@ To regenerate:
 ```
 cd $GOPATH/src/github.com/googleforgames/global-multiplayer-demo/services/open-match/director
 docker run --rm -v ${PWD}:/local swaggerapi/swagger-codegen-cli generate -i https://raw.githubusercontent.com/googleforgames/agones/release-1.30.0/pkg/allocation/go/allocation.swagger.json -o /local/agones/swagger -l go
+cd agones/swagger
+find . -type f -not \( -name \*.go -or -name \*.md \) | xargs rm
+rmdir * # remove empty dirs, should error on `docs`
+docker run -it -v ${PWD}:/src ghcr.io/google/addlicense *.go
 ```
 
 ## Documentation for API Endpoints
