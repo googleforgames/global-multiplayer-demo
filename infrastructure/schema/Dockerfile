@@ -18,4 +18,4 @@ COPY --chown=liquibase:liquibase liquibase.properties /liquibase/liquibase.prope
 COPY --chown=liquibase:liquibase changelog.yaml /liquibase/changelog/changelog.yaml
 COPY --chown=liquibase:liquibase lib/liquibase-spanner-*.jar /liquibase/lib/.
 
-CMD ["liquibase", "--log-level", "FINE", "--defaults-file", "/liquibase/liquibase.properties", "update"]
+CMD ["liquibase", "--defaults-file", "/liquibase/liquibase.properties", "update"]

@@ -21,15 +21,21 @@ steps:
 
   - name: gcr.io/cloud-builders/docker
     id: schema image build
-    args: [ "build", ".", "-t", "spanner-migration" ]
+    args: [ "build", ".", "-t", "${_SCHEMA_IMAGE}" ]
 
   #
   # Running migration
   #
 
-  - name: spanner-migration
+  - name: "${_SCHEMA_IMAGE}"
     id: schema migrate execute
     dir: /liquibase
-
+substitutions:
+  _SCHEMA_IMAGE: ${_REGISTRY}/schema-migration:${BUILD_ID}
+  _REGISTRY: us-docker.pkg.dev/${PROJECT_ID}/global-game-images
+artifacts:
+  images:
+    - ${_SCHEMA_IMAGE}
 options:
+  dynamic_substitutions: true
   logging: CLOUD_LOGGING_ONLY
