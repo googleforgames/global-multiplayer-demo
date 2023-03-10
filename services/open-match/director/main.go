@@ -35,11 +35,11 @@ const (
 	omBackendEndpoint = "open-match-backend.open-match.svc.cluster.local:50505"
 
 	// The Host and Port for the Match Function service endpoint.
-	functionHostName       = "open-match-matchfunction.default.svc.cluster.local"
+	functionHostName       = "open-match-matchfunction.open-match.svc.cluster.local"
 	functionPort     int32 = 50502
 
 	// Agones Allocation Service base path
-	agonesAllocationService = "http://agones-allocator.agones-system:8000"
+	agonesAllocationService = "http://agones-allocator.agones-system.svc.cluster.local:8000"
 
 	// Namespace to allocate from
 	gameNamespace = "default"
@@ -139,9 +139,9 @@ func assignMatch(ctx context.Context, be pb.BackendServiceClient, aas *allocatio
 	aar, _, err := aas.AllocationServiceApi.Allocate(ctx, allocation.AllocationAllocationRequest{Namespace: gameNamespace})
 	if err != nil {
 		if swErr, ok := err.(allocation.GenericSwaggerError); ok {
-			log.Printf("Could not allocate game server from Agones: %s: %s", swErr.Error(), swErr.Body())
+			log.Printf("Could not allocate game server from Agones for match %s: %s: %s", match.GetMatchId(), swErr.Error(), swErr.Body())
 		} else {
-			log.Printf("Could not allocate game server from Agones (generic error): %v", err)
+			log.Printf("Could not allocate game server from Agones for match %s (generic error): %v", match.GetMatchId(), err)
 		}
 		return
 	}
