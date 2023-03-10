@@ -92,10 +92,8 @@ gcp_project_services = [
   "secretmanager.googleapis.com",
   "servicenetworking.googleapis.com",
   "servicecontrol.googleapis.com",
-  "run.googleapis.com",
   "orgpolicy.googleapis.com",
   "redis.googleapis.com",
-  "run.googleapis.com",
   "iap.googleapis.com"
 ]
 

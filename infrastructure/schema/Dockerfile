@@ -13,8 +13,9 @@
 # limitations under the License.
 
 FROM liquibase/liquibase:4.17
-COPY liquibase.properties /liquibase/liquibase.properties
-COPY changelog.yaml /liquibase/changelog.yaml
-COPY lib/liquibase-spanner-*.jar /liquibase/lib/.
 
-CMD ["liquibase", "update", "--defaultsFile=/liquibase/liquibase.properties"]
+COPY --chown=liquibase:liquibase liquibase.properties /liquibase/liquibase.properties
+COPY --chown=liquibase:liquibase changelog.yaml /liquibase/changelog/changelog.yaml
+COPY --chown=liquibase:liquibase lib/liquibase-spanner-*.jar /liquibase/lib/.
+
+CMD ["liquibase", "--defaults-file", "/liquibase/liquibase.properties", "update"]

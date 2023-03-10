@@ -20,4 +20,4 @@ deploy:
       - "./base"
     buildArgs: ["--enable-helm"]
     flags:
-      apply: ['--server-side'] # Avoid the "Too long: must have at most 262144 bytes" problem
+      apply: ['--server-side', '--force-conflicts'] # Avoid the "Too long: must have at most 262144 bytes" problem

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-changeLogFile: /liquibase/changelog.yaml
-url: jdbc:cloudspanner:/projects/${project_id}/instances/${instance_id}/databases/${database_id}
-logLevel: 0
-liquibase.hub.mode=off
+changelogFile:changelog/changelog.yaml
+url:jdbc:cloudspanner:/projects/${project_id}/instances/${instance_id}/databases/${database_id}
+logLevel:fine
+liquibase.hub.mode:off
 liquibase.includeSystemClasspath:true
