@@ -215,16 +215,23 @@ To build the Game Client for your host machine, you will need:
 
 * [Unreal Engine 5.1.0](https://www.unrealengine.com/en-US/download) for your platform.
 
+If you are going to develop with this sample, you will want to 
+[install Unreal Engine from source](https://docs.unrealengine.com/5.1/en-US/building-unreal-engine-from-source/),
+so you can build the `Client` and `Server` builds, but the downloaded editor will do for a quick build. 
+
 Open the [`game`](./game) folder in Unreal Engine. Once finished opening, you can run the game client directly within
 the editor (Hit the ▶️ button), or we can package the project via: Platforms > {your host platform} > Package Project,
 and execute the resultant package.
 
 ## Run the Game Launcher
 
-{TODO: still requires more details}
+To run the game launcher, you will need to have [Go](https://go.dev/dl/) installed to run it. 
 
 ```shell
 cd $GAME_DEMO_HOME/game/GameLauncher
+
+# grab your own copy of the app.ini
+cp app.ini.sample app.ini
 
 # Grab the IP Address again of our frontend service, so we can use it
 gcloud compute addresses list --filter=name=frontend-service --format="value(address)"
@@ -232,7 +239,9 @@ gcloud compute addresses list --filter=name=frontend-service --format="value(add
 
 Edit the app.ini, and replace the `frontend_api` value with http://[IP_ADDRESS].sslip.io
 
-The run:
+And update the `binary` field with the path to the executable of the client build for your operating system.
+
+Then run the following to start the launcher and the game!
 
 ```shell
 go run main.go
