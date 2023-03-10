@@ -25,3 +25,4 @@ Packaged
 Saved
 *.code-workspace
 /Makefile
+/GameLauncher/app.ini
