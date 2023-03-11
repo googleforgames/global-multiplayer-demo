@@ -25,6 +25,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/googleforgames/global-multiplayer-demo/services/frontend-api/match"
 	"github.com/googleforgames/global-multiplayer-demo/services/frontend-api/models"
 	"github.com/googleforgames/global-multiplayer-demo/services/frontend-api/shared"
 	"github.com/googleforgames/global-multiplayer-demo/services/frontend-api/shared/auth"
@@ -59,11 +60,17 @@ func main() {
 		log.Fatalf("could not set trusted proxies: %s", err)
 	}
 
+	m, err := match.NewMatcher()
+	if err != nil {
+		log.Fatalf("could not initialize matcher: %v", err)
+	}
+	defer m.Close()
+
 	r.GET("/login", handleGoogleLogin)
 	r.GET("/callback", handleGoogleCallback)
 
 	// JWT protected endpoint handlers
-	r.GET("/play", auth.VerifyJWT(handlePlay))
+	r.POST("/play", auth.VerifyJWT(func(id string, c *gin.Context) { handlePlay(id, c, m) }))
 	r.GET("/profile", auth.VerifyJWT(handleProfile))
 	r.GET("/stats", auth.VerifyJWT(handleGetStats))
 	r.PUT("/stats", auth.VerifyJWT(handleUpdateStats))
@@ -245,13 +252,23 @@ func handlePingServers(id string, c *gin.Context) {
 }
 
 // WIP: Handles the play request from the game client
-func handlePlay(id string, c *gin.Context) {
-
-	preferredRegion := c.Request.FormValue("preferred_region")
+func handlePlay(id string, c *gin.Context, m *match.Matcher) {
+	pr := &models.PlayRequest{}
+	if err := c.Bind(pr); err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
 
 	// TODO #1: Get profile here (from Cloud Spanner via token/id??)
 	// TODO #2: Add profile parameter for finding the server (besides the preferred region)
-	c.JSON(http.StatusOK, models.FindMatchingServer(preferredRegion))
+
+	conn, err := m.FindMatchingServer(c.Request.Context(), pr)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, conn)
 }
 
 // Function responsible for checking if profile is not yet created in our own profile service
