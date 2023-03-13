@@ -18,14 +18,14 @@ metadata:
   name: agones-destination-rule
   namespace: open-match
 spec:
-  host: agones-allocator.agones-system.svc
+  host: agones-allocator.agones-system.svc.cluster.local
   subsets:
   - name: us-central1
     labels:
       region: us-central1
-  - name: eu-west1
+  - name: europe-west1
     labels:
-      region: eu-west1
+      region: europe-west1
   - name: asia-east1
     labels:
       region: asia-east1
@@ -38,7 +38,7 @@ metadata:
   namespace: open-match
 spec:
   hosts:
-  - agones-allocator.agones-system.svc
+  - agones-allocator.agones-system.svc.cluster.local
   http:
   - match:
     - headers:
@@ -46,24 +46,26 @@ spec:
           exact: us-central1
     route:
     - destination:
-        host: agones-allocator.agones-system.svc
+        host: agones-allocator.agones-system.svc.cluster.local
         subset: us-central1
   - match:
     - headers:
         region:
-          exact: eu-west1
+          exact: europe-west1
     route:
     - destination:
-        host: agones-allocator.agones-system.svc
-        subset: eu-west1
+        host: agones-allocator.agones-system.svc.cluster.local
+        subset: europe-west1
   - match:
     - headers:
         region:
           exact: asia-east1
     route:
     - destination:
-        host: agones-allocator.agones-system.svc
+        host: agones-allocator.agones-system.svc.cluster.local
         subset: asia-east1
+  - redirect:
+      uri: /missing/region/invalid # If no region is matched, then go to invalid endpoint to surface the error
 
 ---
 

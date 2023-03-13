@@ -14,8 +14,6 @@
 
 package models
 
-import "log"
-
 type OMServerResponse struct {
 	IP   string
 	Port int
@@ -30,16 +28,6 @@ type PingServer struct {
 	Port      uint64
 }
 
-func FindMatchingServer(region string) OMServerResponse {
-
-	// TODO: Query OpenMatch on `OMFrontendEndpoint` in a preferred region for a server
-	log.Printf("Looking for a server in the %s region.\n", region)
-
-	IP := "127.0.0.1"
-	Port := 7777
-
-	return OMServerResponse{
-		IP:   IP,
-		Port: Port}
-
+type PlayRequest struct {
+	PingByRegion map[string]int32 `json:"pingByRegion"` // region -> ping time in milliseconds
 }

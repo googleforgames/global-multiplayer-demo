@@ -16,6 +16,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: open-match-matchfunction
+  namespace: open-match
 spec:
   replicas: 1
   selector:
@@ -37,6 +38,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: open-match-matchfunction
+  namespace: open-match
 spec:
   selector:
     app: open-match-matchfunction

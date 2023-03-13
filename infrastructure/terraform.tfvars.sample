@@ -21,6 +21,7 @@ resource_env_label = "demo-global-game"
 # Cloud Deploy Configuration
 platform_directory = "../platform" # Relative to Terraform directory
 services_directory = "../services" # Relative to Terraform directory
+schema_directory = "../infrastructure/schema" # Relative to Terraform directory
 clouddeploy_config = {
   "location" : "us-central1"
 }
@@ -91,10 +92,8 @@ gcp_project_services = [
   "secretmanager.googleapis.com",
   "servicenetworking.googleapis.com",
   "servicecontrol.googleapis.com",
-  "run.googleapis.com",
   "orgpolicy.googleapis.com",
   "redis.googleapis.com",
-  "run.googleapis.com",
   "iap.googleapis.com"
 ]
 

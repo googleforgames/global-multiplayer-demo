@@ -13,10 +13,10 @@ arbitrary for any part not specified.
 Open the [Google OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent) for your project,
 and create an "External" App, and allowlist any users you wish to be able to login to your deployment of this game.
 
-Open the [Google Credentials](https://console.cloud.google.com/apis/credentials) screen for your project, and click 
+Open the [Google Credentials](https://console.cloud.google.com/apis/credentials) screen for your project, and click
 "+ CREATE CREDENTIALS", and create an "OAuth Client ID" of type "Web Application".
 
-Leave this page open, as we'll need the Client ID and Client secret of the ID you just created shortly. 
+Leave this page open, as we'll need the Client ID and Client secret of the ID you just created shortly.
 
 ## Infrastructure and Services
 
@@ -62,7 +62,7 @@ To do so, follow: [Accessing Unreal Engine source code on GitHub](https://www.un
 
 Once done, to pull down the [Unreal Development Containers](https://unrealcontainers.com/), you will also need to
 create [a personal access token (classic)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-personal-access-token-classic)
-with at least `read:packages` scope.  
+with at least `read:packages` scope.
 
 Leave the page open with this token, as we'll need it shortly.
 
@@ -88,17 +88,17 @@ cp terraform.tfvars.sample terraform.tfvars
 
 You will need to now edit `terraform.tfvars`
 
-* Update <PROJECT_ID> with the ID of your Google Cloud Project, 
+* Update <PROJECT_ID> with the ID of your Google Cloud Project,
 * Updated <CLIENT_ID> and <CLIENT_SECRET> with the Client ID and Client secret created in the above step.
 * Updated <GITHUB_PAT> with the GitHub personal access token you created the above steps.
 
-You can edit other variables in this file, but we recommend leaving the default values for your first run before 
+You can edit other variables in this file, but we recommend leaving the default values for your first run before
 experimenting.
 
 ### Provision the infrastructure.
 
-> **Warning**  
-> This demo in its default state creates multiple Kubernetes clusters around the world, 
+> **Warning**
+> This demo in its default state creates multiple Kubernetes clusters around the world,
 > Spanner instances, and more. Running this demo for an extended amount of time may incur significant costs.
 
 
@@ -122,7 +122,7 @@ This should give you back an IP, such as `35.202.107.204`.
 2. Click "+ ADD URI" under "Authorised redirect URIs" and add "http://[IP_ADDRESS].sslip.io/callback"
 3. Click "Save".
 
-Since OAuth needs a domain to authenticate against, we'll use [sslip.io](https://sslip.io) for development purposes. 
+Since OAuth needs a domain to authenticate against, we'll use [sslip.io](https://sslip.io) for development purposes.
 
 ### Deploy Platform Components
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloud Build will deploy
@@ -136,10 +136,10 @@ cd $GAME_DEMO_HOME/platform/
 gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
 ```
 
-Navigate to the 
+Navigate to the
 [agones-deploy-pipeline](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/agones-deploy-pipeline)
-delivery pipeline to review the rollout status. Cloud Build will create a Cloud Deploy release which automatically 
-deploys Agones the first game server cluster. Agones can be deployed to subsequent clusters by clicking on the 
+delivery pipeline to review the rollout status. Cloud Build will create a Cloud Deploy release which automatically
+deploys Agones the first game server cluster. Agones can be deployed to subsequent clusters by clicking on the
 `promote` button within the Pipeline visualization or by running the following gcloud command:
 
 ```shell
@@ -147,14 +147,25 @@ deploys Agones the first game server cluster. Agones can be deployed to subseque
 gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=agones-deploy-pipeline --region=us-central1
 ```
 
-Continue the promotion until Agones has been deployed to all clusters. You can monitor the status of the deployment 
+Continue the promotion until Agones has been deployed to all clusters. You can monitor the status of the deployment
 through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Workloads panel in the GCP Console.
 
 Open Match rollout status can be viewed by navigating to the [global-game-open-match](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/global-game-open-match) delivery pipeline. Since open match is deployed onto a single services GKE cluster, deployments are automatically rolled out with no need for manual promotion.
 
+## Deploy Cloud Spanner Schema
+
+To deploy the database schema, submit the following Cloud Build command:
+
+```shell
+cd $GAME_DEMO_HOME/infrastructure/schema
+gcloud builds submit --config=cloudbuild.yaml
+```
+
+This will deploy the schema migration using [Liquibase](https://www.liquibase.org/) and the [Cloud Spanner liquibase extension](https://github.com/cloudspannerecosystem/liquibase-spanner).
+
 ## Install Game Backend Services
 
-To install all the backend services, submit the following Cloud Build command, and replace the` _RELEASE_NAME` 
+To install all the backend services, submit the following Cloud Build command, and replace the` _RELEASE_NAME`
 substitution with a unique build name.
 
 ```shell
@@ -170,7 +181,7 @@ This will:
 
 ## Dedicated Game Server
 
-To build the Unreal dedicated game server image, run the following command, and replace the` _RELEASE_NAME` 
+To build the Unreal dedicated game server image, run the following command, and replace the` _RELEASE_NAME`
 substitution with a unique build name.
 
 ```shell
@@ -204,16 +215,23 @@ To build the Game Client for your host machine, you will need:
 
 * [Unreal Engine 5.1.0](https://www.unrealengine.com/en-US/download) for your platform.
 
-Open the [`game`](./game) folder in Unreal Engine. Once finished opening, you can run the game client directly within 
+If you are going to develop with this sample, you will want to 
+[install Unreal Engine from source](https://docs.unrealengine.com/5.1/en-US/building-unreal-engine-from-source/),
+so you can build the `Client` and `Server` builds, but the downloaded editor will do for a quick build. 
+
+Open the [`game`](./game) folder in Unreal Engine. Once finished opening, you can run the game client directly within
 the editor (Hit the ▶️ button), or we can package the project via: Platforms > {your host platform} > Package Project,
 and execute the resultant package.
 
 ## Run the Game Launcher
 
-{TODO: still requires more details}
+To run the game launcher, you will need to have [Go](https://go.dev/dl/) installed to run it. 
 
 ```shell
 cd $GAME_DEMO_HOME/game/GameLauncher
+
+# grab your own copy of the app.ini
+cp app.ini.sample app.ini
 
 # Grab the IP Address again of our frontend service, so we can use it
 gcloud compute addresses list --filter=name=frontend-service --format="value(address)"
@@ -221,7 +239,9 @@ gcloud compute addresses list --filter=name=frontend-service --format="value(add
 
 Edit the app.ini, and replace the `frontend_api` value with http://[IP_ADDRESS].sslip.io
 
-The run:
+And update the `binary` field with the path to the executable of the client build for your operating system.
+
+Then run the following to start the launcher and the game!
 
 ```shell
 go run main.go
@@ -231,7 +251,7 @@ go run main.go
 
 ##### This project was made with a different version of the Unreal Engine.
 
-If you hit this issue, it may be that you are building on a different host platform than the original. To solve, 
+If you hit this issue, it may be that you are building on a different host platform than the original. To solve,
 click: More Options > Convert in-place.
 
 The project should open as normal now.
