@@ -118,20 +118,10 @@ void UDroidshooterIntroUserWidget::FetchGameServer(const FString& frontendApi, c
     for (auto it = servers.begin(); it != servers.end(); ++it)
     {
         UE_LOG(LogDroidshooter, Log, TEXT("Ping responses: %.2f %s "), it->first, *it->second);
-
-        /*TSharedRef<FJsonObject> JsonServerObject = MakeShareable(new FJsonObject);
-        JsonServerObject->SetStringField(it->second, FString::SanitizeFloat(it->first));
-
-        TSharedRef<FJsonValueObject> JsonServerValueObject = MakeShareable(new FJsonValueObject(JsonServerObject));
-
-        JsonServerArray.Add(JsonServerValueObject);*/
-
         JsonBodyObject->Values.Add(it->second, MakeShareable(new FJsonValueNumber(static_cast<int32>(it->first))));
     }
 
-    JsonRootObject->SetArrayField("pingByRegion", JsonServerArray);
-    JsonRootObject->SetObjectField("pingByRegion", JsonBodyObject);
-    
+    JsonRootObject->SetObjectField("pingByRegion", JsonBodyObject);    
 
     FString OutputString;
     TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
@@ -225,6 +215,14 @@ void UDroidshooterIntroUserWidget::ProcessGameserverResponse(const FString& Resp
 
                 UE_LOG(LogDroidshooter, Log, TEXT("Found game server at: %s %s"), *IP, *Port);
 
+                UFunction* Function = this->FindFunction("ConnectToOnlineGame");
+
+                if (Function == nullptr)
+                {
+                    return;
+                }
+
+                this->ProcessEvent(Function, {});
             }
             else {
                 UE_LOG(LogDroidshooter, Log, TEXT("Unable to server player data. Timed out token?"));

@@ -94,3 +94,27 @@ func VerifyJWT(endpointHandler func(id string, c *gin.Context)) gin.HandlerFunc 
 		}
 	})
 }
+
+func VerifyApiKey(endpointHandler func(c *gin.Context)) gin.HandlerFunc {
+	return gin.HandlerFunc(func(c *gin.Context) {
+		prefix := "Basic "
+		authHeader := c.Request.Header.Get("Authorization")
+		reqApi := strings.TrimPrefix(authHeader, prefix)
+
+		if len(reqApi) != 0 {
+
+			if reqApi != os.Getenv("API_ACCESS_KEY") {
+				log.Println("Invalid api key")
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid api key", "context": "auth"})
+				return
+			}
+
+			endpointHandler(c)
+		} else {
+			err := fmt.Errorf("authorization token is not present")
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "context": "auth"})
+			return
+		}
+	})
+}

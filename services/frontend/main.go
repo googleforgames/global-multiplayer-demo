@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -75,6 +76,7 @@ func main() {
 	r.GET("/profile", auth.VerifyJWT(handleProfile))
 	r.GET("/stats", auth.VerifyJWT(handleGetStats))
 	r.PUT("/stats", auth.VerifyJWT(handleUpdateStats))
+	r.POST("/endgame_stats", auth.VerifyApiKey(handleUpdateEndgameStats))
 	r.GET("/ping", auth.VerifyJWT(handlePingServers))
 
 	log.Printf("Google for Games Frontend API is listening on :%s\n", os.Getenv("LISTEN_PORT"))
@@ -214,6 +216,16 @@ func handleUpdateStats(id string, c *gin.Context) {
 	}
 }
 
+// Updating the after game stats on per-user basis
+func handleUpdateEndgameStats(c *gin.Context) {
+	// TODO: WIP: saving stats
+
+	content, _ := ioutil.ReadAll(c.Request.Body)
+	log.Print(string(content))
+
+	c.JSON(http.StatusOK, "OK")
+}
+
 // WIP: Needs an endpoint to fetch the ping servers
 func handlePingServers(id string, c *gin.Context) {
 	client := &http.Client{}
@@ -255,7 +267,7 @@ func handlePlay(id string, c *gin.Context, m *match.Matcher) {
 	if hok && pok {
 		port, _ := strconv.Atoi(port)
 		fmt.Printf("Overriding openmatch response with %s:%d\n", host, port)
-		c.JSON(http.StatusBadRequest, models.OMServerResponse{IP: host, Port: port})
+		c.JSON(http.StatusOK, models.OMServerResponse{IP: host, Port: port})
 		return
 	}
 

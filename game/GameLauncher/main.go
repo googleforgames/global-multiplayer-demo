@@ -63,7 +63,7 @@ func main() {
 	// UI
 	myApp = app.New()
 	myWindow = myApp.NewWindow("Google for Games Launcher")
-	myWindow.SetFixedSize(true)
+	//myWindow.SetFixedSize(true)
 	myWindow.Resize(fyne.NewSize(320, 260))
 	myWindow.CenterOnScreen()
 
@@ -124,7 +124,7 @@ func handleGoogleCallback(rw http.ResponseWriter, req *http.Request) {
 	<p>
 		<h2>Authenticated successfully. Please return to your application. This tab will close in 3 seconds.</h2>
 	</p>`
-	fmt.Fprintf(rw, closeScript)
+	fmt.Fprint(rw, closeScript)
 }
 
 func updateUI(playerName string) {
@@ -155,7 +155,7 @@ func updateUI(playerName string) {
 
 func handlePlay() {
 	params := []string{fmt.Sprintf("-token=%s", myToken), fmt.Sprintf("-frontend_api=%s", iniCfg.Section("").Key("frontend_api").String())}
-	
+
 	// Get the binary file from the ini
 	cmd := exec.Command(iniCfg.Section(runtime.GOOS).Key("binary").String(), params...)
 	log.Printf("Launching: %s %s", iniCfg.Section(runtime.GOOS).Key("binary").String(), params)

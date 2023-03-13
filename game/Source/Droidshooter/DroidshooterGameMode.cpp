@@ -45,6 +45,15 @@ void ADroidshooterGameMode::InitGame(const FString& MapName, const FString& Opti
 
 	if (GetWorld()->IsNetMode(NM_DedicatedServer)) {
 		UE_LOG(LogDroidshooter, Log, TEXT("Server Started for map: %s"), *MapName);
+		
+		if (FParse::Value(FCommandLine::Get(), TEXT("frontend_api"), FrontendApi))
+		{
+			UE_LOG(LogDroidshooter, Log, TEXT("Frontend API set from command line param: %s"), *FrontendApi);
+		}
+		else {
+			UE_LOG(LogDroidshooter, Log, TEXT("Frontend API was NOT provided! Check your command line params"));
+		}
+
 	}
 
 	for (TActorIterator<APlayerStart> It(GetWorld()); It; ++It)
@@ -136,16 +145,33 @@ void ADroidshooterGameMode::PlayerHit() {
 
 void ADroidshooterGameMode::DumpStats(FString token, const FString gameId, const int kills, const int deaths)
 {
-	UE_LOG(LogDroidshooter, Log, TEXT("--- Sending stats for user with token: %s"), *token);
+	UE_LOG(LogDroidshooter, Log, TEXT("--- Sending stats to %s with key %s (user's token: %s)"), *FrontendApi, *ApiKey, *token);
 
-	FString uriPlay = FrontendApi + TEXT("/endgame_stats?game_id="+gameId+"&token=" + token + "&kills=" + FString::FromInt(kills) + "&deaths=" + FString::FromInt(deaths));
+	TSharedRef<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject);
+	TArray<TSharedPtr<FJsonValue>>  JsonServerArray;
+
+	JsonRootObject->Values.Add("GameId", MakeShareable(new FJsonValueString(gameId)));
+	JsonRootObject->Values.Add("Token", MakeShareable(new FJsonValueString(token)));
+	JsonRootObject->Values.Add("Kills", MakeShareable(new FJsonValueNumber(kills)));
+	JsonRootObject->Values.Add("Deaths", MakeShareable(new FJsonValueNumber(deaths)));
+
+	FString OutputString;
+	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
+	FJsonSerializer::Serialize(JsonRootObject, Writer);
+
+	FString uriStats = FrontendApi + TEXT("/endgame_stats");
 
 	FHttpModule& httpModule = FHttpModule::Get();
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> pRequest = httpModule.CreateRequest();
 
 	pRequest->SetHeader("Authorization", "Basic " + ApiKey);
-	pRequest->SetVerb(TEXT("GET"));
-	pRequest->SetURL(uriPlay);
+	pRequest->SetVerb(TEXT("POST"));
+	pRequest->SetURL(uriStats);
+	pRequest->SetHeader(TEXT("User-Agent"), "X-UnrealEngine-Agent");
+	pRequest->SetHeader("Content-Type", TEXT("application/json"));
+	pRequest->SetHeader(TEXT("Accepts"), TEXT("application/json"));
+
+	pRequest->SetContentAsString(OutputString);
 
 	// Set the callback, which will execute when the HTTP call is complete
 	pRequest->OnProcessRequestComplete().BindLambda(
