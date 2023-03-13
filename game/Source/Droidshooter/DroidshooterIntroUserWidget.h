@@ -35,8 +35,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AuthenticateCall(const FString& frontendApi, const FString& accessToken);
 
-	UFUNCTION(BlueprintCallable)
-	void FetchGameServer(const FString& frontendApi, const FString& accessToken, const FString preferredRegion, const FString ping);
+	//UFUNCTION(BlueprintCallable)
+	void FetchGameServer(const FString& frontendApi, const FString& accessToken, std::map<float, FString> servers);
 
 	UFUNCTION(BlueprintCallable)
 	void FindPreferredGameServerLocation(const FString& frontendApi, const FString& accessToken);

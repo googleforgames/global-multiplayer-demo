@@ -107,18 +107,49 @@ void UDroidshooterIntroUserWidget::AuthenticateCall(const FString& frontendApi, 
     pRequest->ProcessRequest();
 }
 
-void UDroidshooterIntroUserWidget::FetchGameServer(const FString& frontendApi, const FString& accessToken, const FString preferredRegion, const FString ping)
+void UDroidshooterIntroUserWidget::FetchGameServer(const FString& frontendApi, const FString& accessToken, std::map<float, FString> servers)
 {
     UE_LOG(LogDroidshooter, Log, TEXT("Fetch server/ip call with token: %s"), *accessToken);
+    
+    TSharedRef<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject);
+    TSharedRef<FJsonObject> JsonBodyObject = MakeShareable(new FJsonObject);
+    TArray<TSharedPtr<FJsonValue>>  JsonServerArray;
 
-    FString uriPlay = frontendApi + TEXT("/play?preferred_region=" + preferredRegion + "&ping=" + ping);
+    for (auto it = servers.begin(); it != servers.end(); ++it)
+    {
+        UE_LOG(LogDroidshooter, Log, TEXT("Ping responses: %.2f %s "), it->first, *it->second);
+
+        /*TSharedRef<FJsonObject> JsonServerObject = MakeShareable(new FJsonObject);
+        JsonServerObject->SetStringField(it->second, FString::SanitizeFloat(it->first));
+
+        TSharedRef<FJsonValueObject> JsonServerValueObject = MakeShareable(new FJsonValueObject(JsonServerObject));
+
+        JsonServerArray.Add(JsonServerValueObject);*/
+
+        JsonBodyObject->Values.Add(it->second, MakeShareable(new FJsonValueNumber(static_cast<int32>(it->first))));
+    }
+
+    JsonRootObject->SetArrayField("pingByRegion", JsonServerArray);
+    JsonRootObject->SetObjectField("pingByRegion", JsonBodyObject);
+    
+
+    FString OutputString;
+    TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
+    FJsonSerializer::Serialize(JsonRootObject, Writer);
+
+    FString uriPlay = frontendApi + TEXT("/play");
 
     FHttpModule& httpModule = FHttpModule::Get();
     TSharedRef<IHttpRequest, ESPMode::ThreadSafe> pRequest = httpModule.CreateRequest();
 
     pRequest->SetHeader("Authorization", "Bearer " + accessToken);
-    pRequest->SetVerb(TEXT("GET"));
+    pRequest->SetVerb(TEXT("POST"));
     pRequest->SetURL(uriPlay);
+    pRequest->SetHeader(TEXT("User-Agent"), "X-UnrealEngine-Agent");
+    pRequest->SetHeader("Content-Type", TEXT("application/json"));
+    pRequest->SetHeader(TEXT("Accepts"), TEXT("application/json"));
+
+    pRequest->SetContentAsString(OutputString);
 
     // Set the callback, which will execute when the HTTP call is complete
     pRequest->OnProcessRequestComplete().BindLambda(
@@ -207,30 +238,35 @@ void UDroidshooterIntroUserWidget::ProcessServersToPingResponse(const FString& R
 
     TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(ResponseContent);
     TArray<TSharedPtr<FJsonValue>> JsonResponseArray;
+    TSharedPtr<FJsonObject> JsonTopObject;
 
-    if (FJsonSerializer::Deserialize(JsonReader, JsonResponseArray))
+    if (FJsonSerializer::Deserialize(JsonReader, JsonTopObject))
     {
-        ServerPinger.SetServersToValidate(JsonResponseArray.Num());
+        ServerPinger.SetServersToValidate(JsonTopObject->Values.Num());
 
-        for (int i = 0; i < JsonResponseArray.Num(); ++i)
-        {
-            TSharedPtr<FJsonObject> JsonResponseObject = JsonResponseArray[i]->AsObject();
+        for (auto JsonResponseObject = JsonTopObject->Values.CreateConstIterator(); JsonResponseObject; ++JsonResponseObject) {
+            const FString KName = (*JsonResponseObject).Key;
 
-            if (JsonResponseObject)
+            // Get the value as a FJsonValue object
+            TSharedPtr< FJsonValue > Value = (*JsonResponseObject).Value;
+
+            TSharedPtr<FJsonObject> JsonObjectIn = Value->AsObject();
+
+            if (JsonObjectIn)
             {
-                FString Name = JsonResponseObject->GetStringField(TEXT("Name"));
-                FString Region = JsonResponseObject->GetStringField(TEXT("Region"));
-                FString Address = JsonResponseObject->GetStringField(TEXT("Address"));
-                FString Protocol = JsonResponseObject->GetStringField(TEXT("Protocol"));
-                FString Port = JsonResponseObject->GetStringField(TEXT("Port"));
+                FString Name = JsonObjectIn->GetStringField(TEXT("Name"));
+                FString Region = JsonObjectIn->GetStringField(TEXT("Region"));
+                FString Address = JsonObjectIn->GetStringField(TEXT("Address"));
+                FString Protocol = JsonObjectIn->GetStringField(TEXT("Protocol"));
+                FString Port = JsonObjectIn->GetStringField(TEXT("Port"));
 
-                UE_LOG(LogDroidshooter, Log, TEXT("Gonna ping: %s %s %s %s %s"), *Name, *Region, *Address, *Protocol, *Port);
-                ServerPinger.CheckIfServerIsOnline(Address, Port);
+                UE_LOG(LogDroidshooter, Log, TEXT("Gonna ping: %s %s %s %s %s (%s)"), *Name, *Region, *Address, *Protocol, *Port, *KName);
+                ServerPinger.CheckIfServerIsOnline(Address, Port, KName);
             }
         }
     }
 
-    GetWorld()->GetTimerManager().SetTimer(MemberTimerHandle, this, &UDroidshooterIntroUserWidget::AllServersValidated, 1.0f, true, 2.0f);
+    GetWorld()->GetTimerManager().SetTimer(MemberTimerHandle, this, &UDroidshooterIntroUserWidget::AllServersValidated, 1.0f, true, 3.0f);
 }
 
 /*
@@ -252,15 +288,7 @@ void UDroidshooterIntroUserWidget::AllServersValidated()
     if (ServerPinger.AllServersValidated()) {
         auto servers = ServerPinger.GetPingedServers();
 
-        for (auto it = servers.begin(); it != servers.end(); ++it)
-        {
-            // Sending the first result (best ping) to request servers from openmatch via game frontend
-            if (it == servers.begin()) {
-                FetchGameServer(FrontendApi, GlobalAccessToken, it->second, FString::SanitizeFloat(it->first));
-            }
-            UE_LOG(LogDroidshooter, Log, TEXT("Ping responses: %.2f %s "), it->first, *it->second);
-        }
-
+        FetchGameServer(FrontendApi, GlobalAccessToken, servers);
         ServerPinger.ClearPingedServers();
         GetWorld()->GetTimerManager().ClearTimer(MemberTimerHandle);
     }

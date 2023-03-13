@@ -17,6 +17,8 @@ CLIENT_LAUNCHER_PORT=8082
 PROFILE_SERVICE=http://localhost:8080
 PING_SERVICE=http://localhost:8083
 JWT_KEY=<JWT_KEY>
+LOCAL_OPENMATCH_SERVER_OVERRIDE_HOST=127.0.0.1 # in case you are testing local gameserver build and have no connection to agones nor openmatch
+LOCAL_OPENMATCH_SERVER_OVERRIDE_PORT=7777 # port of the local gameserver
 ```
 
 * `LISTEN_PORT` is the local port for this Docker container

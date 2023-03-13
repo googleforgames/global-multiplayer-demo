@@ -23,6 +23,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/googleforgames/global-multiplayer-demo/services/frontend-api/match"
@@ -235,12 +236,7 @@ func handlePingServers(id string, c *gin.Context) {
 			return
 		}
 
-		var servers []models.PingServer
-		for _, element := range pingServers {
-			servers = append(servers, element)
-		}
-
-		c.JSON(http.StatusOK, servers)
+		c.JSON(http.StatusOK, pingServers)
 		return
 	} else {
 		err := fmt.Errorf("unable to update profile stats, error code: %d", response.StatusCode)
@@ -253,6 +249,16 @@ func handlePingServers(id string, c *gin.Context) {
 
 // WIP: Handles the play request from the game client
 func handlePlay(id string, c *gin.Context, m *match.Matcher) {
+
+	host, hok := os.LookupEnv("LOCAL_OPENMATCH_SERVER_OVERRIDE_HOST")
+	port, pok := os.LookupEnv("LOCAL_OPENMATCH_SERVER_OVERRIDE_PORT")
+	if hok && pok {
+		port, _ := strconv.Atoi(port)
+		fmt.Printf("Overriding openmatch response with %s:%d\n", host, port)
+		c.JSON(http.StatusBadRequest, models.OMServerResponse{IP: host, Port: port})
+		return
+	}
+
 	pr := &models.PlayRequest{}
 	if err := c.Bind(pr); err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
