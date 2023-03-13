@@ -225,7 +225,8 @@ and execute the resultant package.
 
 ## Run the Game Launcher
 
-To run the game launcher, you will need to have [Go](https://go.dev/dl/) installed to run it. 
+To run the game launcher, you will need to have [Go](https://go.dev/dl/) installed to run it, as well as the
+[prerequisites for the Fyne Go Cross Platform UI library](https://developer.fyne.io/started/).
 
 ```shell
 cd $GAME_DEMO_HOME/game/GameLauncher
