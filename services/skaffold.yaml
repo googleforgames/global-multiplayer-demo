@@ -12,17 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: skaffold/v2beta29
+apiVersion: skaffold/v4beta1
 kind: Config
+manifests:
+  rawYaml:
+    - ping-discovery/service-account.yaml
+    - ping-discovery/deployment.yaml
+    - profile/spanner_config.yaml
+    - profile/deployment.yaml
+    - frontend/config.yaml
+    - frontend/deployment.yaml
+    - open-match/director/director.yaml
+    - open-match/matchfunction/matchfunction.yaml
+    - open-match/fake-frontend/fake-frontend.yaml
 deploy:
   kubectl:
-    manifests:
-      - ping-discovery/service-account.yaml
-      - ping-discovery/deployment.yaml
-      - profile/spanner_config.yaml
-      - profile/deployment.yaml
-      - frontend/config.yaml
-      - frontend/deployment.yaml
-      - open-match/director/director.yaml
-      - open-match/matchfunction/matchfunction.yaml
-      - open-match/fake-frontend/fake-frontend.yaml
+    flags:
+      apply:
+        - --server-side # Avoid the "Too long: must have at most 262144 bytes" problem
+  tolerateFailuresUntilDeadline: true # Fixes startup timeouts

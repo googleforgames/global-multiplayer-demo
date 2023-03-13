@@ -12,12 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: skaffold/v2beta29
+apiVersion: skaffold/v4beta1
 kind: Config
-deploy:
+manifests:
   kustomize:
     paths:
-      - "./base"
-    buildArgs: ["--enable-helm"]
+      - ./base
+    buildArgs:
+      - --enable-helm
+deploy:
+  kubectl:
     flags:
-      apply: ['--server-side', '--force-conflicts'] # Avoid the "Too long: must have at most 262144 bytes" problem
+      apply:
+        - --server-side # Avoid the "Too long: must have at most 262144 bytes" problem
+        - --force-conflicts
+  tolerateFailuresUntilDeadline: true # Fixes startup timeouts
