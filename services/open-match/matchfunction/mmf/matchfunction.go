@@ -27,8 +27,6 @@ import (
 
 const (
 	matchName = "match-skill-and-latency"
-
-	ticketsPerMatch = 4
 )
 
 // Run is this match function's implementation of the gRPC call defined in api/matchfunction.proto.
@@ -45,7 +43,7 @@ func (s *MatchFunctionService) Run(req *pb.RunRequest, stream pb.MatchFunction_R
 
 	// Generate proposals.
 	idPrefix := fmt.Sprintf("profile-%v-time-%v", p.GetName(), time.Now().Format("2006-01-02T15:04:05.00"))
-	proposals, err := makeMatches(p.GetName(), idPrefix, tickets)
+	proposals, err := s.makeMatches(p.GetName(), idPrefix, tickets)
 	if err != nil {
 		log.Printf("Failed to generate matches: %v", err)
 		return err
@@ -64,8 +62,8 @@ func (s *MatchFunctionService) Run(req *pb.RunRequest, stream pb.MatchFunction_R
 }
 
 // Find all matches for the given profile.
-func makeMatches(profileName, idPrefix string, tickets []*pb.Ticket) ([]*pb.Match, error) {
-	if len(tickets) < ticketsPerMatch {
+func (s *MatchFunctionService) makeMatches(profileName, idPrefix string, tickets []*pb.Ticket) ([]*pb.Match, error) {
+	if len(tickets) < s.playersPerMatch {
 		return nil, nil
 	}
 
@@ -80,9 +78,9 @@ func makeMatches(profileName, idPrefix string, tickets []*pb.Ticket) ([]*pb.Matc
 
 	var matches []*pb.Match
 	count := 0
-	for len(tickets) >= ticketsPerMatch {
-		matchTickets := tickets[:ticketsPerMatch]
-		tickets = tickets[ticketsPerMatch:]
+	for len(tickets) >= s.playersPerMatch {
+		matchTickets := tickets[:s.playersPerMatch]
+		tickets = tickets[s.playersPerMatch:]
 
 		var matchScore float64
 		for _, ticket := range matchTickets {

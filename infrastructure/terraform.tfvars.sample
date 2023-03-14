@@ -121,6 +121,11 @@ frontend-service = {
   jwt_key       = "r@nd0m$"
 }
 
+# Open Match Match Function Config Values
+open-match-matchfunction = {
+  players_per_match = 4
+}
+
 # Artifact Registry variables
 ### NOTE: If you change the Artifact registry location, please make sure to change `cloudbuild.yaml` in
 ### `services/clouddeploy.yaml;` as it is not dynamically created.

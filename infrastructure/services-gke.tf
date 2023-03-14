@@ -143,6 +143,14 @@ resource "local_file" "services-frontend-config-map" {
   filename = "${path.module}/${var.services_directory}/frontend/config.yaml"
 }
 
+resource "local_file" "open-match-matchfunction-config-map" {
+  content = templatefile(
+    "${path.module}/files/services/open-match-matchfunction-config.yaml.tpl", {
+      players_per_match = format("%q", var.open-match-matchfunction.players_per_match)
+  })
+  filename = "${path.module}/${var.services_directory}/open-match/matchfunction/config.yaml"
+}
+
 resource "google_gke_hub_membership" "services-gke-membership" {
   provider      = google-beta
   project       = var.project

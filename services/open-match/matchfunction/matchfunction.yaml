@@ -33,6 +33,9 @@ spec:
           ports:
           - name: grpc
             containerPort: 50502
+          envFrom:
+          - configMapRef:
+              name: open-match-matchfunction
 ---
 kind: Service
 apiVersion: v1

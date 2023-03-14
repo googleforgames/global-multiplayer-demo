@@ -19,7 +19,13 @@
 // matchmaking logic in this function based on your game's requirements.
 package main
 
-import "github.com/googleforgames/global-multiplayer-demo/services/open-match/matchfunction/mmf"
+import (
+	"log"
+	"os"
+	"strconv"
+
+	"github.com/googleforgames/global-multiplayer-demo/services/open-match/matchfunction/mmf"
+)
 
 // This tutorial implenents a basic Match Function that is hosted in the below
 // configured port. You can also configure the Open Match QueryService endpoint
@@ -31,5 +37,15 @@ const (
 )
 
 func main() {
-	mmf.Start(queryServiceAddress, serverPort)
+	mmf.Start(queryServiceAddress, serverPort, playersPerMatch())
+}
+
+func playersPerMatch() int {
+	ppms := os.Getenv("PLAYERS_PER_MATCH")
+	ppm, err := strconv.Atoi(ppms)
+	if err != nil {
+		log.Fatalf("PLAYERS_PER_MATCH not a valid int: %q", ppms)
+	}
+	log.Printf("PLAYERS_PER_MATCH=%d", ppm)
+	return ppm
 }

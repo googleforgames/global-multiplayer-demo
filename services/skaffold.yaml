@@ -24,6 +24,7 @@ manifests:
     - frontend/deployment.yaml
     - open-match/director/director.yaml
     - open-match/matchfunction/matchfunction.yaml
+    - open-match/matchfunction/config.yaml
     - open-match/fake-frontend/fake-frontend.yaml
 deploy:
   kubectl:
