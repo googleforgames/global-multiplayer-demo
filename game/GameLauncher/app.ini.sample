@@ -16,10 +16,10 @@ frontend_api = http://[IP_ADDRESS].sslip.io
 callback_listen_port = 8082
 
 [windows]
-binary = DroidshooterClient.exe
+binary = .\DroidshooterClient.exe
 
 [linux]
-binary = DroidshooterClient.sh
+binary = ./DroidshooterClient.sh
 
 [darwin]
-binary = DroidshooterClient
+binary = ./DroidshooterClient

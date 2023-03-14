@@ -65,7 +65,7 @@ func main() {
 	myApp = app.New()
 	myWindow = myApp.NewWindow("Google for Games Launcher")
 	myWindow.SetFixedSize(true)
-	myWindow.Resize(fyne.NewSize(320, 260))
+	myWindow.Resize(fyne.NewSize(320, 480))
 	myWindow.CenterOnScreen()
 
 	buttonSignIn := widget.NewButtonWithIcon("Sign-in with Google", theme.HomeIcon(), func() {

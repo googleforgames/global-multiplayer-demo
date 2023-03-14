@@ -23,12 +23,12 @@ DroidshooterServerPing::~DroidshooterServerPing()
 {
 }
 
-void DroidshooterServerPing::CheckIfServerIsOnline(FString ServerPublicIP, FString ServerPort)
+void DroidshooterServerPing::CheckIfServerIsOnline(FString ServerPublicIP, FString ServerPort, FString RegionName)
 {
 	/* First bind our OnServerCheckFinished function to PingResult.
 	* When we get any reply from UDP server PingResult will be called
 	* and when PingResult is called the binded method (OnServerCheckFinished) is also called. */
-	PingResult.BindRaw(this, &DroidshooterServerPing::OnServerCheckFinished);
+	PingResult.BindRaw(this, &DroidshooterServerPing::OnServerCheckFinished, RegionName);
 
 	/* Our UDP server public ip and port we have to ping.
 	* Port should be the exact same port we defined on UDP server node.js file on EC2 server */
@@ -38,7 +38,7 @@ void DroidshooterServerPing::CheckIfServerIsOnline(FString ServerPublicIP, FStri
 	FUDPPing::UDPEcho(Address, 5.f, PingResult);
 }
 
-void DroidshooterServerPing::OnServerCheckFinished(FIcmpEchoResult Result)
+void DroidshooterServerPing::OnServerCheckFinished(FIcmpEchoResult Result, FString RegionName)
 {
 	// Unbind the function. Its no longer required.
 	PingResult.Unbind();
@@ -70,13 +70,13 @@ void DroidshooterServerPing::OnServerCheckFinished(FIcmpEchoResult Result)
 	}
 
 	if (Result.Status == EIcmpResponseStatus::Success) {
-		pingResponses.insert({Result.Time, Result.ResolvedAddress });
+		pingResponses.insert({Result.Time, RegionName });
 	}
 	
 	serversToValidate--;
 
 	// Simple log
-	UE_LOG(LogDroidshooter, Log, TEXT("Ping status: %s @ %s in %.2fms"), *PingStatus, *Result.ResolvedAddress, Result.Time);
+	UE_LOG(LogDroidshooter, Log, TEXT("Ping status: %s @ %s in %.2fms at %s"), *PingStatus, *Result.ResolvedAddress, Result.Time, *RegionName);
 }
 
 void DroidshooterServerPing::SetServersToValidate(uint16_t num) {

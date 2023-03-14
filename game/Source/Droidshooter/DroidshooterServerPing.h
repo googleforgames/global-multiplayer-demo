@@ -34,10 +34,10 @@ public:
 
 	/* Sends a UDP echo to the given server and waits for a reply */
 	UFUNCTION(BlueprintCallable)
-	void CheckIfServerIsOnline(FString ServerPublicIP, FString ServerPort);
+	void CheckIfServerIsOnline(FString ServerPublicIP, FString ServerPort, FString RegionName);
 
 	/* Delegate called when we get a reply from our EC2 UDP server */
-	void OnServerCheckFinished(FIcmpEchoResult Result);
+	void OnServerCheckFinished(FIcmpEchoResult Result, FString RegionName);
 
 	void SetServersToValidate(uint16_t num);
 	bool AllServersValidated();
