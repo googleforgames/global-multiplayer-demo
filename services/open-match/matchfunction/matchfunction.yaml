@@ -33,6 +33,12 @@ spec:
           ports:
           - name: grpc
             containerPort: 50502
+          env:
+            - name: PLAYERS_PER_MATCH
+              valueFrom:
+                configMapKeyRef:
+                  name: open-match-matchfunction
+                  key: players_per_match
 ---
 kind: Service
 apiVersion: v1

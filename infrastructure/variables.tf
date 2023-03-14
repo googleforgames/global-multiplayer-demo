@@ -134,6 +134,15 @@ variable "services_directory" {
   description = "Services Directory for output to Cloud Deploy related files"
 }
 
+### Open Match Match Function Variables ###
+
+variable "open-match-matchfunction" {
+  type = object({
+    players_per_match = number
+  })
+  description = "Configuration for the Open Match Match Function"
+}
+
 ### Dedicated Game Server Variables
 
 variable "github_pat" {

@@ -29,12 +29,13 @@ type MatchFunctionService struct {
 	grpc               *grpc.Server
 	queryServiceClient pb.QueryServiceClient
 	port               int
+	playersPerMatch    int
 }
 
 // Start creates and starts the Match Function server and also connects to Open
 // Match's queryService service. This connection is used at runtime to fetch tickets
 // for pools specified in MatchProfile.
-func Start(queryServiceAddr string, serverPort int) {
+func Start(queryServiceAddr string, serverPort int, playersPerMatch int) {
 	// Connect to QueryService.
 	conn, err := grpc.Dial(queryServiceAddr, grpc.WithInsecure())
 	if err != nil {
@@ -44,6 +45,7 @@ func Start(queryServiceAddr string, serverPort int) {
 
 	mmfService := MatchFunctionService{
 		queryServiceClient: pb.NewQueryServiceClient(conn),
+		playersPerMatch:    playersPerMatch,
 	}
 
 	// Create and host a new gRPC service on the configured port.
