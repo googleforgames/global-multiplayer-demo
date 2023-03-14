@@ -211,17 +211,22 @@ gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=global
 
 ## Game Client
 
-To build the Game Client for your host machine, you will need:
-
-* [Unreal Engine 5.1.0](https://www.unrealengine.com/en-US/download) for your platform.
-
-If you are going to develop with this sample, you will want to 
+To build the Game Client for your host machine, you will need to
 [install Unreal Engine from source](https://docs.unrealengine.com/5.1/en-US/building-unreal-engine-from-source/),
-so you can build the `Client` and `Server` builds, but the downloaded editor will do for a quick build. 
+as the downloaded installation does not have the functionality to produce separate Client and Server builds.
 
-Open the [`game`](./game) folder in Unreal Engine. Once finished opening, you can run the game client directly within
-the editor (Hit the ▶️ button), or we can package the project via: Platforms > {your host platform} > Package Project,
-and execute the resultant package.
+> Installing Unreal Engine from source can take several hours, and use all your CPU. You have been warned!
+
+Open [`game/Droidshooter.uproject`](./game) in the Unreal Engine Editor.  
+
+To package the project:
+
+1. Select: Platforms > {your host platform} > DroidshooterClient
+2. Platforms > {your host platform} > Cook Content
+3. Platforms > {your host platform} > Package Project
+
+During development, you can also run the game client directly within
+the editor (Hit the ▶️ button).
 
 To run the game client from inside the editor, you would need to launch the editor with -token=[JWT_TOKEN] -frontend_api=[IP_ADDRESS]
 
@@ -262,8 +267,8 @@ go run main.go
 
 ##### This project was made with a different version of the Unreal Engine.
 
-If you hit this issue, it may be that you are building on a different host platform than the original. To solve,
-click: More Options > Convert in-place.
+If you hit this issue, it may be that you are building on a different host platform than the original. or your
+installation of Unreal may have a unique GUID. To solve, click: More Options > Convert in-place.
 
 The project should open as normal now.
 
