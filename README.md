@@ -223,6 +223,16 @@ Open the [`game`](./game) folder in Unreal Engine. Once finished opening, you ca
 the editor (Hit the ▶️ button), or we can package the project via: Platforms > {your host platform} > Package Project,
 and execute the resultant package.
 
+To run the game client from inside the editor, you would need to launch the editor with -token=[JWT_TOKEN] -frontend_api=[IP_ADDRESS]
+
+Obtaining frontend api ip address can be achieved via:
+```shell
+gcloud compute addresses list --filter=name=frontend-service --format="value(address)"
+```
+
+JWT token can be obtained by accessing frontend api's ip address with '/login' path, such as "http://[IP_ADDRESS].sslip.io/login" and extracting it from the URL.
+
+
 ## Run the Game Launcher
 
 To run the game launcher, you will need to have [Go](https://go.dev/dl/) installed to run it. 
