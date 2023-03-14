@@ -35,7 +35,7 @@ ADroidshooterGameMode::ADroidshooterGameMode()
 	}*/
 
 	AgonesSDK = CreateDefaultSubobject<UAgonesComponent>(TEXT("AgonesSDK"));
-	ApiKey = FPlatformMisc::GetEnvironmentVariable(TEXT("DS_FE_API_KEY"));
+	ApiKey = FPlatformMisc::GetEnvironmentVariable(TEXT("API_ACCESS_KEY"));
 }
 
 void ADroidshooterGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -46,12 +46,12 @@ void ADroidshooterGameMode::InitGame(const FString& MapName, const FString& Opti
 	if (GetWorld()->IsNetMode(NM_DedicatedServer)) {
 		UE_LOG(LogDroidshooter, Log, TEXT("Server Started for map: %s"), *MapName);
 		
-		if (FParse::Value(FCommandLine::Get(), TEXT("frontend_api"), FrontendApi))
+		if (FParse::Value(FCommandLine::Get(), TEXT("stats_api"), StatsApi))
 		{
-			UE_LOG(LogDroidshooter, Log, TEXT("Frontend API set from command line param: %s"), *FrontendApi);
+			UE_LOG(LogDroidshooter, Log, TEXT("Stats API set from command line param: %s"), *StatsApi);
 		}
 		else {
-			UE_LOG(LogDroidshooter, Log, TEXT("Frontend API was NOT provided! Check your command line params"));
+			UE_LOG(LogDroidshooter, Log, TEXT("Stats API was NOT provided! Check your command line params"));
 		}
 
 	}
@@ -145,7 +145,11 @@ void ADroidshooterGameMode::PlayerHit() {
 
 void ADroidshooterGameMode::DumpStats(FString token, const FString gameId, const int kills, const int deaths)
 {
-	UE_LOG(LogDroidshooter, Log, TEXT("--- Sending stats to %s with key %s (user's token: %s)"), *FrontendApi, *ApiKey, *token);
+	if (StatsApi.Len() == 0) {
+		return;
+	}
+
+	UE_LOG(LogDroidshooter, Log, TEXT("--- Sending stats to %s with key %s (user's token: %s)"), *StatsApi, *ApiKey, *token);
 
 	TSharedRef<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject);
 	TArray<TSharedPtr<FJsonValue>>  JsonServerArray;
@@ -159,7 +163,7 @@ void ADroidshooterGameMode::DumpStats(FString token, const FString gameId, const
 	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
 	FJsonSerializer::Serialize(JsonRootObject, Writer);
 
-	FString uriStats = FrontendApi + TEXT("/endgame_stats");
+	FString uriStats = StatsApi + TEXT("/stats");
 
 	FHttpModule& httpModule = FHttpModule::Get();
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> pRequest = httpModule.CreateRequest();

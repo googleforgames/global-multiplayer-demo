@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -76,7 +75,6 @@ func main() {
 	r.GET("/profile", auth.VerifyJWT(handleProfile))
 	r.GET("/stats", auth.VerifyJWT(handleGetStats))
 	r.PUT("/stats", auth.VerifyJWT(handleUpdateStats))
-	r.POST("/endgame_stats", auth.VerifyApiKey(handleUpdateEndgameStats))
 	r.GET("/ping", auth.VerifyJWT(handlePingServers))
 
 	log.Printf("Google for Games Frontend API is listening on :%s\n", os.Getenv("LISTEN_PORT"))
@@ -214,16 +212,6 @@ func handleUpdateStats(id string, c *gin.Context) {
 		}
 
 	}
-}
-
-// Updating the after game stats on per-user basis
-func handleUpdateEndgameStats(c *gin.Context) {
-	// TODO: WIP: saving stats
-
-	content, _ := ioutil.ReadAll(c.Request.Body)
-	log.Print(string(content))
-
-	c.JSON(http.StatusOK, "OK")
 }
 
 // WIP: Needs an endpoint to fetch the ping servers

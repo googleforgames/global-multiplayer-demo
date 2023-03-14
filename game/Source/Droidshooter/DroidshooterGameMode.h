@@ -40,9 +40,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAgonesComponent* AgonesSDK;
 
-	/** Frontend api endpoint */
+	/** Stats api endpoint */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString FrontendApi;
+	FString StatsApi;
 
 	/** Frontend api endpoint access key - server only */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

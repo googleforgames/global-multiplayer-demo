@@ -63,8 +63,8 @@ func main() {
 	// UI
 	myApp = app.New()
 	myWindow = myApp.NewWindow("Google for Games Launcher")
-	//myWindow.SetFixedSize(true)
 	myWindow.Resize(fyne.NewSize(320, 260))
+	myWindow.SetFixedSize(true)
 	myWindow.CenterOnScreen()
 
 	image := canvas.NewImageFromFile("assets/header.png")
