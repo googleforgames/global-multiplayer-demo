@@ -228,9 +228,20 @@ To package the project:
 During development, you can also run the game client directly within
 the editor (Hit the ▶️ button).
 
+To run the game client from inside the editor, you would need to launch the editor with -token=[JWT_TOKEN] -frontend_api=[IP_ADDRESS]
+
+Obtaining frontend api ip address can be achieved via:
+```shell
+gcloud compute addresses list --filter=name=frontend-service --format="value(address)"
+```
+
+JWT token can be obtained by accessing frontend api's ip address with '/login' path, such as "http://[IP_ADDRESS].sslip.io/login" and extracting it from the URL.
+
+
 ## Run the Game Launcher
 
-To run the game launcher, you will need to have [Go](https://go.dev/dl/) installed to run it. 
+To run the game launcher, you will need to have [Go](https://go.dev/dl/) installed to run it, as well as the
+[prerequisites for the Fyne Go Cross Platform UI library](https://developer.fyne.io/started/).
 
 ```shell
 cd $GAME_DEMO_HOME/game/GameLauncher

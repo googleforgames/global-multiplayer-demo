@@ -19,6 +19,9 @@
 #include "Droidshooter.h"
 #include "EngineUtils.h"
 #include "GameFramework/PlayerStart.h"
+#include "HttpModule.h"
+#include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
 #include "AgonesComponent.h"
 #include "Classes.h"
 #include <random>
@@ -32,7 +35,7 @@ ADroidshooterGameMode::ADroidshooterGameMode()
 	}*/
 
 	AgonesSDK = CreateDefaultSubobject<UAgonesComponent>(TEXT("AgonesSDK"));
-	ApiKey = FGenericPlatformMisc::GetEnvironmentVariable(*FString("DS_FE_API_KEY"));
+	ApiKey = FPlatformMisc::GetEnvironmentVariable(TEXT("API_ACCESS_KEY"));
 }
 
 void ADroidshooterGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -41,7 +44,22 @@ void ADroidshooterGameMode::InitGame(const FString& MapName, const FString& Opti
     UE_LOG(LogDroidshooter, Log, TEXT("Game is running: %s %s"), *MapName, *Options);
 
 	if (GetWorld()->IsNetMode(NM_DedicatedServer)) {
+
 		UE_LOG(LogDroidshooter, Log, TEXT("Server Started for map: %s"), *MapName);
+
+		FNetworkVersion::IsNetworkCompatibleOverride.BindLambda([](uint32 LocalNetworkVersion, uint32 RemoteNetworkVersion)
+		{
+			return true;
+		});
+
+		if (FParse::Value(FCommandLine::Get(), TEXT("stats_api"), StatsApi))
+		{
+			UE_LOG(LogDroidshooter, Log, TEXT("Stats API set from command line param: %s"), *StatsApi);
+		}
+		else {
+			UE_LOG(LogDroidshooter, Log, TEXT("Stats API was NOT provided! Check your command line params"));
+		}
+
 	}
 
 	for (TActorIterator<APlayerStart> It(GetWorld()); It; ++It)
@@ -129,4 +147,64 @@ void ADroidshooterGameMode::PlayerHit() {
 		UE_LOG(LogDroidshooter, Log, TEXT("Player was hit (in DroidshooterGameMode)"));
 		GS->PlayerHit();
 	}
+}
+
+void ADroidshooterGameMode::DumpStats(FString token, const FString gameId, const int kills, const int deaths)
+{
+	if (StatsApi.Len() == 0) {
+		return;
+	}
+
+	UE_LOG(LogDroidshooter, Log, TEXT("--- Sending stats to %s with key %s (user's token: %s)"), *StatsApi, *ApiKey, *token);
+
+	TSharedRef<FJsonObject> JsonRootObject = MakeShareable(new FJsonObject);
+	TArray<TSharedPtr<FJsonValue>>  JsonServerArray;
+
+	JsonRootObject->Values.Add("GameId", MakeShareable(new FJsonValueString(gameId)));
+	JsonRootObject->Values.Add("Token", MakeShareable(new FJsonValueString(token)));
+	JsonRootObject->Values.Add("Kills", MakeShareable(new FJsonValueNumber(kills)));
+	JsonRootObject->Values.Add("Deaths", MakeShareable(new FJsonValueNumber(deaths)));
+
+	FString OutputString;
+	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
+	FJsonSerializer::Serialize(JsonRootObject, Writer);
+
+	FString uriStats = StatsApi + TEXT("/stats");
+
+	FHttpModule& httpModule = FHttpModule::Get();
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> pRequest = httpModule.CreateRequest();
+
+	pRequest->SetHeader("Authorization", "Basic " + ApiKey);
+	pRequest->SetVerb(TEXT("POST"));
+	pRequest->SetURL(uriStats);
+	pRequest->SetHeader(TEXT("User-Agent"), "X-UnrealEngine-Agent");
+	pRequest->SetHeader("Content-Type", TEXT("application/json"));
+	pRequest->SetHeader(TEXT("Accepts"), TEXT("application/json"));
+
+	pRequest->SetContentAsString(OutputString);
+
+	// Set the callback, which will execute when the HTTP call is complete
+	pRequest->OnProcessRequestComplete().BindLambda(
+		[&](
+			FHttpRequestPtr pRequest,
+			FHttpResponsePtr pResponse,
+			bool connectedSuccessfully) mutable {
+
+				if (connectedSuccessfully) {
+					/* Eventual check for error codes & retry */
+					UE_LOG(LogDroidshooter, Log, TEXT("Stats data sent for one player."));
+				}
+				else {
+					switch (pRequest->GetStatus()) {
+					case EHttpRequestStatus::Failed_ConnectionError:
+						UE_LOG(LogDroidshooter, Log, TEXT("Connection failed."));
+					default:
+						UE_LOG(LogDroidshooter, Log, TEXT("Request failed."));
+					}
+				}
+		});
+
+	// Finally, submit the request for processing
+	pRequest->ProcessRequest();
+
 }

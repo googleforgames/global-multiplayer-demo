@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -64,11 +65,8 @@ func main() {
 	myApp = app.New()
 	myWindow = myApp.NewWindow("Google for Games Launcher")
 	myWindow.SetFixedSize(true)
-	myWindow.Resize(fyne.NewSize(320, 260))
+	myWindow.Resize(fyne.NewSize(320, 480))
 	myWindow.CenterOnScreen()
-
-	image := canvas.NewImageFromFile("assets/header.png")
-	image.FillMode = canvas.ImageFillContain
 
 	buttonSignIn := widget.NewButtonWithIcon("Sign-in with Google", theme.HomeIcon(), func() {
 		openBrowser(iniCfg.Section("").Key("frontend_api").String() + "/login")
@@ -80,7 +78,7 @@ func main() {
 	})
 
 	subGrid := container.New(layout.NewGridLayout(1), layout.NewSpacer(), buttonSignIn, buttonExit)
-	grid := container.New(layout.NewGridLayout(1), image, subGrid)
+	grid := container.New(layout.NewVBoxLayout(), headerImage(), subGrid)
 
 	myWindow.SetContent(grid)
 
@@ -94,17 +92,6 @@ func main() {
 }
 
 func handleGoogleCallback(rw http.ResponseWriter, req *http.Request) {
-	defer func() {
-		if err := recover(); err != nil {
-			rw.Header().Set("Access-Control-Allow-Origin", "*")
-			rw.Header().Set("Content-Type", "application/json")
-			rw.WriteHeader(http.StatusInternalServerError)
-
-			fmt.Fprintf(rw, "{\"error\": \"%s\"}", err)
-			log.Printf("panic occurred: %s", err)
-		}
-	}()
-
 	// Save my token
 	myToken = req.FormValue("token")
 	if len(myToken) == 0 {
@@ -129,17 +116,36 @@ func handleGoogleCallback(rw http.ResponseWriter, req *http.Request) {
 
 func updateUI(playerName string) {
 	// Update UI with profile info and launch game button
-	image := canvas.NewImageFromFile("assets/header.png")
-	image.FillMode = canvas.ImageFillContain
-
 	label1 := widget.NewLabel(fmt.Sprintf("Welcome %s!", playerName))
 	label1.Alignment = fyne.TextAlignCenter
 	label2 := widget.NewLabel("Are you ready to play again?!")
 	label2.Alignment = fyne.TextAlignCenter
 
+	resolutions := widget.NewSelect([]string{"800x600", "1024x768", "1280x1024", "1600x1200", "1920x1080"}, func(s string) {
+		log.Println("Instances set to", s)
+	})
+	resolutions.SetSelectedIndex(1)
+	windowed := widget.NewCheck("Windowed?", func(value bool) {
+		log.Println("Windowed set to", value)
+		if value {
+			resolutions.Enable()
+		} else {
+			resolutions.Disable()
+		}
+	})
+	windowed.Checked = true
+	instances := widget.NewSelect([]string{"1", "2", "3", "4"}, func(s string) {
+		log.Println("Instances set to", s)
+	})
+	instances.SetSelectedIndex(0)
+	label3 := widget.NewLabel("Instances:")
+	clientLayout := container.New(layout.NewVBoxLayout(),
+		container.New(layout.NewHBoxLayout(), windowed, label3, instances),
+		resolutions)
+
 	buttonPlay := widget.NewButtonWithIcon("Open Droidshooter", theme.MediaPlayIcon(), func() {
 		log.Println("Tapped Play!")
-		handlePlay()
+		handlePlay(windowed.Checked, instances.SelectedIndex()+1, resolutions.Selected)
 	})
 
 	buttonExit := widget.NewButtonWithIcon("Exit", theme.CancelIcon(), func() {
@@ -149,21 +155,45 @@ func updateUI(playerName string) {
 
 	infoGrid := container.New(layout.NewGridLayout(1), label1, label2)
 	subGrid := container.New(layout.NewGridLayout(1), infoGrid, buttonPlay, buttonExit)
-	grid := container.New(layout.NewGridLayout(1), image, subGrid)
+	grid := container.New(layout.NewVBoxLayout(), headerImage(), subGrid, clientLayout)
 	myWindow.SetContent(grid)
 }
 
-func handlePlay() {
-	params := []string{fmt.Sprintf("-token=%s", myToken), fmt.Sprintf("-frontend_api=%s", iniCfg.Section("").Key("frontend_api").String())}
-	
-	// Get the binary file from the ini
-	cmd := exec.Command(iniCfg.Section(runtime.GOOS).Key("binary").String(), params...)
-	log.Printf("Launching: %s %s", iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
+func headerImage() *canvas.Image {
+	image := canvas.NewImageFromFile("assets/header.png")
+	image.FillMode = canvas.ImageFillContain
+	image.SetMinSize(fyne.Size{
+		Height: 140,
+	})
+	return image
+}
 
-	_, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("Error: %s", err)
+func handlePlay(windowed bool, instances int, res string) {
+	params := []string{fmt.Sprintf("-token=%s", myToken), fmt.Sprintf("-frontend_api=%s", iniCfg.Section("").Key("frontend_api").String())}
+
+	if windowed {
+		params = append(params, "-WINDOWED")
+
+		res := strings.Split(res, "x")
+		params = append(params, fmt.Sprintf("-ResX=%s", res[0]))
+		params = append(params, fmt.Sprintf("-ResY=%s", res[1]))
 	}
+
+	for i := 0; i < instances; i++ {
+		go func() {
+			// Get the binary file from the ini
+			cmd := exec.Command(iniCfg.Section(runtime.GOOS).Key("binary").String(), params...)
+			log.Printf("[%d] Launching: %s %s", i, iniCfg.Section(runtime.GOOS).Key("binary").String(), params)
+
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				log.Printf("[%d] Error: %s", i, err)
+			} else {
+				log.Printf("[%d] Unreal output: %s", i, output)
+			}
+		}()
+	}
+
 }
 
 func getPlayerName() string {

@@ -30,8 +30,8 @@ public:
 	ADroidshooterPlayerState();
 
 protected:
-	UPROPERTY(ReplicatedUsing = OnRep_TotalHits)
-	uint16 TotalHits;
+	UPROPERTY(ReplicatedUsing = OnRep_TotalHits, BlueprintReadWrite)
+	int TotalHits;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Health)
 	float Health;
