@@ -44,8 +44,14 @@ void ADroidshooterGameMode::InitGame(const FString& MapName, const FString& Opti
     UE_LOG(LogDroidshooter, Log, TEXT("Game is running: %s %s"), *MapName, *Options);
 
 	if (GetWorld()->IsNetMode(NM_DedicatedServer)) {
+
 		UE_LOG(LogDroidshooter, Log, TEXT("Server Started for map: %s"), *MapName);
-		
+
+		FNetworkVersion::IsNetworkCompatibleOverride.BindLambda([](uint32 LocalNetworkVersion, uint32 RemoteNetworkVersion)
+		{
+			return true;
+		});
+
 		if (FParse::Value(FCommandLine::Get(), TEXT("stats_api"), StatsApi))
 		{
 			UE_LOG(LogDroidshooter, Log, TEXT("Stats API set from command line param: %s"), *StatsApi);
