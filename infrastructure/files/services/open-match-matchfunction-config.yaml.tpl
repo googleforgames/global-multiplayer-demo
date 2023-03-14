@@ -18,4 +18,4 @@ metadata:
   name: open-match-matchfunction
   namespace: open-match
 data:
-  players_per_match: ${players_per_match}
+  PLAYERS_PER_MATCH: ${players_per_match}
