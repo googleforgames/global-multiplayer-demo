@@ -121,10 +121,14 @@ func updateUI(playerName string) {
 	label2 := widget.NewLabel("Are you ready to play again?!")
 	label2.Alignment = fyne.TextAlignCenter
 
-	resolutions := widget.NewSelect([]string{"800x600", "1024x768", "1280x1024", "1600x1200", "1920x1080"}, func(s string) {
-		log.Println("Instances set to", s)
-	})
-	resolutions.SetSelectedIndex(1)
+	resolutions := widget.NewSelect([]string{
+		"320x240", "512x384", "640x480",
+		"720x480", "800x600", "1024x768",
+		"1280x1024", "1600x1200", "1920x1080"},
+		func(s string) {
+			log.Println("Instances set to", s)
+		})
+	resolutions.SetSelected("1280x1024")
 	windowed := widget.NewCheck("Windowed?", func(value bool) {
 		log.Println("Windowed set to", value)
 		if value {
