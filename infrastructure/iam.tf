@@ -50,6 +50,7 @@ resource "google_project_iam_member" "clouddeploy-iam" {
   project = var.project
   for_each = toset([
     "roles/container.admin",
+    "roles/artifactregistry.reader",
     "roles/storage.admin"
   ])
   role   = each.key
