@@ -217,7 +217,7 @@ func handleUpdateStats(id string, c *gin.Context) {
 // WIP: Needs an endpoint to fetch the ping servers
 func handlePingServers(id string, c *gin.Context) {
 	client := &http.Client{}
-	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/list", os.Getenv("PING_SERVICE")), c.Request.Body)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/list", os.Getenv("PING_SERVICE")), c.Request.Body)
 	if shared.HandleError(c, http.StatusInternalServerError, "fetch ping servers", err) {
 		return
 	}
@@ -239,7 +239,7 @@ func handlePingServers(id string, c *gin.Context) {
 		c.JSON(http.StatusOK, pingServers)
 		return
 	} else {
-		err := fmt.Errorf("unable to update profile stats, error code: %d", response.StatusCode)
+		err := fmt.Errorf("unable to fetch ping servers, error code: %d", response.StatusCode)
 		if shared.HandleError(c, http.StatusBadRequest, "stats update", err) {
 			return
 		}
