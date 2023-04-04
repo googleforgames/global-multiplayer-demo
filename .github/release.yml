@@ -15,9 +15,16 @@
 changelog:
   exclude:
     labels:
+      - bug
+      - cleanup
+      - design
+      - documentation
       - duplicate
-      - question
+      - enhancement
+      - good first issue
+      - help wanted
       - invalid
+      - question
       - wontfix
   categories:
     - title: Breaking changes
