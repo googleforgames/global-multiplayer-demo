@@ -15,30 +15,30 @@
 changelog:
   exclude:
     labels:
-      - bug
-      - cleanup
-      - design
-      - documentation
       - duplicate
-      - enhancement
-      - good first issue
       - help wanted
       - invalid
       - question
       - wontfix
   categories:
-    - title: Breaking changes
+    - title: Design
       labels:
-        - kind/breaking
+        - design
     - title: Implemented enhancements
       labels:
-        - kind/feature
+        - enhancement
+    - title: Documentation
+      labels:
+        - documentation
     - title: Fixed bugs
       labels:
-        - kind/bug
+        - bug
     - title: Security fixes
       labels:
-        - area/security
+        - security
+    - title: Cleanup
+      labels:
+        - cleanup
     - title: Other
       labels:
         - "*"
