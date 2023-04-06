@@ -41,6 +41,7 @@ RUN mkdir -p /usr/local/gcloud \
 # Adding the package path to local
 ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 
+# Copy over Linux client to GCS bucket
 RUN gsutil -o GSUtil:parallel_composite_upload_threshold=150M -m rsync -r /tmp/project/Packaged/Linux/ gs://${CLIENT_BUCKET}/Linux/
 
 # Remove Linux client & gcloud binaries from container once done
