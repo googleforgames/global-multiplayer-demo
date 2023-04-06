@@ -40,3 +40,6 @@ infrastructure/schema/liquibase.properties
 # Ignore go.work, go.work.sum (results of `go work`)
 go.work
 go.work.sum
+
+# Ignore generated Dockerfile
+game/Dockerfile

@@ -211,6 +211,11 @@ gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=global
 
 ## Game Client
 
+### Pre-Built Linux Game Binaries
+
+The Cloud Build process will build the Linux Game Client and place it into a GCS Storage bucket. The GCS bucket name will be `<PROJECT ID>-game-client-binaries`
+
+### Building the Game Client
 To build the Game Client for your host machine, you will need to
 [install Unreal Engine from source](https://docs.unrealengine.com/5.1/en-US/building-unreal-engine-from-source/),
 as the downloaded installation does not have the functionality to produce separate Client and Server builds.

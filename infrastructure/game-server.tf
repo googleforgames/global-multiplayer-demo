@@ -39,3 +39,21 @@ resource "google_secret_manager_secret_iam_binding" "cloud_build_binding" {
     "serviceAccount:cloudbuild-cicd@${var.project}.iam.gserviceaccount.com",
   ]
 }
+
+# Make Game Dockerfile 
+resource "local_file" "game-dockerfile" {
+  content = templatefile(
+    "${path.module}/files/game/Dockerfile.tpl", {
+      CLIENT_BUCKET = google_storage_bucket.game-client-binaries.name
+  })
+  filename = "${path.module}/../game/Dockerfile"
+}
+
+resource "google_storage_bucket" "game-client-binaries" {
+  project       = var.project
+  name          = "${var.project}-game-client-binaries"
+  location      = "US"
+  force_destroy = true
+
+  public_access_prevention = "enforced"
+}

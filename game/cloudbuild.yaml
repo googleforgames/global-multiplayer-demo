@@ -27,7 +27,7 @@ steps:
       - CR_PAT
   - name: gcr.io/cloud-builders/docker
     id: build-image
-    args: [ "build", ".", "-t", "${_UNREAL_SERVER_IMAGE}" ]
+    args: [ "build", ".", "-t", "${_UNREAL_SERVER_IMAGE}", "--network=cloudbuild" ]
 
   #
   # Deployment
