@@ -19,17 +19,6 @@
 FROM ghcr.io/epicgames/unreal-engine:dev-slim-5.1.0 as builder
 ARG SERVER_CONFIG=Development
 
-# Downloading gcloud package
-RUN curl -s https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz > /tmp/google-cloud-sdk.tar.gz
-
-# Installing the package
-RUN mkdir -p /usr/local/gcloud \
-  && tar -C /usr/local/gcloud -xf /tmp/google-cloud-sdk.tar.gz \
-  && /usr/local/gcloud/google-cloud-sdk/install.sh -q 2>&1
-
-# Adding the package path to local
-ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
-
 COPY --chown=ue4:ue4 . /tmp/project
 
 # Build Droidshooter: Linux Server & Linux Client
@@ -40,10 +29,21 @@ RUN /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
 	-ArchiveDirectory=/tmp/project/Packaged \
 	-Platform=Linux
 
-# Copy over Linux Client to GCS Bucket
-RUN gsutil -o GSUtil:parallel_composite_upload_threshold=150M rsync /tmp/project/Packaged/Linux/ gs://${CLIENT_BUCKET}/Linux/
+# Downloading gcloud package
+USER root
+RUN curl -s https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz > /tmp/google-cloud-sdk.tar.gz
 
-# Remove Linux client & gcloud binaries from container once done using them
+# Installing the package
+RUN mkdir -p /usr/local/gcloud \
+  && tar -C /usr/local/gcloud -xf /tmp/google-cloud-sdk.tar.gz \
+  && /usr/local/gcloud/google-cloud-sdk/install.sh -q 2>&1
+
+# Adding the package path to local
+ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
+
+RUN gsutil -o GSUtil:parallel_composite_upload_threshold=150M -m rsync -r /tmp/project/Packaged/Linux/ gs://${CLIENT_BUCKET}/Linux/
+
+# Remove Linux client & gcloud binaries from container once done
 RUN rm -fR /tmp/project/Packaged/Linux/ && rm -fR /usr/local/gcloud/
 
 FROM gcr.io/distroless/cc-debian11:nonroot
