@@ -47,6 +47,7 @@ RUN gsutil -o GSUtil:parallel_composite_upload_threshold=150M -m rsync -r /tmp/p
 # Remove Linux client & gcloud binaries from container once done
 RUN rm -fR /tmp/project/Packaged/Linux/ && rm -fR /usr/local/gcloud/
 
+USER builder
 FROM gcr.io/distroless/cc-debian11:nonroot
 COPY --from=builder --chown=nonroot:nonroot /tmp/project/Packaged/LinuxServer /home/nonroot/project
 EXPOSE 7777/udp
