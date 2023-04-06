@@ -27,7 +27,7 @@ import (
 	"open-match.dev/open-match/pkg/pb"
 )
 
-// The Director in this tutorial continously polls Open Match for the Match
+// The Director in this tutorial continuously polls Open Match for the Match
 // Profiles and makes random assignments for the Tickets in the returned matches.
 
 const (
