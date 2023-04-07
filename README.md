@@ -24,6 +24,17 @@ Projects and products utilised include:
 The **Droid Shooter** game, is composed of a game client and dedicated server, and multiple backend services hosted
 around the globe.
 
+### Top Level Folders
+
+| Folder                             | Description                                                                                                                                                                                                                                                                                   |
+|------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [infrastructure](./infrastructure) | This contains all the Terraform scripts and resources to create the infrastructure that the project relies on. It is worth noting that the Terraform scripts will generate configuration files that are used by Cloud Deploy and Kubernetes in both the `platform` and `services` directories |
+| [platform](./platform)             | The `platform` directory contains the Cloud Build and Cloud Deploy scripts to set up the application platforms, such as Open Match and Agones, on the infrastructure that the `infrastructure` folder provisions.                                                                             |
+| [services](./services)             | Contains the code for all the backend services that Droid Shooter requires, and Cloud Build and Cloud Deploy scripts to build and deploy these services to their appropriate hosting and storage infrastructure.                                                                              |
+| [game](./game)                     | The code for the game launcher, client and server, as well as Cloud Build, Cloud Deploy and Agones configurations for building and hosting the dedicated game servers                                                                                                                         |
+
+### System Components
+
 ![Architecture diagram](images/architecture.png)
 
 | Component                                             | Technologies                 | Description                                                                                                                                                                                                                                               |
@@ -39,7 +50,7 @@ around the globe.
 [Fyne]: https://developer.fyne.io/index.html
 [Agones Fleet]: https://agones.dev/site/docs/getting-started/create-fleet/
 [Agones Latency Ping endpoints]: https://agones.dev/site/docs/guides/ping-service/
-[Agones Allocator Endpoints]: https://agones.dev/site/docs/advanced/allocator-service/
+[Agones Allocator Service]: https://agones.dev/site/docs/advanced/allocator-service/
 
 ## Run in Your Google Cloud Project
 
