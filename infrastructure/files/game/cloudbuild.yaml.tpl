@@ -37,7 +37,7 @@ steps:
             "-ArchiveDirectory=/workspace/Packaged",
             "-Platform=Linux" ]
 
-  # Publish Linux Server container to project Artifacts Repo
+  # Buld & Publish linux server container to project Artifacts Repo
   - name: gcr.io/cloud-builders/docker
     id: publish-linux-server-container
     args: [ "build", ".", "-t", "$${_UNREAL_SERVER_IMAGE}" ]
