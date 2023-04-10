@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC All Rights Reserved.
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-!.gcloudignore
-.vs
-*.blend1
-*.fbx
-Binaries
-Build
-DerivedDataCache
-Droidshooter.sln
-Intermediate
-Packaged
-Saved
-*.code-workspace
-/Makefile
-/GameLauncher/app.ini
-cloudbuild.yaml
+#
+# Build a container for the Unreal Engine dedicated game server
+#
+
+FROM gcr.io/distroless/cc-debian11:nonroot
+USER builder
+COPY --from=builder --chown=nonroot:nonroot /workspace/Packaged/LinuxServer /home/nonroot/project
+EXPOSE 7777/udp
+ENTRYPOINT ["/home/nonroot/project/Droidshooter/Binaries/Linux/DroidshooterServer", "Droidshooter"]

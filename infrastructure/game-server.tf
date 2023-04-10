@@ -40,13 +40,13 @@ resource "google_secret_manager_secret_iam_binding" "cloud_build_binding" {
   ]
 }
 
-# Make Game Dockerfile 
-resource "local_file" "game-dockerfile" {
+# Make game cloudbuild.yaml
+resource "local_file" "game-cloudbuild" {
   content = templatefile(
-    "${path.module}/files/game/Dockerfile.tpl", {
+    "${path.module}/files/game/cloudbuild.yaml.tpl", {
       CLIENT_BUCKET = google_storage_bucket.game-client-binaries.name
   })
-  filename = "${path.module}/../game/Dockerfile"
+  filename = "${path.module}/../game/cloudbuild.yaml"
 }
 
 resource "google_storage_bucket" "game-client-binaries" {
