@@ -27,7 +27,7 @@ steps:
     secretEnv:
       - CR_PAT
 
-  # Build Linux Client & Server Binaries
+  # Build Linux Client & Server Binaries using UE4 container
   - name: ghcr.io/epicgames/unreal-engine:dev-slim-5.1.0
     id: build-linux-binaries
     args: [ "/home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh", "BuildCookRun", 
@@ -37,7 +37,7 @@ steps:
             "-ArchiveDirectory=/workspace/Packaged",
             "-Platform=Linux" ]
 
-  # Publish Linux Server binaries to project Artifacts Repo
+  # Publish Linux Server container to project Artifacts Repo
   - name: gcr.io/cloud-builders/docker
     id: publish-linux-server-container
     args: [ "build", ".", "-t", "$${_UNREAL_SERVER_IMAGE}" ]
