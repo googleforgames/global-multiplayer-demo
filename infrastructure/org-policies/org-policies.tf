@@ -27,6 +27,8 @@ module "gcp_org_policy_v2_requireShieldedVm" {
   }]
   constraint  = "compute.requireShieldedVm"
   policy_type = "boolean"
+  
+  depends_on = [google_project_service.project]
 }
 
 module "gcp_org_policy_v2_disableServiceAccountKeyCreation" {
@@ -43,6 +45,8 @@ module "gcp_org_policy_v2_disableServiceAccountKeyCreation" {
   }]
   constraint  = "iam.disableServiceAccountKeyCreation"
   policy_type = "boolean"
+
+  depends_on = [google_project_service.project]
 }
 
 module "gcp_org_policy_v2_vmCanIpForward" {
@@ -59,6 +63,8 @@ module "gcp_org_policy_v2_vmCanIpForward" {
   }]
   constraint  = "compute.vmCanIpForward"
   policy_type = "list"
+
+  depends_on = [google_project_service.project]
 }
 
 module "gcp_org_policy_v2_vmExternalIpAccess" {
@@ -75,4 +81,6 @@ module "gcp_org_policy_v2_vmExternalIpAccess" {
   }]
   constraint  = "compute.vmExternalIpAccess"
   policy_type = "list"
+
+  depends_on = [google_project_service.project]
 }

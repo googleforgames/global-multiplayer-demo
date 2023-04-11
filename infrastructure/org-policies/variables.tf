@@ -12,9 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-### Project Variables ###
+# Project Variables
 
 variable "project" {
   type        = string
   description = "GCP Project ID"
+}
+
+variable "gcp_project_services" {
+  type        = list(any)
+  description = "GCP Service APIs (<api>.googleapis.com) to enable for this project"
+  default     = []
 }

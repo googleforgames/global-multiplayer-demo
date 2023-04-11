@@ -12,10 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-resource "google_project_services" "project" {
+resource "google_project_service" "project" {
   project = var.project
-  services   = ["iam.googleapis.com", 
-                "cloudresourcemanager.googleapis.com",
-                "orgpolicy.googleapis.com"
-                ]
+  for_each = toset(var.gcp_project_services)
+  service  = each.value
+
+  timeouts {
+    create = "30m"
+    update = "40m"
+  }
+  
+  # Ensure service is truly active before continuing onward
+  provisioner "local-exec" {
+    command = <<EOF
+        while [ ! $(gcloud services list --project=${var.project} | grep ${each.value} | wc -l ) ];
+        do
+            sleep 1s 
+        done
+        EOF
+  }
+
+  disable_dependent_services = false
+  disable_on_destroy = false
 }
