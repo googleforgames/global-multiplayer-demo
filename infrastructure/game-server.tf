@@ -40,15 +40,6 @@ resource "google_secret_manager_secret_iam_binding" "cloud_build_binding" {
   ]
 }
 
-# Make game cloudbuild.yaml
-resource "local_file" "game-cloudbuild" {
-  content = templatefile(
-    "${path.module}/files/game/cloudbuild.yaml.tpl", {
-      CLIENT_BUCKET = google_storage_bucket.game-client-binaries.name
-  })
-  filename = "${path.module}/../game/cloudbuild.yaml"
-}
-
 resource "google_storage_bucket" "game-client-binaries" {
   project       = var.project
   name          = "${var.project}-game-client-binaries"

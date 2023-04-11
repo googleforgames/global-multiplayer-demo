@@ -26,4 +26,3 @@ Saved
 *.code-workspace
 /Makefile
 /GameLauncher/app.ini
-cloudbuild.yaml

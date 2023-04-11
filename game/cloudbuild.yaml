@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-serviceAccount: projects/$${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@$${PROJECT_ID}.iam.gserviceaccount.com
+serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT_ID}.iam.gserviceaccount.com
 steps:
 
   #
@@ -28,10 +28,11 @@ steps:
       - CR_PAT
 
   # Build Linux Client & Server Binaries using UE4 container
-  - name: ghcr.io/epicgames/unreal-engine:dev-slim-5.1.0
+  - name: gcr.io/cloud-builders/docker
+  #- name: ghcr.io/epicgames/unreal-engine:dev-slim-5.1.0
     id: build-linux-binaries
-    args: [ "/home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh", "BuildCookRun", 
-            "--Server", "-ServerConfig=Development",
+    args: [ "run", "ghcr.io/epicgames/unreal-engine:dev-slim-5.1.0", "/home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh", "BuildCookRun", 
+            "-Server", "-ServerConfig=Development",
             "-Project=/workspace/Droidshooter.uproject", "-UTF8Output", "-NoDebugInfo", "-AllMaps",
             "-NoP4", "-Build", "-Cook", "-Stage", "-Pak", "-Package", "-Archive",
             "-ArchiveDirectory=/workspace/Packaged",
@@ -40,7 +41,7 @@ steps:
   # Buld & Publish linux server container to project Artifacts Repo
   - name: gcr.io/cloud-builders/docker
     id: publish-linux-server-container
-    args: [ "build", ".", "-t", "$${_UNREAL_SERVER_IMAGE}" ]
+    args: [ "build", ".", "-t", "${_UNREAL_SERVER_IMAGE}" ]
 
   # Copy over Binaries to GCS
   - name: "gcr.io/cloud-builders/gcloud-slim"
@@ -50,7 +51,7 @@ steps:
       "cp",
       "--recursive",
       "/workspace/Packaged",
-      "gs://${CLIENT_BUCKET}"
+      "gs://${PROJECT_ID}-game-client-binaries"
   ]
 
   #
@@ -63,23 +64,23 @@ steps:
     entrypoint: gcloud
     args:
       [
-        "deploy", "releases", "create", "$${_RELEASE_NAME}",
+        "deploy", "releases", "create", "${_RELEASE_NAME}",
         "--delivery-pipeline", "global-game-agones-gameservers",
         "--skaffold-file", "skaffold.yaml",
-        "--images", "droidshooter-server=$${_UNREAL_SERVER_IMAGE}",
+        "--images", "droidshooter-server=${_UNREAL_SERVER_IMAGE}",
         "--region", "us-central1"
       ]
 
 artifacts:
   images:
-    - $${_REGISTRY}/droidshooter-server
+    - ${_REGISTRY}/droidshooter-server
 substitutions:
-  _UNREAL_SERVER_IMAGE: $${_REGISTRY}/droidshooter-server:$${BUILD_ID}
-  _REGISTRY: us-docker.pkg.dev/$${PROJECT_ID}/global-game-images
+  _UNREAL_SERVER_IMAGE: ${_REGISTRY}/droidshooter-server:${BUILD_ID}
+  _REGISTRY: us-docker.pkg.dev/${PROJECT_ID}/global-game-images
   _RELEASE_NAME: rel-01
 availableSecrets:
   secretManager:
-    - versionName: projects/$${PROJECT_ID}/secrets/github-packages/versions/latest
+    - versionName: projects/${PROJECT_ID}/secrets/github-packages/versions/latest
       env: CR_PAT
 options:
   dynamic_substitutions: true
