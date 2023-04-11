@@ -1,9 +1,78 @@
 # Global, World Scale Multiplayer Game Demo
 
+![Screenshot of the game](images/game.png)
+
+## Overview
+
 This multiplayer demo is a cloud first implementation of a global scale, realtime multiplayer game utilising
 dedicated game servers, utlising both Google Cloud's products and open source gaming solutions.
 
-## OAuth Authentication
+Projects and products utilised include:
+
+*   [Unreal Engine 5](https://www.unrealengine.com/) for the game client and server code.
+*   A custom [Go](https://go.dev/) game launcher for client side authentication.
+*   [Terraform](https://www.terraform.io/), for infrastructure as code.
+*   [Cloud Build](https://cloud.google.com/build) and [Cloud Deploy](https://cloud.google.com/deploy) for Continuous Integration and Deployment.
+*   [GKE Autopilot](https://cloud.google.com/kubernetes-engine/docs/concepts/autopilot-overview) for hosting the backend microservices.
+*   [Anthos Service Mesh](https://cloud.google.com/anthos/service-mesh) for and cross cluster service discovery and communication.
+*   Globally distributed [GKE](https://cloud.google.com/kubernetes-engine) Autopilot and/or Standard clusters running [Agones](https://agones.dev/) for hosting and scaling dedicated game servers.
+*   [Open Match](https://open-match.dev/) for match making our global player base.
+*   [Cloud Spanner](https://cloud.google.com/spanner) for storing the player in-game data.
+
+## Architecture
+
+The **Droid Shooter** game, is composed of a game client and dedicated server, and multiple backend services hosted
+around the globe.
+
+### Top Level Folders
+
+| Folder                             | Description                                                                                                                                                                                                                                                                                   |
+|------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [infrastructure](./infrastructure) | This contains all the Terraform scripts and resources to create the infrastructure that the project relies on. It is worth noting that the Terraform scripts will generate configuration files that are used by Cloud Deploy and Kubernetes in both the `platform` and `services` directories |
+| [platform](./platform)             | The `platform` directory contains the Cloud Build and Cloud Deploy scripts to set up the application platforms, such as Open Match and Agones, on the infrastructure that the `infrastructure` folder provisions.                                                                             |
+| [services](./services)             | Contains the code for all the backend services that Droid Shooter requires, and Cloud Build and Cloud Deploy scripts to build and deploy these services to their appropriate hosting and storage infrastructure.                                                                              |
+| [game](./game)                     | The code for the game launcher, client and server, as well as Cloud Build, Cloud Deploy and Agones configurations for building and hosting the dedicated game servers                                                                                                                         |
+
+### System Components
+
+![Architecture diagram](images/architecture.png)
+
+| Component                                             | Technologies                 | Description                                                                                                                                                                                                                                               |
+|-------------------------------------------------------|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Game Launcher](./game/GameLauncher)                  | Go, [Fyne] UI toolkit        | A launcher for the game, that handles both client side authentication and options for the game client execution.                                                                                                                                          |
+| [Game Client and Server](./game)                      | Unreal Engine 5, Agones, GKE | The local game client for Droid Shooter, and the containerised dedicated game server it connects to when players play a game, hosted via an [Agones Fleet] on GKE Standard or Autopilot.                                                                  |
+| [Frontend](./services/frontend)                       | Go, GKE Autopilot            | The single public entrypoint for all REST invocations from the launcher and client. It's main responsibility to ensure that the player their calls from the client are authenticated appropriately before passing on messages to other internal services. |
+| [Ping Discovery](./services/ping-discovery)           | Go, GKE Autopilot            | This service will inspect a Google Cloud project for [Agones Latency Ping endpoints], and return one for each region that Agones is installed.                                                                                                            |
+| [Profile](./services/profile)                         | Go, GKE Autopilot, Spanner   | The Profile Service provides a REST API to interact with Cloud Spanner to manage Player Profiles.                                                                                                                                                         |
+| [Match Function](./services/open-match/matchfunction) | Go, Open Match, Memorystore  | A simple match making function that groups 3 players toghether based on latency and skill metrics                                                                                                                                                         |
+| [Match Director](./services/open-match/director)      | Go, Open Match, Memorystore  | The Director allocates a GameServer from an GKE and Agones cluster hosted in the target region for a given set of match player's latencies, via the [Agones Allocator Service] on each cluster.                                                           |
+
+[Fyne]: https://developer.fyne.io/index.html
+[Agones Fleet]: https://agones.dev/site/docs/getting-started/create-fleet/
+[Agones Latency Ping endpoints]: https://agones.dev/site/docs/guides/ping-service/
+[Agones Allocator Service]: https://agones.dev/site/docs/advanced/allocator-service/
+
+## Run in Your Google Cloud Project
+
+> **Warning**
+> This demo in its default state creates multiple Kubernetes clusters around the world,
+> Spanner instances, and more. Running this demo for an extended amount of time may incur significant costs.
+
+Follow these steps to have an instance of the global scale game running in your own Google Cloud Project.
+
+### Prerequisites
+
+To run the Game Demo install, you will need the following applications installed on your workstation:
+
+* A Google Cloud Project
+* [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
+* [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
+
+You can also click on the following icon to open this repository in a 'batteries-included' [Google Cloud Shell](https://cloud.google.com/shell) web development environment.
+
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fgoogleforgames%2Fglobal-multiplayer-demo.git&cloudshell_git_branch=main&cloudshell_open_in_editor=README.md&cloudshell_workspace=.)
+
+### OAuth Authentication
 
 We need to manually set up the OAuth authentication, as unfortunately this cannot be automated.
 
@@ -18,21 +87,9 @@ Open the [Google Credentials](https://console.cloud.google.com/apis/credentials)
 
 Leave this page open, as we'll need the Client ID and Client secret of the ID you just created shortly.
 
-## Infrastructure and Services
+### Infrastructure and Services
 
-### Prerequisites
-
-To run the Game Demo install, you will need the following applications installed on your workstation:
-
-* A Google Cloud Project
-* [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
-* [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
-
-You can also click on the following icon to open this repository in a 'batteries-included' [Google Cloud Shell](https://cloud.google.com/shell) web development environment.
-
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2Fgoogleforgames%2Fglobal-multiplayer-demo.git&cloudshell_git_branch=main&cloudshell_open_in_editor=README.md&cloudshell_workspace=.)
-
-### Google Cloud Auth
+#### Google Cloud Auth
 
 Once you have Google Cloud CLI installed, you will need to set your [GCP Project ID](https://support.google.com/googleapi/answer/7014113?hl=en#:~:text=The%20project%20ID%20is%20a,ID%20or%20create%20your%20own.):
 
@@ -54,7 +111,7 @@ cd global-multiplayer-demo
 export GAME_DEMO_HOME=$(pwd)
 ```
 
-### Access to Unreal Engine Container Images
+#### Access to Unreal Engine Container Images
 
 To build the Dedicated Game Server you will need access to the Unreal Engine GitHub organisation.
 
@@ -66,9 +123,9 @@ with at least `read:packages` scope.
 
 Leave the page open with this token, as we'll need it shortly.
 
-## Provision
+### Provision
 
-### Optional: GCS Backend
+#### Optional: GCS Backend
 
 Normally Terraform stores the current state in the `terraform.tfstate` file locally. However, if you would like to have Terraform store the state file in a GCS Bucket, you can:
 
@@ -78,7 +135,7 @@ Normally Terraform stores the current state in the `terraform.tfstate` file loca
 
 NOTE: The GCS bucket does not have to exist in the same Google project as the Global Game but the Google user/service account running Terraform must have write & read access to that bucket.
 
-### Initialize Terraform & configure variables
+#### Initialize Terraform & configure variables
 
 ```shell
 cd $GAME_DEMO_HOME/infrastructure
@@ -95,18 +152,17 @@ You will need to now edit `terraform.tfvars`
 You can edit other variables in this file, but we recommend leaving the default values for your first run before
 experimenting.
 
-### Provision the infrastructure.
+#### Provision the infrastructure.
 
 > **Warning**
 > This demo in its default state creates multiple Kubernetes clusters around the world,
 > Spanner instances, and more. Running this demo for an extended amount of time may incur significant costs.
 
-
 ```shell
 terraform apply
 ```
 
-### OAuth Authentication
+#### OAuth Authentication
 
 We now need to update our OAuth authentication configuration with the address of our authenticating frontend API.
 
@@ -124,7 +180,7 @@ This should give you back an IP, such as `35.202.107.204`.
 
 Since OAuth needs a domain to authenticate against, we'll use [sslip.io](https://sslip.io) for development purposes.
 
-### Deploy Platform Components
+#### Deploy Platform Components
 Replace the` _RELEASE_NAME` substitution with a unique build name. Cloud Build will deploy
 
 - Anthos Service Mesh (ASM) to all clusters using the fleet feature API
@@ -143,7 +199,7 @@ deploys Agones the first game server cluster. Agones can be deployed to subseque
 `promote` button within the Pipeline visualization or by running the following gcloud command:
 
 ```shell
-# Replace RELEASE_NAME with the unique build name
+## Replace RELEASE_NAME with the unique build name
 gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=agones-deploy-pipeline --region=us-central1
 ```
 
@@ -152,7 +208,7 @@ through the Cloud Logging URL returned by the `gcloud builds` command as well as
 
 Open Match rollout status can be viewed by navigating to the [global-game-open-match](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/global-game-open-match) delivery pipeline. Since open match is deployed onto a single services GKE cluster, deployments are automatically rolled out with no need for manual promotion.
 
-## Deploy Cloud Spanner Schema
+### Deploy Cloud Spanner Schema
 
 To deploy the database schema, submit the following Cloud Build command:
 
@@ -163,7 +219,7 @@ gcloud builds submit --config=cloudbuild.yaml
 
 This will deploy the schema migration using [Liquibase](https://www.liquibase.org/) and the [Cloud Spanner liquibase extension](https://github.com/cloudspannerecosystem/liquibase-spanner).
 
-## Install Game Backend Services
+### Install Game Backend Services
 
 To install all the backend services, submit the following Cloud Build command, and replace the` _RELEASE_NAME`
 substitution with a unique build name.
@@ -179,7 +235,7 @@ This will:
 * Store those image in [Artifact Registry](https://cloud.google.com/artifact-registry)
 * Deploy them via Cloud Build to a Autopilot cluster.
 
-## Dedicated Game Server
+### Dedicated Game Server
 
 To build the Unreal dedicated game server image, run the following command, and replace the` _RELEASE_NAME`
 substitution with a unique build name.
@@ -205,11 +261,11 @@ The Fleet can be deployed to the next region in the queue via pressing the
 `promote` button within the Pipeline visualization or by running the following gcloud command:
 
 ```shell
-# Replace RELEASE_NAME with the unique build name
+## Replace RELEASE_NAME with the unique build name
 gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=global-game-agones-gameservers --region=us-central1
 ```
 
-## Game Client
+### Game Client
 
 To build the Game Client for your host machine, you will need to
 [install Unreal Engine from source](https://docs.unrealengine.com/5.1/en-US/building-unreal-engine-from-source/),
@@ -228,7 +284,7 @@ To package the project:
 During development, you can also run the game client directly within
 the editor (Hit the ▶️ button).
 
-To run the game client from inside the editor, you would need to launch the editor with -token=[JWT_TOKEN] -frontend_api=[IP_ADDRESS]
+To run the game client from inside the editor, you would need to launch the editor with -token=[JWT_TOKEN] -frontend_api=http://[IP_ADDRESS].sslip.io
 
 Obtaining frontend api ip address can be achieved via:
 ```shell
@@ -238,7 +294,7 @@ gcloud compute addresses list --filter=name=frontend-service --format="value(add
 JWT token can be obtained by accessing frontend api's ip address with '/login' path, such as "http://[IP_ADDRESS].sslip.io/login" and extracting it from the URL.
 
 
-## Run the Game Launcher
+### Run the Game Launcher
 
 To run the game launcher, you will need to have [Go](https://go.dev/dl/) installed to run it, as well as the
 [prerequisites for the Fyne Go Cross Platform UI library](https://developer.fyne.io/started/).
@@ -246,10 +302,10 @@ To run the game launcher, you will need to have [Go](https://go.dev/dl/) install
 ```shell
 cd $GAME_DEMO_HOME/game/GameLauncher
 
-# grab your own copy of the app.ini
+## grab your own copy of the app.ini
 cp app.ini.sample app.ini
 
-# Grab the IP Address again of our frontend service, so we can use it
+## Grab the IP Address again of our frontend service, so we can use it
 gcloud compute addresses list --filter=name=frontend-service --format="value(address)"
 ```
 
@@ -257,15 +313,23 @@ Edit the app.ini, and replace the `frontend_api` value with http://[IP_ADDRESS].
 
 And update the `binary` field with the path to the executable of the client build for your operating system.
 
-Then run the following to start the launcher and the game!
+Then run the following to start the launcher!
 
 ```shell
 go run main.go
 ```
 
-### Troubleshooting
+You will need three players to play a game, so you can use the "Instances" drop down to create more than one
+game client instance on your local machine. Depending on the capability of your graphics card, creating smaller 
+resolution game client instances may be required.
 
-##### This project was made with a different version of the Unreal Engine.
+Finally, click "Play an online match" on each game client, wait a few seconds for the mathmaking to occur, and when 
+all clients have connected to the allocated game server - play a game! But remember, each game only lasts _30 
+seconds_ so get started quickly!
+
+## Troubleshooting
+
+### This project was made with a different version of the Unreal Engine.
 
 If you hit this issue, it may be that you are building on a different host platform than the original. or your
 installation of Unreal may have a unique GUID. To solve, click: More Options > Convert in-place.

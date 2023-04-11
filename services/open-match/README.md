@@ -16,7 +16,7 @@ To align player latencies, the Match Function uses a separate [`MatchProfile`](h
 For each regional `MatchProfile`, we:
 * Score each ticket based roughly on `skill-latency_to_region`, i.e. higher skill is better, lower latency to that region is better.
 * Sort the incoming tickets by score
-* Create 4 ticket matches from the sorted tickets, thereby grouping scores
+* Create 3 ticket matches from the sorted tickets, thereby grouping scores
 * Assign a match score that is simply the sum of the scores of each ticket, for use by the [Default Evaluator](https://open-match.dev/site/docs/tutorials/defaultevaluator/).
 
 The [Evaluator](https://open-match.dev/site/docs/guides/evaluator/) (part of Open Match Core) then chooses
@@ -24,7 +24,11 @@ a match from the overlapping matches returned by the different profiles.
 
 ## Director
 
-TBD, write more when the Director is wired to Agones.
+The Director allocates a GameServer from an GKE Standard/Autopilot and Agones cluster hosted in the target region for a 
+given set of match player's latencies.
+
+It does this by providing the `region` HTTP header to an Anthos Service Mesh Allocation Service - where the `region` 
+header will route the allocation request to one of the Agones GKE clusters in that region.
 
 ## Fake Frontend
 
