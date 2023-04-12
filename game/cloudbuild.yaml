@@ -32,13 +32,13 @@ steps:
     id: build-linux-binaries
     script: "docker run -v /workspace:/workspace \ 
             ghcr.io/epicgames/unreal-engine:dev-slim-5.1.0 \
-            sh -c \"mkdir /tmp/project/ && cp -a /workspace/ /tmp/project/ && chown -R ue4:ue4 /tmp/project/ \ 
+            sh -c \"cp -a /workspace/ /tmp/ && chown -R ue4:ue4 /tmp/workspace \ 
             && /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
             -Server -ServerConfig=Development \
-            -Project=../../../tmp/project/Droidshooter.uproject -UTF8Output -NoDebugInfo -AllMaps \
+            -Project=../../../tmp/workspace/Droidshooter.uproject -UTF8Output -NoDebugInfo -AllMaps \
             -NoP4 -Build -Cook -Stage -Pak -Package -Archive \
-            -ArchiveDirectory=../../../workspace/Packaged \
-            -Platform=Linux\""
+            -ArchiveDirectory=/tmp/workspace/Packaged \
+            -Platform=Linux\" && cp -a /tmp/workspace/Packaged/ /workspace/"
 
   # Buld & Publish linux server container to project Artifacts Repo
   - name: gcr.io/cloud-builders/docker
