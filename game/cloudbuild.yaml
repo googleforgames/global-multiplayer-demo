@@ -29,14 +29,16 @@ steps:
 
   # Build Linux Client & Server Binaries using UE4 container
   - name: gcr.io/cloud-builders/docker
-  #- name: ghcr.io/epicgames/unreal-engine:dev-slim-5.1.0
     id: build-linux-binaries
-    args: [ "run", "ghcr.io/epicgames/unreal-engine:dev-slim-5.1.0", "/home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh", "BuildCookRun", 
-            "-Server", "-ServerConfig=Development",
-            "-Project=/workspace/Droidshooter.uproject", "-UTF8Output", "-NoDebugInfo", "-AllMaps",
-            "-NoP4", "-Build", "-Cook", "-Stage", "-Pak", "-Package", "-Archive",
-            "-ArchiveDirectory=/workspace/Packaged",
-            "-Platform=Linux" ]
+    script: "docker run -v /workspace:/workspace \ 
+            ghcr.io/epicgames/unreal-engine:dev-slim-5.1.0 \
+            sh -c \"mkdir /tmp/project/ && cp -a /workspace/ /tmp/project/ && chown -R ue4:ue4 /tmp/project/ \ 
+            && /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
+            -Server -ServerConfig=Development \
+            -Project=../../../tmp/project/Droidshooter.uproject -UTF8Output -NoDebugInfo -AllMaps \
+            -NoP4 -Build -Cook -Stage -Pak -Package -Archive \
+            -ArchiveDirectory=../../../workspace/Packaged \
+            -Platform=Linux\""
 
   # Buld & Publish linux server container to project Artifacts Repo
   - name: gcr.io/cloud-builders/docker
@@ -60,7 +62,7 @@ steps:
 
   # Run job for deployment of game server container to game GKE clusters
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    id: deploy-linux-binaries-to-gke-clusters
+    id: deploy-linux-server-container-to-gke-clusters
     entrypoint: gcloud
     args:
       [
