@@ -7,6 +7,10 @@
 This multiplayer demo is a cloud first implementation of a global scale, realtime multiplayer game utilising
 dedicated game servers, utlising both Google Cloud's products and open source gaming solutions.
 
+If you’re using this demo, please **★Star** this repository to show your interest!
+
+**Note to Googlers**: Please fill out the form at [go/global-scale-game-form](go/global-scale-game-form).
+
 Projects and products utilised include:
 
 *   [Unreal Engine 5](https://www.unrealengine.com/) for the game client and server code.
