@@ -20,9 +20,10 @@ data "google_container_engine_versions" "services-cluster" {
 }
 
 resource "google_container_cluster" "services-gke" {
-  name         = var.services_gke_config.cluster_name
-  location     = var.services_gke_config.location
-  node_version = data.google_container_engine_versions.services-cluster.latest_node_version
+  name               = var.services_gke_config.cluster_name
+  location           = var.services_gke_config.location
+  min_master_version = data.google_container_engine_versions.services-cluster.latest_node_version
+  node_version       = data.google_container_engine_versions.services-cluster.latest_node_version
 
   network    = google_compute_network.vpc.name
   subnetwork = google_compute_subnetwork.subnet[var.services_gke_config.location].name
