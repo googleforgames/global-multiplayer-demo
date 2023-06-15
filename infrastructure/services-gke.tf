@@ -12,9 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Pinning Services Cluster version to 1.24 until open-match supports GKE 1.25+
+data "google_container_engine_versions" "services-cluster" {
+  provider       = google
+  location       = var.services_gke_config.location
+  version_prefix = "1.24."
+}
+
 resource "google_container_cluster" "services-gke" {
-  name     = var.services_gke_config.cluster_name
-  location = var.services_gke_config.location
+  name         = var.services_gke_config.cluster_name
+  location     = var.services_gke_config.location
+  node_version = data.google_container_engine_versions.services-cluster.latest_node_version
 
   network    = google_compute_network.vpc.name
   subnetwork = google_compute_subnetwork.subnet[var.services_gke_config.location].name
