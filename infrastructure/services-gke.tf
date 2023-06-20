@@ -44,6 +44,22 @@ resource "google_container_cluster" "services-gke" {
     "environment" = var.resource_env_label
   }
 
+  maintenance_policy {
+    recurring_window {
+      start_time = "2019-08-01T02:00:00Z"
+      end_time   = "2019-08-01T06:00:00Z"
+      recurrence = "FREQ=DAILY"
+    }
+    maintenance_exclusion {
+      exclusion_name = "No Upgrades"
+      start_time     = "2019-01-01T00:00:00Z"
+      end_time       = "2019-01-02T00:00:00Z"
+      exclusion_options {
+        scope = "NO_MINOR_OR_NODE_UPGRADES"
+      }
+    }
+  }
+
   depends_on = [google_compute_subnetwork.subnet, google_project_service.project]
 }
 
