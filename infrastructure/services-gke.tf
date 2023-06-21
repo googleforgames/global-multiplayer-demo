@@ -12,18 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Pinning Services Cluster version to 1.24 until open-match supports GKE 1.25+
-data "google_container_engine_versions" "services-cluster" {
-  provider       = google
-  location       = var.services_gke_config.location
-  version_prefix = "1.24."
-}
-
 resource "google_container_cluster" "services-gke" {
-  name               = var.services_gke_config.cluster_name
-  location           = var.services_gke_config.location
-  min_master_version = data.google_container_engine_versions.services-cluster.latest_node_version
-  node_version       = data.google_container_engine_versions.services-cluster.latest_node_version
+  name     = var.services_gke_config.cluster_name
+  location = var.services_gke_config.location
 
   network    = google_compute_network.vpc.name
   subnetwork = google_compute_subnetwork.subnet[var.services_gke_config.location].name
@@ -42,22 +33,6 @@ resource "google_container_cluster" "services-gke" {
 
   resource_labels = {
     "environment" = var.resource_env_label
-  }
-
-  maintenance_policy {
-    recurring_window {
-      start_time = "2019-08-01T02:00:00Z"
-      end_time   = "2019-08-01T06:00:00Z"
-      recurrence = "FREQ=DAILY"
-    }
-    maintenance_exclusion {
-      exclusion_name = "No Upgrades"
-      start_time     = "2019-01-01T00:00:00Z"
-      end_time       = "2019-01-02T00:00:00Z"
-      exclusion_options {
-        scope = "NO_MINOR_OR_NODE_UPGRADES"
-      }
-    }
   }
 
   depends_on = [google_compute_subnetwork.subnet, google_project_service.project]

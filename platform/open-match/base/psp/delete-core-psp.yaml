@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: v1
-kind: Namespace
+$patch: delete
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
 metadata:
-  name: open-match
-  labels:
-    pod-security.kubernetes.io/enforce: baseline
-    pod-security.kubernetes.io/warn: baseline
+  name: open-match-core-podsecuritypolicy
+  namespace: open-match

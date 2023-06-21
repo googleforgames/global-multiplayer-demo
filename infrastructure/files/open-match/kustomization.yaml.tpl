@@ -20,6 +20,12 @@ helmCharts:
   version: 1.6.0
   releaseName: open-match
   valuesInline:
+    prometheus:
+      enabled: false
+    grafana:
+      enabled: false
+    jaeger:
+      enabled: false
     open-match-override:
       enabled: true
     open-match-customize:
@@ -42,3 +48,9 @@ helmCharts:
 resources:
   - open-match.yaml
   - agones-allocator-vs.yaml
+
+patches:
+    - path: psp/delete-core-psp.yaml
+    - path: psp/delete-redis-psp.yaml
+    - path: psp/delete-service-role.yaml
+    - path: psp/delete-service-binding.yaml
