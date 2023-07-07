@@ -35,15 +35,16 @@ steps:
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     id: cloud-deploy-release
-    entrypoint: gcloud
+    entrypoint: bash
     args:
-      [
-        "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "global-game-agones-gameservers",
-        "--skaffold-file", "skaffold.yaml",
-        "--images", "droidshooter-server=${_UNREAL_SERVER_IMAGE}",
-        "--region", "us-central1"
-      ]
+      - "-c"
+      - |
+        gcloud deploy releases create deploy-$(date +'%Y%m%d%H%M%S') \
+        --annotations=cloud_build=https://console.cloud.google.com/cloud-build/builds/${BUILD_ID} \
+        --delivery-pipeline global-game-agones-gameservers \
+        --skaffold-file skaffold.yaml \
+        --images droidshooter-server=${_UNREAL_SERVER_IMAGE} \
+        --region us-central1
 
 artifacts:
   images:
@@ -51,7 +52,6 @@ artifacts:
 substitutions:
   _UNREAL_SERVER_IMAGE: ${_REGISTRY}/droidshooter-server:${BUILD_ID}
   _REGISTRY: us-docker.pkg.dev/${PROJECT_ID}/global-game-images
-  _RELEASE_NAME: rel-01
 availableSecrets:
   secretManager:
     - versionName: projects/${PROJECT_ID}/secrets/github-packages/versions/latest
@@ -60,3 +60,6 @@ options:
   dynamic_substitutions: true
   machineType: E2_HIGHCPU_32
   logging: CLOUD_LOGGING_ONLY
+tags:
+  - global-game-demo
+  - game

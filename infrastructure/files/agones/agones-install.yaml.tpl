@@ -1,14 +1,13 @@
 helmCharts:
   - name: agones
     repo: https://agones.dev/chart/stable
-    version: 1.30.0
+    version: 1.32.0
     releaseName: agones
     namespace: agones-system
     valuesInline:
       agones:
         crds:
           cleanupOnDelete: false
-        featureGates: "SplitControllerAndExtensions=true"
         allocator:
           disableMTLS: true
           disableTLS: true

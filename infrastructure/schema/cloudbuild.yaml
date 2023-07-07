@@ -39,3 +39,6 @@ artifacts:
 options:
   dynamic_substitutions: true
   logging: CLOUD_LOGGING_ONLY
+tags:
+  - global-game-demo
+  - infrastructure/schema

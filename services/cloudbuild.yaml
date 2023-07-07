@@ -56,15 +56,16 @@ steps:
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     id: cloud-deploy-release
-    entrypoint: gcloud
+    entrypoint: bash
     args:
-      [
-        "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "global-game-services",
-        "--skaffold-file", "skaffold.yaml",
-        "--images", "ping-discovery=${_PING_IMAGE},profile=${_PROFILE_IMAGE},frontend=${_FRONTEND_IMAGE},open-match-director=${_OPEN_MATCH_DIRECTOR_IMAGE},open-match-matchfunction=${_OPEN_MATCH_MATCHFUNCTION_IMAGE},open-match-fake-frontend=${_OPEN_MATCH_FAKE_FRONTEND_IMAGE}",
-        "--region", "us-central1"
-      ]
+      - "-c"
+      - |
+        gcloud deploy releases create deploy-$(date +'%Y%m%d%H%M%S') \
+        --annotations=cloud_build=https://console.cloud.google.com/cloud-build/builds/${BUILD_ID} \
+        --delivery-pipeline global-game-services \
+        --skaffold-file skaffold.yaml \
+        --images ping-discovery=${_PING_IMAGE},profile=${_PROFILE_IMAGE},frontend=${_FRONTEND_IMAGE},open-match-director=${_OPEN_MATCH_DIRECTOR_IMAGE},open-match-matchfunction=${_OPEN_MATCH_MATCHFUNCTION_IMAGE},open-match-fake-frontend=${_OPEN_MATCH_FAKE_FRONTEND_IMAGE} \
+        --region us-central1
 
 artifacts:
   images:
@@ -82,8 +83,10 @@ substitutions:
   _OPEN_MATCH_MATCHFUNCTION_IMAGE: ${_REGISTRY}/open-match-matchfunction:${BUILD_ID}
   _OPEN_MATCH_FAKE_FRONTEND_IMAGE: ${_REGISTRY}/open-match-fake-frontend:${BUILD_ID}
   _REGISTRY: us-docker.pkg.dev/${PROJECT_ID}/global-game-images
-  _RELEASE_NAME: rel-01
 options:
   dynamic_substitutions: true
   machineType: E2_HIGHCPU_8
   logging: CLOUD_LOGGING_ONLY
+tags:
+  - global-game-demo
+  - services

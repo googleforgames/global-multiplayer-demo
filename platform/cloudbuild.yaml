@@ -19,6 +19,7 @@ steps:
   # support for ASM at cluster creation time, this step is performed with platform component deployments so
   # newly added clusters are configured properly with ASM.
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: fleet-membership
     entrypoint: bash
     args:
     - '-c'
@@ -28,29 +29,38 @@ steps:
         gcloud container fleet mesh update --management automatic --memberships $$MEMBERSHIPS
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    entrypoint: gcloud
+    id: deploy-agones
+    entrypoint: bash
     dir: agones
     args:
-      [
-        "deploy", "releases", "create", "${_RELEASE_NAME}",
-        "--delivery-pipeline", "agones-deploy-pipeline",
-        "--skaffold-file", "skaffold.yaml",
-        "--region", "us-central1"
-      ]
-    timeout: 1800s
+      - '-c'
+      - |
+        gcloud deploy releases create deploy-$(date +'%Y%m%d%H%M%S') \
+        --annotations=cloud_build=https://console.cloud.google.com/cloud-build/builds/${BUILD_ID} \
+        --delivery-pipeline agones-deploy-pipeline \
+        --skaffold-file skaffold.yaml \
+        --region us-central1
+    waitFor:
+      - fleet-membership
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    entrypoint: gcloud
+    id: deploy-open-match
+    entrypoint: bash
     dir: open-match
     args:
-      [
-        "deploy", "releases", "create", "open-match-${_RELEASE_NAME}",
-        "--delivery-pipeline", "global-game-open-match",
-        "--skaffold-file", "skaffold.yaml",
-        "--region", "us-central1"
-      ]
+      - '-c'
+      - |
+        gcloud deploy releases create deploy-$(date +'%Y%m%d%H%M%S') \
+        --annotations=cloud_build=https://console.cloud.google.com/cloud-build/builds/${BUILD_ID} \
+        --delivery-pipeline global-game-open-match \
+        --skaffold-file skaffold.yaml \
+        --region us-central1
+    waitFor:
+      - fleet-membership
 
-substitutions:
-  _RELEASE_NAME: rel-0001
 options:
+  dynamic_substitutions: true
   logging: CLOUD_LOGGING_ONLY
+tags:
+  - global-game-demo
+  - platform
