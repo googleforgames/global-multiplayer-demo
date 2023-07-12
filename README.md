@@ -185,7 +185,7 @@ This should give you back an IP, such as `35.202.107.204`.
 Since OAuth needs a domain to authenticate against, we'll use [sslip.io](https://sslip.io) for development purposes.
 
 #### Deploy Platform Components
-Replace the` _RELEASE_NAME` substitution with a unique build name. Cloud Build will deploy
+Cloud Build will deploy
 
 - Anthos Service Mesh (ASM) to all clusters using the fleet feature API
 - Agones using Cloud Deploy
@@ -193,7 +193,7 @@ Replace the` _RELEASE_NAME` substitution with a unique build name. Cloud Build w
 
 ```shell
 cd $GAME_DEMO_HOME/platform/
-gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
+gcloud builds submit --config=cloudbuild.yaml
 ```
 
 Navigate to the
@@ -203,7 +203,7 @@ deploys Agones the first game server cluster. Agones can be deployed to subseque
 `promote` button within the Pipeline visualization or by running the following gcloud command:
 
 ```shell
-## Replace RELEASE_NAME with the unique build name
+## Replace RELEASE_NAME with the unique id generated from the Cloud Build.
 gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=agones-deploy-pipeline --region=us-central1
 ```
 
@@ -225,12 +225,11 @@ This will deploy the schema migration using [Liquibase](https://www.liquibase.or
 
 ### Install Game Backend Services
 
-To install all the backend services, submit the following Cloud Build command, and replace the` _RELEASE_NAME`
-substitution with a unique build name.
+To install all the backend services, submit the following Cloud Build command.
 
 ```shell
 cd $GAME_DEMO_HOME/services
-gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
+gcloud builds submit --config=cloudbuild.yaml
 ```
 
 This will:
@@ -241,12 +240,11 @@ This will:
 
 ### Dedicated Game Server
 
-To build the Unreal dedicated game server image, run the following command, and replace the` _RELEASE_NAME`
-substitution with a unique build name.
+To build the Unreal dedicated game server image, run the following command.
 
 ```shell
 cd $GAME_DEMO_HOME/game
-gcloud builds submit --config=cloudbuild.yaml --substitutions=_RELEASE_NAME=rel-1
+gcloud builds submit --config=cloudbuild.yaml
 ```
 
 Cloud Build will deploy:
