@@ -16,7 +16,7 @@
 # Build a container for the Unreal Engine dedicated game server
 #
 
-FROM ghcr.io/epicgames/unreal-engine:dev-slim-5.1.0  as builder
+FROM ghcr.io/epicgames/unreal-engine:dev-slim-5.2.0  as builder
 ARG SERVER_CONFIG=Development
 
 COPY --chown=ue4:ue4 . /tmp/project

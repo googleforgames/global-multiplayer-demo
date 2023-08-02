@@ -41,4 +41,4 @@ options:
   logging: CLOUD_LOGGING_ONLY
 tags:
   - global-game-demo
-  - infrastructure/schema
+  - infrastructure-schema
