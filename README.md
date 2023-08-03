@@ -270,8 +270,10 @@ gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=global
 ### Game Client
 
 To build the Game Client for your host machine, you will need to
-[install Unreal Engine from source](https://docs.unrealengine.com/5.1/en-US/building-unreal-engine-from-source/),
+[install Unreal Engine from source](https://docs.unrealengine.com/5.2/en-US/building-unreal-engine-from-source/),
 as the downloaded installation does not have the functionality to produce separate Client and Server builds.
+
+This project currently uses **Unreal Engine 5.2.0**.
 
 > Installing Unreal Engine from source can take several hours, and use all your CPU. You have been warned!
 
