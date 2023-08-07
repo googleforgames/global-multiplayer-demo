@@ -16,18 +16,74 @@ serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT
 steps:
 
   #
-  # Building of the images
+  # Build the unreal editor build image if it does not exist.
+  #
+  - name: gcr.io/cloud-builders/gcloud
+    id: build-unreal-editor-container
+    dir: /workspace/unreal-engine
+    script: |
+      gcloud container images describe $_BUILD_IMAGE || gcloud builds submit --substitutions _UNREAL_VERSION=$_UNREAL_VERSION --config=cloudbuild.yaml .
+    automapSubstitutions: true
+    waitFor: ['-']
+
+  #
+  # Game Launcher building
+  #
+
+  - name: gcr.io/cloud-builders/gcloud
+    id: get-front-end
+    dir: /workspace/GameLauncher
+    script: |
+      echo "export IP_ADDRESS=$(gcloud compute addresses list --filter=name=frontend-service --format='value(address)')" > .env && \
+      cat .env
+    waitFor: ['-']
+  - name: golang:1.21.4
+    id: linux-game-launcher
+    dir: /workspace/GameLauncher
+    script: |
+      apt update && \
+      apt install -y golang gcc libgl1-mesa-dev xorg-dev zip gettext-base && \
+      go build . && \
+      . ./.env && \
+      envsubst < app.ini.sample > app.ini && \
+      cat app.ini && \
+      zip -ur /workspace/Client-$BUILD_ID.zip launcher app.ini assets
+    automapSubstitutions: true
+    waitFor:
+      - get-front-end
+
+  #
+  # Game Client Building
+  #
+
+  - name: ${_BUILD_IMAGE}
+    id: linux-unreal-client
+    dir: /home/ue4
+    script: |
+      df -h && \
+      echo "who: $(whoami)" && \
+      sudo mkdir -pv "/builder/home/Library/Logs/Unreal Engine/LocalBuildLogs" && sudo chown -R ue4:ue4 /builder && \
+      touch "/builder/home/Library/Logs/Unreal Engine/LocalBuildLogs/empty.log" && \
+      sudo cp -r /workspace /tmp/project && sudo chown -R ue4:ue4 /tmp/project && ls -l /tmp/project && \
+      /home/ue4/UnrealEngine/Engine/Build/BatchFiles/RunUAT.sh BuildCookRun \
+      -project=/tmp/project/Droidshooter.uproject -noP4 -clientconfig=Development \
+      -utf8output -NoDebugInfo -AllMaps -platform=Linux -client -build -cook -pak -stage -prereqs -package \
+      -archive -archivedirectory=/tmp/project/Packaged && \
+      cd /tmp/project/Packaged/LinuxClient && sudo zip -ur /workspace/Client-$BUILD_ID.zip .
+    automapSubstitutions: true
+    waitFor:
+      - build-unreal-editor-container
+      - linux-game-launcher
+
+  #
+  # Building of the dedicate game server images
   #
 
   - name: gcr.io/cloud-builders/docker
-    id: github-login
-    script: |
-      echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
-    secretEnv:
-      - CR_PAT
-  - name: gcr.io/cloud-builders/docker
-    id: build-image
-    args: [ "build", ".", "-t", "${_UNREAL_SERVER_IMAGE}" ]
+    id: dedicated-server
+    args: [ "build", "--build-arg", "BASE_IMAGE=${_BUILD_IMAGE}", ".", "-t", "${_UNREAL_SERVER_IMAGE}" ]
+    waitFor:
+      - linux-unreal-client
 
   #
   # Deployment
@@ -35,31 +91,35 @@ steps:
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     id: cloud-deploy-release
-    entrypoint: bash
-    args:
-      - "-c"
-      - |
+    script: |
         gcloud deploy releases create deploy-$(date +'%Y%m%d%H%M%S') \
         --annotations=cloud_build=https://console.cloud.google.com/cloud-build/builds/${BUILD_ID} \
         --delivery-pipeline global-game-agones-gameservers \
         --skaffold-file skaffold.yaml \
-        --images droidshooter-server=${_UNREAL_SERVER_IMAGE} \
+        --images droidshooter-server=$_UNREAL_SERVER_IMAGE \
         --region us-central1
+    automapSubstitutions: true
+    waitFor:
+      - dedicated-server
 
 artifacts:
   images:
     - ${_REGISTRY}/droidshooter-server
+  objects:
+    location: gs://${PROJECT_ID}-release-artifacts
+    paths:
+      - Client-${BUILD_ID}.zip
 substitutions:
+  _UNREAL_VERSION: 5.2.0
+  _BUILD_IMAGE: us-docker.pkg.dev/${PROJECT_ID}/global-game-images/unreal-engine:${_UNREAL_VERSION}
   _UNREAL_SERVER_IMAGE: ${_REGISTRY}/droidshooter-server:${BUILD_ID}
   _REGISTRY: us-docker.pkg.dev/${PROJECT_ID}/global-game-images
-availableSecrets:
-  secretManager:
-    - versionName: projects/${PROJECT_ID}/secrets/github-packages/versions/latest
-      env: CR_PAT
 options:
   dynamic_substitutions: true
   machineType: E2_HIGHCPU_32
   logging: CLOUD_LOGGING_ONLY
+  diskSizeGb: '500'
+timeout: 36000s
 tags:
   - global-game-demo
   - game
