@@ -25,7 +25,7 @@ data "google_container_engine_versions" "regions" {
 module "agones_gke_standard_clusters" {
   for_each = var.game_gke_standard_clusters
 
-  source = "git::https://github.com/googleforgames/agones.git//install/terraform/modules/gke/?ref=v1.32.0"
+  source = "git::https://github.com/googleforgames/agones.git//install/terraform/modules/gke/?ref=v1.34.0"
 
   cluster = {
     name             = each.key
@@ -49,7 +49,7 @@ module "agones_gke_standard_clusters" {
 module "agones_gke_autopilot_clusters" {
   for_each = var.game_gke_autopilot_clusters
 
-  source = "git::https://github.com/googleforgames/agones.git//install/terraform/modules/gke-autopilot/?ref=v1.32.0"
+  source = "git::https://github.com/googleforgames/agones.git//install/terraform/modules/gke-autopilot/?ref=v1.34.0"
 
   cluster = {
     name     = each.key
