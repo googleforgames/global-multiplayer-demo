@@ -84,7 +84,6 @@ gcp_project_services = [
   "cloudresourcemanager.googleapis.com",
   "compute.googleapis.com",
   "container.googleapis.com",
-  "gameservices.googleapis.com",
   "gkehub.googleapis.com",
   "meshca.googleapis.com",
   "meshconfig.googleapis.com",
