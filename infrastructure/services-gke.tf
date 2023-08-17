@@ -31,6 +31,12 @@ resource "google_container_cluster" "services-gke" {
     enable_private_endpoint = false
   }
 
+  dns_config {
+    cluster_dns        = "CLOUD_DNS"
+    cluster_dns_domain = "cluster.local"
+    cluster_dns_scope  = "CLUSTER_SCOPE"
+  }
+
   resource_labels = {
     "environment" = var.resource_env_label
   }
