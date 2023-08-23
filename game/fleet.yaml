@@ -31,3 +31,7 @@ spec:
           containers:
             - name: droidshooter
               image: droidshooter-server
+              resources:
+                requests:
+                  cpu: 1000m
+                  memory: 1Gi
