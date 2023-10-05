@@ -5,11 +5,12 @@
 ## Overview
 
 This multiplayer demo is a cloud first implementation of a global scale, realtime multiplayer game utilising
-dedicated game servers, utlising both Google Cloud's products and open source gaming solutions.
+dedicated game servers, utilising both Google Cloud's products and open source gaming solutions.
 
 If you’re using this demo, please **★Star** this repository to show your interest!
 
-**Note to Googlers**: Please fill out the form at [go/global-scale-game-form](go/global-scale-game-form).
+**Note to Googlers**: Please fill out the form at [go/global-scale-game-form](http://go/global-scale-game-form). 
+Details of the program can be found at [go/global-scale-game](http://go/global-scale-game).
 
 Projects and products utilised include:
 
@@ -48,7 +49,7 @@ around the globe.
 | [Frontend](./services/frontend)                       | Go, GKE Autopilot            | The single public entrypoint for all REST invocations from the launcher and client. It's main responsibility to ensure that the player their calls from the client are authenticated appropriately before passing on messages to other internal services. |
 | [Ping Discovery](./services/ping-discovery)           | Go, GKE Autopilot            | This service will inspect a Google Cloud project for [Agones Latency Ping endpoints], and return one for each region that Agones is installed.                                                                                                            |
 | [Profile](./services/profile)                         | Go, GKE Autopilot, Spanner   | The Profile Service provides a REST API to interact with Cloud Spanner to manage Player Profiles.                                                                                                                                                         |
-| [Match Function](./services/open-match/matchfunction) | Go, Open Match, Memorystore  | A simple match making function that groups 3 players toghether based on latency and skill metrics                                                                                                                                                         |
+| [Match Function](./services/open-match/matchfunction) | Go, Open Match, Memorystore  | A simple match making function that groups 3 players together based on latency and skill metrics                                                                                                                                                          |
 | [Match Director](./services/open-match/director)      | Go, Open Match, Memorystore  | The Director allocates a GameServer from an GKE and Agones cluster hosted in the target region for a given set of match player's latencies, via the [Agones Allocator Service] on each cluster.                                                           |
 
 [Fyne]: https://developer.fyne.io/index.html
@@ -84,7 +85,7 @@ The details, such as name and email address of both of these steps don't matter,
 arbitrary for any part not specified.
 
 Open the [Google OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent) for your project,
-and create an "External" App, and allowlist any users you wish to be able to login to your deployment of this game.
+and create an "External" App, and allow list any users you wish to be able to log in to your deployment of this game.
 
 Open the [Google Credentials](https://console.cloud.google.com/apis/credentials) screen for your project, and click
 "+ CREATE CREDENTIALS", and create an "OAuth Client ID" of type "Web Application".
@@ -137,7 +138,8 @@ Normally Terraform stores the current state in the `terraform.tfstate` file loca
 - [ ] Change the `bucket =` line to an already created GCS bucket
 - [ ] Rename `backend.tf.sample` to `backend.tf`.
 
-NOTE: The GCS bucket does not have to exist in the same Google project as the Global Game but the Google user/service account running Terraform must have write & read access to that bucket.
+NOTE: The GCS bucket does not have to exist in the same Google project as the Global Game but the Google 
+user/service account running Terraform must have read & write access to that bucket.
 
 #### Initialize Terraform & configure variables
 
@@ -236,7 +238,7 @@ This will:
 
 * Build all the images required for all services.
 * Store those image in [Artifact Registry](https://cloud.google.com/artifact-registry)
-* Deploy them via Cloud Build to a Autopilot cluster.
+* Deploy them via Cloud Build to an Autopilot cluster.
 
 ### Dedicated Game Server
 
@@ -327,7 +329,7 @@ You will need three players to play a game, so you can use the "Instances" drop 
 game client instance on your local machine. Depending on the capability of your graphics card, creating smaller 
 resolution game client instances may be required.
 
-Finally, click "Play an online match" on each game client, wait a few seconds for the mathmaking to occur, and when 
+Finally, click "Play an online match" on each game client, wait a few seconds for the matchmaking to occur, and when 
 all clients have connected to the allocated game server - play a game! But remember, each game only lasts _30 
 seconds_ so get started quickly!
 
