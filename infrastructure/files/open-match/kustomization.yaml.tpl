@@ -17,7 +17,7 @@ helmCharts:
 - name: open-match
   namespace: open-match
   repo: https://open-match.dev/chart/stable
-  version: 1.6.0
+  version: 1.8.0
   releaseName: open-match
   valuesInline:
     prometheus:
@@ -48,9 +48,3 @@ helmCharts:
 resources:
   - open-match.yaml
   - agones-allocator-vs.yaml
-
-patches:
-    - path: psp/delete-core-psp.yaml
-    - path: psp/delete-redis-psp.yaml
-    - path: psp/delete-service-role.yaml
-    - path: psp/delete-service-binding.yaml
