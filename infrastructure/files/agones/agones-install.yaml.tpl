@@ -19,23 +19,9 @@ helmCharts:
               portName: http-alloc
             grpc:
               enabled: false
+          labels:
+            istio.io/rev: asm-managed  #ASM managed dataplane channel
+            region: ${location}        #Region to identify the POD and send traffic
 
 resources:
   - agones-system.yaml
-
-patches:
-  - target:
-      kind: Deployment
-      name: agones-allocator
-    patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: agones-allocator
-        namespace: agones-system
-      spec:
-        template:
-          metadata:
-            labels:
-              istio.io/rev: asm-managed  #ASM managed dataplane channel
-              region: ${location}        #Region to identify the POD and send traffic
