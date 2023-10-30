@@ -77,7 +77,7 @@ resource "google_compute_instance" "game_client_vm" {
     serial-port-logging-enable = "TRUE"
   }
 
-  metadata_startup_script = "echo hi > /test.txt"
+  metadata_startup_script = file("${path.root}/game-client-startup.sh")
 
   service_account {
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.

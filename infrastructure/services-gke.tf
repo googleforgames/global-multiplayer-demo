@@ -19,6 +19,10 @@ resource "google_container_cluster" "services-gke" {
   network    = google_compute_network.vpc.name
   subnetwork = google_compute_subnetwork.subnet[var.services_gke_config.location].name
 
+  gateway_api_config {
+    channel = "CHANNEL_STANDARD"
+  }
+
   # See issue: https://github.com/hashicorp/terraform-provider-google/issues/10782
   ip_allocation_policy {}
 
