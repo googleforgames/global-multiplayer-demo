@@ -16,3 +16,9 @@ resource "google_storage_bucket" "release-artifacts" {
   location = "US"
   name     = "${var.project}-release-artifacts"
 }
+
+resource "google_storage_bucket_object" "update-client" {
+  name   = "update-client.sh"
+  bucket = google_storage_bucket.release-artifacts.name
+  source = "./files/update-client.sh"
+}
