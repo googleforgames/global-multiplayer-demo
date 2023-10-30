@@ -149,3 +149,41 @@ variable "github_pat" {
   type        = string
   description = "A GitHub personal access token (classic) with at least read:packages scope"
 }
+
+### Game Client VM Variables
+
+variable "enable_game_client_vm" {
+  type        = bool
+  description = "Whether to create or not a Linux Game Client VM"
+  default     = false
+}
+
+variable "game_client_vm_machine_type" {
+  type        = string
+  description = "Game Client VM Machine Type"
+}
+
+variable "game_client_vm_allowed_cidr" {
+  type        = list(any)
+  description = "Game Client VM Allowed CIDRs"
+}
+
+variable "game_client_vm_region" {
+  type        = string
+  description = "Game Client VM Region"
+}
+
+variable "game_client_vm_storage" {
+  type        = number
+  description = "Game Client VM Storage Size"
+}
+
+variable "game_client_vm_os_family" {
+  type        = string
+  description = "Game Client VM OS Image Family"
+}
+
+variable "game_client_vm_os_project" {
+  type        = string
+  description = "Game Client OS Image Project"
+}
