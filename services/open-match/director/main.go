@@ -124,7 +124,7 @@ func fetch(be pb.BackendServiceClient, p *pb.MatchProfile) ([]*pb.Match, error) 
 		}
 
 		if err != nil {
-			return nil, fmt.Errorf("error on fetch match stream recieving: %w", err)
+			return nil, fmt.Errorf("error on fetch match stream receiving: %w", err)
 		}
 
 		result = append(result, resp.GetMatch())
