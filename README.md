@@ -306,11 +306,18 @@ You have the option to enable a GCP Linux VM for the Game Client. To have Terraf
 
 `enable_game_client_vm = true`
 
-You can then connect to the VM using gcloud:
+Then you will need to run Terraform to apply the changes to your environment:
+
+```shell
+terraform apply
+```
+
+Once Terraform has run and a few minutes have passed for all of the software packages to install, you can then connect to the VM using gcloud:
 
 ```shell
 gcloud compute ssh game-client-vm
 ```
+
 ### Run the Game Launcher
 
 To run the game launcher, you will need to have [Go](https://go.dev/dl/) installed to run it, as well as the
