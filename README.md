@@ -300,6 +300,17 @@ gcloud compute addresses list --filter=name=frontend-service --format="value(add
 JWT token can be obtained by accessing frontend api's ip address with '/login' path, such as "http://[IP_ADDRESS].sslip.io/login" and extracting it from the URL.
 
 
+### Enable Cloud Linux VM for Game Client
+
+You have the option to enable a GCP Linux VM for the Game Client. To have Terraform setup the VM, edit `terraform.tfvars` and set:
+
+`enable_game_client_vm = true`
+
+You can then connect to the VM using gcloud:
+
+```shell
+gcloud compute ssh game-client-vm
+```
 ### Run the Game Launcher
 
 To run the game launcher, you will need to have [Go](https://go.dev/dl/) installed to run it, as well as the
