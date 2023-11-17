@@ -4,6 +4,7 @@
 
 export DEBIAN_FRONTEND=noninteractive
 
+wget -O "/usr/share/keyrings/xpra.asc" https://xpra.org/xpra.asc
 cd /etc/apt/sources.list.d 
 wget https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/bookworm/xpra.sources
 sudo apt update -y
