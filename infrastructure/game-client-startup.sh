@@ -4,8 +4,8 @@
 
 export DEBIAN_FRONTEND=noninteractive
 
-curl -1sLf 'https://dl.cloudsmith.io/public/moonlight-game-streaming/moonlight-l4t/setup.deb.sh' | sudo -E bash
-sudo apt install moonlight-qt
+curl -OL https://github.com/LizardByte/Sunshine/releases/download/v0.21.0/sunshine-debian-bookworm-amd64.deb
+sudo apt install -f ./sunshine-debian-bookworm-amd64.deb -y
 sudo apt install xfce4 xfce4-goodies -y
 sudo apt install tightvncserver -y
 sudo apt install dbus-x11 -y
