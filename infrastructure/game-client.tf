@@ -22,6 +22,22 @@ resource "google_service_account" "game_client_vm" {
   display_name = "Custom SA for Game Client VM"
 }
 
+resource "google_project_iam_member" "game_client_vm_compute_admin" {
+  count = var.enable_game_client_vm ? 1 : 0
+
+  project = var.project
+  role    = "roles/compute.instanceAdmin.v1"
+  member  = "serviceAccount:${google_service_account.game_client_vm[0].email}"
+}
+
+resource "google_project_iam_member" "game_client_vm_compute_is_sa" {
+  count = var.enable_game_client_vm ? 1 : 0
+
+  project = var.project
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${google_service_account.game_client_vm[0].email}"
+}
+
 resource "google_compute_address" "game_client_vm_static_ip" {
   count = var.enable_game_client_vm ? 1 : 0
 
@@ -46,7 +62,7 @@ resource "google_compute_instance" "game_client_vm" {
   machine_type = var.game_client_vm_machine_type
   zone         = "${var.game_client_vm_region}-a"
 
-  tags = ["game-client-vm-ssh"]
+  tags = ["game-client-vm-ssh", "game-client-vm-vnc"]
 
   scheduling {
     on_host_maintenance = "TERMINATE"
@@ -54,6 +70,7 @@ resource "google_compute_instance" "game_client_vm" {
 
   boot_disk {
     initialize_params {
+      size  = var.game_client_vm_storage
       image = data.google_compute_image.game_client_vm_os[0].self_link
     }
   }
@@ -98,5 +115,20 @@ resource "google_compute_firewall" "game-client-vm-ssh" {
   }
 
   target_tags   = ["game-client-vm-ssh"]
+  source_ranges = var.game_client_vm_allowed_cidr
+}
+
+resource "google_compute_firewall" "game-client-vm-vnc" {
+  project = var.project
+
+  name    = "game-client-vm-vnc"
+  network = google_compute_network.vpc.id
+
+  allow {
+    protocol = "tcp"
+    ports    = ["5901"]
+  }
+
+  target_tags   = ["game-client-vm-vnc"]
   source_ranges = var.game_client_vm_allowed_cidr
 }

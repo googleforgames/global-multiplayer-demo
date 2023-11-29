@@ -318,6 +318,11 @@ Once Terraform has run and a few minutes have passed for all of the software pac
 gcloud compute ssh game-client-vm
 ```
 
+You can also connect to an X display using [Chrome Remote Desktop](https://remotedesktop.google.com/). 
+The first time you use the service, you will need to configure the Game Client VM by [Setting up via SSH](https://remotedesktop.google.com/headless)  
+
+You can click through the buttons Begin -> Next -> Authorize to get to the screen where you can then copy the commands for `Debian Linux`. Then you can paste these commands into the SSH terminal you have open to the Game Client VM. After the commands have been succesfully run, you can return to [Chrome Remote Desktop](https://remotedesktop.google.com/access) and click on the Game Client VM that should now be displayed.
+
 ### Run the Game Launcher
 
 To run the game launcher, you will need to have [Go](https://go.dev/dl/) installed to run it, as well as the
