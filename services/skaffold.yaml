@@ -22,6 +22,7 @@ manifests:
     - profile/deployment.yaml
     - frontend/config.yaml
     - frontend/deployment.yaml
+    - open-match/deployment.yaml
     - open-match/director/director.yaml
     - open-match/matchfunction/matchfunction.yaml
     - open-match/matchfunction/config.yaml
