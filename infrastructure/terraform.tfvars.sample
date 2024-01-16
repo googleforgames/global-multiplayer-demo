@@ -142,4 +142,5 @@ app_service_account_config = {
 k8s_service_account_id = "k8s-service-account"
 
 # Github Personal Access Token
+github_username = "<GITHUB_USERNAME>"
 github_pat = "<GITHUB_PAT>"

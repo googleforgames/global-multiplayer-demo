@@ -145,7 +145,12 @@ variable "open-match-matchfunction" {
 
 ### Dedicated Game Server Variables
 
+variable "github_username" {
+  type        = string
+  description = "The GitHub username that matches to the `github_pat` personal access token"
+}
+
 variable "github_pat" {
   type        = string
-  description = "A GitHub personal access token (classic) with at least read:packages scope"
+  description = "A GitHub personal access token (classic) with at least repo scope"
 }
