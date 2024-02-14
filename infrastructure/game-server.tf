@@ -36,7 +36,6 @@ resource "google_secret_manager_secret_iam_binding" "cloud_build_binding" {
   secret_id = google_secret_manager_secret.secret_github_packages.id
   role      = "roles/secretmanager.secretAccessor"
   members = [
-    # "serviceAccount:cloudbuild-cicd@${var.project}.iam.gserviceaccount.com",
     google_service_account.cloudbuild-sa.member
   ]
 }
