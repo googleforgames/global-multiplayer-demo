@@ -1,7 +1,7 @@
 helmCharts:
   - name: agones
     repo: https://agones.dev/chart/stable
-    version: 1.36.0
+    version: 1.38.0
     releaseName: agones
     namespace: agones-system
     valuesInline:
