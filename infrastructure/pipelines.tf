@@ -48,6 +48,14 @@ resource "google_clouddeploy_delivery_pipeline" "services_pipeline" {
   serial_pipeline {
     stages {
       target_id = google_clouddeploy_target.services_deploy_target.target_id
+      deploy_parameters {
+        values = {
+          project               = var.project
+          spanner_service_email = google_service_account.spanner-sa.email
+          spanner_instance_id   = google_spanner_instance.global-game-spanner.name
+          spanner_database_id   = google_spanner_database.spanner-database.name
+        }
+      }
     }
   }
 }

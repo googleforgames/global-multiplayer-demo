@@ -15,57 +15,55 @@
 serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT_ID}.iam.gserviceaccount.com
 steps:
 
-#
-# Building of images
-#
+  #
+  # Building of images
+  #
 
   - name: gcr.io/cloud-builders/docker
     id: ping-discovery
-    args: ["build", ".", "-t", "${_PING_IMAGE}"]
+    args: [ "build", ".", "-t", "${_PING_IMAGE}" ]
     dir: ping-discovery
-    waitFor: ['-']
+    waitFor: [ '-' ]
   - name: gcr.io/cloud-builders/docker
     id: profile
-    args: ["build", ".", "-t", "${_PROFILE_IMAGE}"]
+    args: [ "build", ".", "-t", "${_PROFILE_IMAGE}" ]
     dir: profile
-    waitFor: ['-']
+    waitFor: [ '-' ]
   - name: gcr.io/cloud-builders/docker
     id: frontend
-    args: ["build", ".", "-t", "${_FRONTEND_IMAGE}"]
+    args: [ "build", ".", "-t", "${_FRONTEND_IMAGE}" ]
     dir: frontend
-    waitFor: ['-']
+    waitFor: [ '-' ]
   - name: gcr.io/cloud-builders/docker
     id: open-match-director
-    args: ["build", ".", "-t", "${_OPEN_MATCH_DIRECTOR_IMAGE}"]
+    args: [ "build", ".", "-t", "${_OPEN_MATCH_DIRECTOR_IMAGE}" ]
     dir: open-match/director
-    waitFor: ['-']
+    waitFor: [ '-' ]
   - name: gcr.io/cloud-builders/docker
     id: open-match-matchfunction
-    args: ["build", ".", "-t", "${_OPEN_MATCH_MATCHFUNCTION_IMAGE}"]
+    args: [ "build", ".", "-t", "${_OPEN_MATCH_MATCHFUNCTION_IMAGE}" ]
     dir: open-match/matchfunction
-    waitFor: ['-']
+    waitFor: [ '-' ]
   - name: gcr.io/cloud-builders/docker
     id: open-match-fake-frontend
-    args: ["build", ".", "-t", "${_OPEN_MATCH_FAKE_FRONTEND_IMAGE}"]
+    args: [ "build", ".", "-t", "${_OPEN_MATCH_FAKE_FRONTEND_IMAGE}" ]
     dir: open-match/fake-frontend
-    waitFor: ['-']
+    waitFor: [ '-' ]
 
-#
-# Deployment
-#
+  #
+  # Deployment
+  #
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     id: cloud-deploy-release
-    entrypoint: bash
-    args:
-      - "-c"
-      - |
-        gcloud deploy releases create deploy-$(date +'%Y%m%d%H%M%S') \
-        --annotations=cloud_build=https://console.cloud.google.com/cloud-build/builds/${BUILD_ID} \
-        --delivery-pipeline global-game-services \
-        --skaffold-file skaffold.yaml \
-        --images ping-discovery=${_PING_IMAGE},profile=${_PROFILE_IMAGE},frontend=${_FRONTEND_IMAGE},open-match-director=${_OPEN_MATCH_DIRECTOR_IMAGE},open-match-matchfunction=${_OPEN_MATCH_MATCHFUNCTION_IMAGE},open-match-fake-frontend=${_OPEN_MATCH_FAKE_FRONTEND_IMAGE} \
-        --region us-central1
+    script: |
+      gcloud deploy releases create deploy-$(date +'%Y%m%d%H%M%S') \
+      --annotations=cloud_build=https://console.cloud.google.com/cloud-build/builds/$BUILD_ID \
+      --delivery-pipeline global-game-services \
+      --skaffold-file skaffold.yaml \
+      --images ping-discovery=$_PING_IMAGE,profile=$_PROFILE_IMAGE,frontend=$_FRONTEND_IMAGE,open-match-director=$_OPEN_MATCH_DIRECTOR_IMAGE,open-match-matchfunction=$_OPEN_MATCH_MATCHFUNCTION_IMAGE,open-match-fake-frontend=$_OPEN_MATCH_FAKE_FRONTEND_IMAGE \
+      --region us-central1
+    automapSubstitutions: true
 
 artifacts:
   images:

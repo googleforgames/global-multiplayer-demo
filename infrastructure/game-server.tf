@@ -20,7 +20,7 @@ resource "google_secret_manager_secret" "secret_github_packages" {
   }
 
   replication {
-    automatic = true
+    auto {}
   }
 }
 
