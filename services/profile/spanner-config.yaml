@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC All Rights Reserved.
+# Copyright 2024 Google LLC All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ kind: ServiceAccount
 metadata:
   name: profile
   annotations:
-    iam.gke.io/gcp-service-account: ${service_email}
+    iam.gke.io/gcp-service-account: spanner-sa@project.iam.gserviceaccount.com # from-param: ${spanner_service_email}
 
 ---
 
@@ -26,6 +26,6 @@ kind: ConfigMap
 metadata:
   name: spanner-config
 data:
-  SPANNER_PROJECT_ID: ${project_id}
-  SPANNER_INSTANCE_ID: ${instance_id}
-  SPANNER_DATABASE_ID: ${database_id}
+  SPANNER_PROJECT_ID: "project" # from-param: ${project}
+  SPANNER_INSTANCE_ID: "instance_id" # from-param: ${spanner_instance_id}
+  SPANNER_DATABASE_ID: "database_id" # from-param: ${spanner_database_id}
