@@ -24,3 +24,5 @@ Packaged
 Saved
 *.code-workspace
 /Makefile
+*.zip
+

@@ -18,10 +18,11 @@ manifests:
   rawYaml:
     - ping-discovery/service-account.yaml
     - ping-discovery/deployment.yaml
-    - profile/spanner_config.yaml
+    - profile/spanner-config.yaml
     - profile/deployment.yaml
     - frontend/config.yaml
     - frontend/deployment.yaml
+    - open-match/deployment.yaml
     - open-match/director/director.yaml
     - open-match/matchfunction/matchfunction.yaml
     - open-match/matchfunction/config.yaml

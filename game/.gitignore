@@ -26,3 +26,4 @@ Saved
 *.code-workspace
 /Makefile
 /GameLauncher/app.ini
+*.zip

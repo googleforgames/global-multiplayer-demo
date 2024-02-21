@@ -116,15 +116,15 @@ cd global-multiplayer-demo
 export GAME_DEMO_HOME=$(pwd)
 ```
 
-#### Access to Unreal Engine Container Images
+#### Access to Unreal Engine Source code.
 
 To build the Dedicated Game Server you will need access to the Unreal Engine GitHub organisation.
 
 To do so, follow: [Accessing Unreal Engine source code on GitHub](https://www.unrealengine.com/en-US/ue-on-github).
 
-Once done, to pull down the [Unreal Development Containers](https://unrealcontainers.com/), you will also need to
+Once done, to pull down the source code with Cloud Build, you will also need to
 create [a personal access token (classic)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-personal-access-token-classic)
-with at least `read:packages` scope.
+with at least `repo` scope.
 
 Leave the page open with this token, as we'll need it shortly.
 
@@ -152,8 +152,9 @@ cp terraform.tfvars.sample terraform.tfvars
 You will need to now edit `terraform.tfvars`
 
 * Update <PROJECT_ID> with the ID of your Google Cloud Project,
-* Updated <CLIENT_ID> and <CLIENT_SECRET> with the Client ID and Client secret created in the above step.
-* Updated <GITHUB_PAT> with the GitHub personal access token you created the above steps.
+* Update <CLIENT_ID> and <CLIENT_SECRET> with the Client ID and Client secret created in the above step.
+* Update <GITHUB_USERNAME> with your GitHub username and the <GITHUB_PAT> with the GitHub personal access token you 
+  created with the above steps.
 
 You can edit other variables in this file, but we recommend leaving the default values for your first run before
 experimenting.
@@ -240,9 +241,12 @@ This will:
 * Store those image in [Artifact Registry](https://cloud.google.com/artifact-registry)
 * Deploy them via Cloud Build to an Autopilot cluster.
 
-### Dedicated Game Server
+### Build Linux Games Client and Dedicated Game Server
 
-To build the Unreal dedicated game server image, run the following command.
+To build both the Unreal Client and Game launcher, as well as the Unreal dedicated game server image, run the following
+command.
+
+> This will take ~5 hours on first run, and ~2 hours afterwards or so, so feel free to grab a cup of ☕ or a long nap.
 
 ```shell
 cd $GAME_DEMO_HOME/game
@@ -251,13 +255,17 @@ gcloud builds submit --config=cloudbuild.yaml
 
 Cloud Build will deploy:
 
+* Build a custom [Unreal Engine development image](https://unrealcontainers.com/docs/concepts/image-types#development-images) on first run, to have all the plugins we need for our game 
+  client.
+* Build a Linux version of the Unreal Game Client Game Launcher with appropriate configuration files.
+* Store a zip of the Client in a Google Cloud Storage Bucket `gs://${PROJECT_ID}-release-artifacts`.
 * Build the image for the dedicated game server.
 * Store the image in [Artifact Registry](https://cloud.google.com/artifact-registry).
 * Start the staged rollout of the Agones Fleet to each regional set of clusters.
 
-> This will take ~20 minutes or so, so feel free to grab a cup of ☕
+#### Deploy the Game Server to all Agones Clusters
 
-Navigate to the
+Once the build process is complete, navigate to the
 [agones-deploy-pipeline](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/global-game-agones-gameservers)
 delivery pipeline to review the rollout status. Cloud Build will create a Cloud Deploy release which automatically
 deploys the game server Agones Fleet to the `asia-east1` region first.
@@ -268,8 +276,18 @@ The Fleet can be deployed to the next region in the queue via pressing the
 ## Replace RELEASE_NAME with the unique build name
 gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=global-game-agones-gameservers --region=us-central1
 ```
+#### Retrieve Game Client
 
-### Game Client
+The Cloud Build process will build and archive a `Client-${BUILD_ID}.zip` file in the Google Cloud Storage
+Bucket `gs://${PROJECT_ID}-release-artifacts`.
+
+Use the [Cloud Storage Browser](https://console.cloud.google.com/storage/browser/) or `gsutil` to download
+the file and `unzip` it locally.
+
+Run `launcher` to run the Game Launcher, and see [Playing The Game](#playing-the-game) for details on how to play the
+game once the launcher is up and running.
+
+### Editing or Building the Game Locally
 
 To build the Game Client for your host machine, you will need to
 [install Unreal Engine from source](https://docs.unrealengine.com/5.2/en-US/building-unreal-engine-from-source/),
@@ -298,7 +316,6 @@ gcloud compute addresses list --filter=name=frontend-service --format="value(add
 ```
 
 JWT token can be obtained by accessing frontend api's ip address with '/login' path, such as "http://[IP_ADDRESS].sslip.io/login" and extracting it from the URL.
-
 
 ### Enable Cloud Linux VM for Game Client
 
@@ -338,7 +355,7 @@ cp app.ini.sample app.ini
 gcloud compute addresses list --filter=name=frontend-service --format="value(address)"
 ```
 
-Edit the app.ini, and replace the `frontend_api` value with http://[IP_ADDRESS].sslip.io
+Edit the app.ini, and replace the `frontend_api` value for ${IP_ADDRESS}.
 
 And update the `binary` field with the path to the executable of the client build for your operating system.
 
@@ -347,6 +364,8 @@ Then run the following to start the launcher!
 ```shell
 go run main.go
 ```
+
+### Playing the Game
 
 You will need three players to play a game, so you can use the "Instances" drop down to create more than one
 game client instance on your local machine. Depending on the capability of your graphics card, creating smaller 
