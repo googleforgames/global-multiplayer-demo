@@ -317,8 +317,30 @@ gcloud compute addresses list --filter=name=frontend-service --format="value(add
 
 JWT token can be obtained by accessing frontend api's ip address with '/login' path, such as "http://[IP_ADDRESS].sslip.io/login" and extracting it from the URL.
 
+### Enable Cloud Linux VM for Game Client
 
-#### Run the Game Launcher
+You have the option to enable a GCP Linux VM for the Game Client. To have Terraform setup the VM, edit `terraform.tfvars` and set:
+
+`enable_game_client_vm = true`
+
+Then you will need to run Terraform to apply the changes to your environment:
+
+```shell
+terraform apply
+```
+
+Once Terraform has run and a few minutes have passed for all of the software packages to install, you can then connect to the VM using gcloud:
+
+```shell
+gcloud compute ssh game-client-vm
+```
+
+You can also connect to an X display using [Chrome Remote Desktop](https://remotedesktop.google.com/). 
+The first time you use the service, you will need to configure the Game Client VM by [Setting up via SSH](https://remotedesktop.google.com/headless)  
+
+You can click through the buttons Begin -> Next -> Authorize to get to the screen where you can then copy the commands for `Debian Linux`. Then you can paste these commands into the SSH terminal you have open to the Game Client VM. After the commands have been succesfully run, you can return to [Chrome Remote Desktop](https://remotedesktop.google.com/access) and click on the Game Client VM that should now be displayed.
+
+### Run the Game Launcher
 
 To run the game launcher, you will need to have [Go](https://go.dev/dl/) installed to run it, as well as the
 [prerequisites for the Fyne Go Cross Platform UI library](https://developer.fyne.io/started/).
