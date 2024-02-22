@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-##### Spanner Pipelines #####
+##### Services Pipelines #####
 
 resource "google_clouddeploy_target" "services_deploy_target" {
   location    = var.services_gke_config.location
@@ -50,10 +50,25 @@ resource "google_clouddeploy_delivery_pipeline" "services_pipeline" {
       target_id = google_clouddeploy_target.services_deploy_target.target_id
       deploy_parameters {
         values = {
-          project               = var.project
-          spanner_service_email = google_service_account.spanner-sa.email
-          spanner_instance_id   = google_spanner_instance.global-game-spanner.name
-          spanner_database_id   = google_spanner_database.spanner-database.name
+          project = var.project
+
+          # Spanner config
+          spanner_service_account = google_service_account.spanner-sa.email
+          spanner_instance_id     = google_spanner_instance.global-game-spanner.name
+          spanner_database_id     = google_spanner_database.spanner-database.name
+
+          # Ping Service config
+          ping_service_account = google_service_account.ping_discovery_sa.email
+
+          # Frontend config
+          frontend_client_id         = var.frontend-service.client_id
+          frontend_client_secret     = var.frontend-service.client_secret
+          frontend_jwt_key           = var.frontend-service.jwt_key
+          frontend_service_address   = google_compute_address.frontend-service.address
+          frontend_callback_hostname = "http://${google_compute_address.frontend-service.address}.sslip.io/callback"
+
+          # Open Match config
+          players_per_match = var.open-match-matchfunction.players_per_match
         }
       }
     }

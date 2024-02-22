@@ -17,7 +17,7 @@ kind: ServiceAccount
 metadata:
   name: profile
   annotations:
-    iam.gke.io/gcp-service-account: spanner-sa@project.iam.gserviceaccount.com # from-param: ${spanner_service_email}
+    iam.gke.io/gcp-service-account: spanner-sa@project.iam.gserviceaccount.com # from-param: ${spanner_service_account}
 
 ---
 
