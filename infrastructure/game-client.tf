@@ -38,6 +38,15 @@ resource "google_project_iam_member" "game_client_vm_compute_is_sa" {
   member  = "serviceAccount:${google_service_account.game_client_vm[0].email}"
 }
 
+# GCS storage, so we can pull down the Client build.
+resource "google_project_iam_member" "game_client_vm_compute_storage_viewer" {
+  count = var.enable_game_client_vm ? 1 : 0
+
+  project = var.project
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${google_service_account.game_client_vm[0].email}"
+}
+
 resource "google_compute_address" "game_client_vm_static_ip" {
   count = var.enable_game_client_vm ? 1 : 0
 
@@ -62,6 +71,10 @@ resource "google_compute_instance" "game_client_vm" {
   machine_type = var.game_client_vm_machine_type
   zone         = "${var.game_client_vm_region}-a"
 
+  guest_accelerator {
+    type  = "nvidia-l4-vws"
+    count = 1
+  }
   tags = ["game-client-vm-ssh", "game-client-vm-vnc"]
 
   scheduling {
@@ -94,7 +107,7 @@ resource "google_compute_instance" "game_client_vm" {
     serial-port-logging-enable = "TRUE"
   }
 
-  metadata_startup_script = file("${path.root}/game-client-startup.sh")
+  metadata_startup_script = file("${path.root}/files/game-client-startup.sh")
 
   service_account {
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.

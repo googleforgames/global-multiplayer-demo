@@ -18,9 +18,9 @@ steps:
   - name: gcr.io/cloud-builders/git
     id: clone-unreal-engine
     script: |
-      df -h
-      git clone --depth=1 --single-branch --branch "$_UNREAL_VERSION-release" https://$GITHUB_AUTH@github.com/EpicGames/UnrealEngine.git
-      cd UnrealEngine
+      df -h && \
+      git clone --depth=1 --single-branch --branch "$_UNREAL_VERSION-release" https://$GITHUB_AUTH@github.com/EpicGames/UnrealEngine.git && \
+      cd UnrealEngine && \
       ls -l
     secretEnv:
       - GITHUB_AUTH

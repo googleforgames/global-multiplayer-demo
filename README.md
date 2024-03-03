@@ -10,7 +10,7 @@ dedicated game servers, utilising both Google Cloud's products and open source g
 If you’re using this demo, please **★Star** this repository to show your interest!
 
 **Note to Googlers**: Please fill out the form at [go/global-scale-game-form](http://go/global-scale-game-form). 
-Details of the program can be found at [go/global-scale-game](http://go/global-scale-game).
+Details of the program can be found at [go/global-scale-game].
 
 Projects and products utilised include:
 
@@ -287,6 +287,69 @@ the file and `unzip` it locally.
 Run `launcher` to run the Game Launcher, and see [Playing The Game](#playing-the-game) for details on how to play the
 game once the launcher is up and running.
 
+### Enable Remote Cloud Game Client VM
+
+Since not everyone has a Linux machine with a graphics card - we've supplied one for you in the Cloud, which can run 
+our automated Linux build of the game launcher and client!
+
+To enable the VM for the Game Client, make sure to set `enable_game_client_vm = true` in the  `terraform.tfvars`, 
+and `terraform apply` those changes.
+
+Once Terraform has run and the VM has successfully rebooted after all the software has installed, SSH into the VM 
+using gcloud (or the [Cloud Console](https://console.cloud.google.com/compute/instances)) for first time setup with
+[Chrome Remote Desktop](https://remotedesktop.google.com/).
+
+```shell
+gcloud compute ssh game-client-vm
+```
+
+To determine if the setup scripts are complete, running 
+[`nvidia-smi`](https://developer.nvidia.com/nvidia-system-management-interface) will complete successfully. 
+
+The first time you use the service, you will need to configure the Game Client VM
+by [Setting up via SSH](https://remotedesktop.google.com/headless).
+
+**Note to Googlers**: Check [go/global-scale-game] for special instructions on setting up Chrome Remote Desktop for
+the Game Client VM.
+
+Click through the buttons Begin -> Next -> Authorize (skip installing the deb, we already did that) to get to
+the screen where you can then copy the commands for `Debian Linux`.
+
+Paste these commands into the SSH terminal you have open to the Game Client VM. After the commands have been 
+successfully run, you can return to [Chrome Remote Desktop](https://remotedesktop.google.com/access) and click on the 
+Game Client VM that should now be displayed.
+
+If Chrome Remote Desktop is an issue for you, we have also installed several other (but less tested) remoting solutions 
+into the VM, including:
+
+* [TightVNC](https://www.tightvnc.com/)
+* [Xpra](https://xpra.org/)
+* [Sunshine](https://app.lizardbyte.dev/Sunshine/)
+* [xrdp](https://www.xrdp.org/)
+
+#### Downloading the latest client
+
+On first connection to the remote machine, you will need to download the latest client. To do so, open a terminal and
+run:
+
+```shell
+/opt/game-client/update-client.sh
+```
+
+Which will download the latest DroidShooter Client to the Desktop of this machine.
+
+If you ever want to update the client to the latest build, run the same command again.
+
+#### Running the Launcher
+
+After remoting into the Game Cloud Game Client VM, open the `Client` folder on the Desktop, and double-click the 
+`launcher` to run the game launcher.
+
+**Note:** When using Chrome Remote Desktop, you may want to enable "Relative Mouse Mode" via the sidebar, when playing 
+the game for better mouse interaction with the game client (hit `Esc` to exit Relative Mouse Mode).
+
+See [Playing The Game](#playing-the-game) for details on how to play the game once the launcher is up and running.
+
 ### Editing or Building the Game Locally
 
 To build the Game Client for your host machine, you will need to
@@ -297,7 +360,7 @@ This project currently uses **Unreal Engine 5.2.0**.
 
 > Installing Unreal Engine from source can take several hours, and use all your CPU. You have been warned!
 
-Open [`game/Droidshooter.uproject`](./game) in the Unreal Engine Editor.  
+Open [`game/Droidshooter.uproject`](./game) in the Unreal Engine Editor.
 
 To package the project:
 
@@ -317,30 +380,7 @@ gcloud compute addresses list --filter=name=frontend-service --format="value(add
 
 JWT token can be obtained by accessing frontend api's ip address with '/login' path, such as "http://[IP_ADDRESS].sslip.io/login" and extracting it from the URL.
 
-### Enable Cloud Linux VM for Game Client
-
-You have the option to enable a GCP Linux VM for the Game Client. To have Terraform setup the VM, edit `terraform.tfvars` and set:
-
-`enable_game_client_vm = true`
-
-Then you will need to run Terraform to apply the changes to your environment:
-
-```shell
-terraform apply
-```
-
-Once Terraform has run and a few minutes have passed for all of the software packages to install, you can then connect to the VM using gcloud:
-
-```shell
-gcloud compute ssh game-client-vm
-```
-
-You can also connect to an X display using [Chrome Remote Desktop](https://remotedesktop.google.com/). 
-The first time you use the service, you will need to configure the Game Client VM by [Setting up via SSH](https://remotedesktop.google.com/headless)  
-
-You can click through the buttons Begin -> Next -> Authorize to get to the screen where you can then copy the commands for `Debian Linux`. Then you can paste these commands into the SSH terminal you have open to the Game Client VM. After the commands have been succesfully run, you can return to [Chrome Remote Desktop](https://remotedesktop.google.com/access) and click on the Game Client VM that should now be displayed.
-
-### Run the Game Launcher
+#### Run the Game Launcher from source
 
 To run the game launcher, you will need to have [Go](https://go.dev/dl/) installed to run it, as well as the
 [prerequisites for the Fyne Go Cross Platform UI library](https://developer.fyne.io/started/).
@@ -389,3 +429,5 @@ The project should open as normal now.
 Apache 2.0
 
 This is not an officially supported Google product
+
+[go/global-scale-game]: http://go/global-scale-game
