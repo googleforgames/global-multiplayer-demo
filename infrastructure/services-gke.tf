@@ -117,15 +117,6 @@ resource "google_project_iam_member" "ping_discovery_sa" {
   member  = "serviceAccount:${google_service_account.ping_discovery_sa.email}"
 }
 
-# Make Service Account file for deploy with Cloud Deploy
-resource "local_file" "services-ping-service-account" {
-  content = templatefile(
-    "${path.module}/files/services/ping-service-account.yaml.tpl", {
-      service_email = google_service_account.ping_discovery_sa.email
-  })
-  filename = "${path.module}/${var.services_directory}/ping-discovery/service-account.yaml"
-}
-
 #
 # Frontend Service
 #
@@ -140,25 +131,6 @@ resource "google_compute_address" "frontend-service" {
   labels = {
     "environment" = var.resource_env_label
   }
-}
-
-resource "local_file" "services-frontend-config-map" {
-  content = templatefile(
-    "${path.module}/files/services/frontend-config.yaml.tpl", {
-      service_address = google_compute_address.frontend-service.address
-      client_id       = var.frontend-service.client_id
-      client_secret   = var.frontend-service.client_secret
-      jwt_key         = var.frontend-service.jwt_key
-  })
-  filename = "${path.module}/${var.services_directory}/frontend/config.yaml"
-}
-
-resource "local_file" "open-match-matchfunction-config-map" {
-  content = templatefile(
-    "${path.module}/files/services/open-match-matchfunction-config.yaml.tpl", {
-      players_per_match = format("%q", var.open-match-matchfunction.players_per_match)
-  })
-  filename = "${path.module}/${var.services_directory}/open-match/matchfunction/config.yaml"
 }
 
 resource "google_gke_hub_membership" "services-gke-membership" {
