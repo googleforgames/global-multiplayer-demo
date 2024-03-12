@@ -15,6 +15,10 @@
 serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT_ID}.iam.gserviceaccount.com
 steps:
 
+  - name: gcr.io/cloud-builders/gcloud
+    id: download schema file
+    args: ["storage", "cp", "gs://${PROJECT_ID}-spanner-schema/liquibase.properties", "."]
+
   #
   # Building of schema image
   #
