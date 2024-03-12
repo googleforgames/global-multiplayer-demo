@@ -63,5 +63,17 @@ resource "local_file" "liquibase-properties" {
       instance_id = google_spanner_instance.global-game-spanner.name
       database_id = google_spanner_database.spanner-database.name
   })
-  filename = "${path.module}/${var.schema_directory}/liquibase.properties"
+  filename = "${path.module}/tmp/liquibase.properties"
+}
+
+# Store the file in GCS as our source of truth for where our database is.
+resource "google_storage_bucket" "spanner-schema" {
+  location = "US"
+  name     = "${var.project}-spanner-schema"
+}
+
+resource "google_storage_bucket_object" "upload-spanner-schema" {
+  name   = "liquibase.properties"
+  bucket = google_storage_bucket.spanner-schema.name
+  source = local_file.liquibase-properties.filename
 }
