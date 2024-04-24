@@ -54,13 +54,3 @@ resource "google_service_networking_connection" "private_service_connection" {
   depends_on = [google_project_service.project]
 }
 
-# Add Redis Host & IP to Open Match kustomization.yaml
-resource "local_file" "open-match-kustomization-file" {
-
-  content = templatefile(
-    "${path.module}/files/open-match/kustomization.yaml.tpl", {
-      redis_host = google_redis_instance.open-match.host
-      redis_port = google_redis_instance.open-match.port
-  })
-  filename = "${path.module}/${var.platform_directory}/open-match/base/kustomization.yaml"
-}

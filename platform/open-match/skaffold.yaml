@@ -12,14 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: skaffold/v4beta1
+apiVersion: skaffold/v4beta9
 kind: Config
 manifests:
-  kustomize:
-    paths:
-      - ./base
-    buildArgs:
-      - --enable-helm
+  rawYaml:
+    - open-match.yaml
+    - agones-allocator-vs.yaml
+  helm:
+    releases:
+      - name: open-match
+        namespace: open-match
+        repo: https://open-match.dev/chart/stable
+        remoteChart: open-match
+        version: 1.8.0
+        setValues:
+          prometheus.enabled: false
+          grafana.enabled: false
+          jaeger.enabled: false
+          open-match-override.enabled: true
+          open-match-customize.enabled: true
+          open-match-customize.evaluator.enabled: true
+          open-match-core.redis.enabled: false
+          # open-match-core.redis.hostname: redis -- set through Cloud Deploy by convention
+          # open-match-core.redis.port: 6379 -- set through Cloud Deploy by convention
+          open-match-core.redis.pool.maxIdle: 500
+          open-match-core.redis.pool.maxActive: 500
+          open-match-core.redis.pool.idleTimeout: 0
+          open-match-core.redis.pool.healthCheckTimeout: 300ms
+
 deploy:
   kubectl:
     flags:
