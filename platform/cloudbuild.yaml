@@ -20,41 +20,34 @@ steps:
   # newly added clusters are configured properly with ASM.
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     id: fleet-membership
-    entrypoint: bash
-    args:
-    - '-c'
-    - |
-        MEMBERSHIPS=$(gcloud container fleet memberships list --format="value(name)" | xargs | sed 's/ /,/g')
-
-        gcloud container fleet mesh update --management automatic --memberships $$MEMBERSHIPS
+    script: |
+      export MEMBERSHIPS=$(gcloud container fleet memberships list --format="value(name)" | xargs | sed 's/ /,/g') && \
+      echo Memberships: $MEMBERSHIPS && \
+      gcloud container fleet mesh update --management automatic --memberships "$MEMBERSHIPS"
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     id: deploy-agones
-    entrypoint: bash
     dir: agones
-    args:
-      - '-c'
-      - |
-        gcloud deploy releases create deploy-$(date +'%Y%m%d%H%M%S') \
-        --annotations=cloud_build=https://console.cloud.google.com/cloud-build/builds/${BUILD_ID} \
-        --delivery-pipeline agones-deploy-pipeline \
-        --skaffold-file skaffold.yaml \
-        --region us-central1
+    script: |
+      gcloud deploy releases create deploy-$(date +'%Y%m%d%H%M%S') \
+      --annotations=cloud_build=https://console.cloud.google.com/cloud-build/builds/$BUILD_ID \
+      --delivery-pipeline agones-deploy-pipeline \
+      --skaffold-file skaffold.yaml \
+      --region us-central1
+    automapSubstitutions: true
     waitFor:
       - fleet-membership
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     id: deploy-open-match
-    entrypoint: bash
     dir: open-match
-    args:
-      - '-c'
-      - |
-        gcloud deploy releases create deploy-$(date +'%Y%m%d%H%M%S') \
-        --annotations=cloud_build=https://console.cloud.google.com/cloud-build/builds/${BUILD_ID} \
-        --delivery-pipeline global-game-open-match \
-        --skaffold-file skaffold.yaml \
-        --region us-central1
+    script: |
+      gcloud deploy releases create deploy-$(date +'%Y%m%d%H%M%S') \
+      --annotations=cloud_build=https://console.cloud.google.com/cloud-build/builds/$BUILD_ID \
+      --delivery-pipeline global-game-open-match \
+      --skaffold-file skaffold.yaml \
+      --region us-central1
+    automapSubstitutions: true
     waitFor:
       - fleet-membership
 

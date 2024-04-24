@@ -32,7 +32,6 @@ platform/agones/skaffold.yaml
 # Ignore Terraform generated kustomization files
 **/global-game-*/kustomization.yaml
 **/global-game-*/agones-system.yaml
-platform/open-match/base/kustomization.yaml
 
 # Ignore any tmp files generated
 infrastructure/tmp

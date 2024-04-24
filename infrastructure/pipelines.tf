@@ -212,6 +212,13 @@ resource "google_clouddeploy_delivery_pipeline" "open-match" {
   serial_pipeline {
     stages {
       target_id = google_clouddeploy_target.open-match-target.target_id
+      deploy_parameters {
+        values = {
+          # values are passed into Cloud Deploy Helm Charts by convention.
+          "open-match-core.redis.hostname" = google_redis_instance.open-match.host
+          "open-match-core.redis.port"     = google_redis_instance.open-match.port
+        }
+      }
     }
   }
 }
