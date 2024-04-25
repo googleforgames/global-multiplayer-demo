@@ -15,16 +15,6 @@
 serviceAccount: projects/${PROJECT_ID}/serviceAccounts/cloudbuild-cicd@${PROJECT_ID}.iam.gserviceaccount.com
 steps:
 
-  # Deploys Anthos Service Mesh (ASM) to all clusters using the fleet feature API. Since there is no terraform
-  # support for ASM at cluster creation time, this step is performed with platform component deployments so
-  # newly added clusters are configured properly with ASM.
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    id: fleet-membership
-    script: |
-      export MEMBERSHIPS=$(gcloud container fleet memberships list --format="value(name)" | xargs | sed 's/ /,/g') && \
-      echo Memberships: $MEMBERSHIPS && \
-      gcloud container fleet mesh update --management automatic --memberships "$MEMBERSHIPS"
-
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     id: deploy-agones
     dir: agones
@@ -35,8 +25,6 @@ steps:
       --skaffold-file skaffold.yaml \
       --region us-central1
     automapSubstitutions: true
-    waitFor:
-      - fleet-membership
 
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     id: deploy-open-match
@@ -48,8 +36,6 @@ steps:
       --skaffold-file skaffold.yaml \
       --region us-central1
     automapSubstitutions: true
-    waitFor:
-      - fleet-membership
 
 options:
   dynamic_substitutions: true
