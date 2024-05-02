@@ -90,13 +90,23 @@ resource "google_gke_hub_membership" "membership" {
   depends_on = [google_project_service.project]
 }
 
-resource "google_gke_hub_feature" "mesh" {
-  name     = "servicemesh"
+resource "google_gke_hub_feature" "servicemesh" {
   project  = var.project
+  name     = "servicemesh"
   location = "global"
-  provider = google-beta
 
   depends_on = [google_project_service.project]
+}
+
+resource "google_gke_hub_feature_membership" "mesh-member" {
+  for_each   = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
+  project    = var.project
+  location   = "global"
+  feature    = google_gke_hub_feature.servicemesh.name
+  membership = google_gke_hub_membership.membership[each.key].membership_id
+  mesh {
+    management = "MANAGEMENT_AUTOMATIC"
+  }
 }
 
 resource "google_compute_firewall" "agones-gameservers" {
