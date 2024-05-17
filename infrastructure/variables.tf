@@ -62,6 +62,11 @@ variable "clouddeploy_config" {
   })
 }
 
+variable "pipeline_promotion_wait" {
+  type        = string
+  description = "Pipeline wait time between deployment promotion - in seconds"
+}
+
 ### Artifact Registry Variables ###
 
 variable "artifact_registry_config" {
