@@ -58,13 +58,9 @@ variable "game_gke_autopilot_clusters" {
 
 variable "clouddeploy_config" {
   type = object({
-    location = string
+    location                = string,
+    pipeline_promotion_wait = string
   })
-}
-
-variable "pipeline_promotion_wait" {
-  type        = string
-  description = "Pipeline wait time between deployment promotion - in seconds"
 }
 
 ### Artifact Registry Variables ###

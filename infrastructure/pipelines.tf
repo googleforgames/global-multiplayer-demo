@@ -140,7 +140,7 @@ resource "google_clouddeploy_automation" "agones-gke" {
   rules {
     promote_release_rule {
       id                    = "promote-release"
-      wait                  = var.pipeline_promotion_wait
+      wait                  = var.clouddeploy_config.pipeline_promotion_wait
       destination_target_id = "@next"
       # destination_phase = "stable"
     }
@@ -220,7 +220,7 @@ resource "google_clouddeploy_automation" "gameservers_gke" {
   rules {
     promote_release_rule {
       id                    = "promote-release"
-      wait                  = var.pipeline_promotion_wait
+      wait                  = var.clouddeploy_config.pipeline_promotion_wait
       destination_target_id = "@next"
       # destination_phase = "stable"
     }
