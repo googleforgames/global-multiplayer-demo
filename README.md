@@ -202,7 +202,7 @@ gcloud builds submit --config=cloudbuild.yaml
 Navigate to the
 [agones-deploy-pipeline](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/agones-deploy-pipeline)
 delivery pipeline to review the rollout status. Cloud Build will create a Cloud Deploy release which automatically
-deploys Agones the first game server cluster. Agones can be deployed to subsequent clusters by clicking on the
+deploys Agones all of the game server clusters automatically. Agones can be deployed manually to subsequent clusters by clicking on the
 `promote` button within the Pipeline visualization or by running the following gcloud command:
 
 ```shell
@@ -210,8 +210,7 @@ deploys Agones the first game server cluster. Agones can be deployed to subseque
 gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=agones-deploy-pipeline --region=us-central1
 ```
 
-Continue the promotion until Agones has been deployed to all clusters. You can monitor the status of the deployment
-through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Workloads panel in the GCP Console.
+You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Workloads panel in the GCP Console.
 
 Open Match rollout status can be viewed by navigating to the [global-game-open-match](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/global-game-open-match) delivery pipeline. Since open match is deployed onto a single services GKE cluster, deployments are automatically rolled out with no need for manual promotion.
 
@@ -268,8 +267,8 @@ Cloud Build will deploy:
 Once the build process is complete, navigate to the
 [agones-deploy-pipeline](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/global-game-agones-gameservers)
 delivery pipeline to review the rollout status. Cloud Build will create a Cloud Deploy release which automatically
-deploys the game server Agones Fleet to the `asia-east1` region first.
-The Fleet can be deployed to the next region in the queue via pressing the
+deploys the game server to the entire Agones Fleet, starting with the `asia-east1` region first.
+The Fleet can be deployed manually to the next region in the queue by pressing the
 `promote` button within the Pipeline visualization or by running the following gcloud command:
 
 ```shell
