@@ -145,3 +145,13 @@ resource "google_gke_hub_membership" "services-gke-membership" {
 
   depends_on = [google_project_service.project]
 }
+
+resource "google_gke_hub_feature_membership" "services-gke-mesh" {
+  project    = var.project
+  location   = "global"
+  feature    = google_gke_hub_feature.servicemesh.name
+  membership = google_gke_hub_membership.services-gke-membership.membership_id
+  mesh {
+    management = "MANAGEMENT_AUTOMATIC"
+  }
+}

@@ -25,7 +25,7 @@ data "google_container_engine_versions" "regions" {
 module "agones_gke_standard_clusters" {
   for_each = var.game_gke_standard_clusters
 
-  source = "git::https://github.com/googleforgames/agones.git//install/terraform/modules/gke/?ref=v1.39.0"
+  source = "git::https://github.com/googleforgames/agones.git//install/terraform/modules/gke/?ref=v1.40.0"
 
   cluster = {
     name             = each.key
@@ -49,7 +49,7 @@ module "agones_gke_standard_clusters" {
 module "agones_gke_autopilot_clusters" {
   for_each = var.game_gke_autopilot_clusters
 
-  source = "git::https://github.com/googleforgames/agones.git//install/terraform/modules/gke-autopilot/?ref=v1.39.0"
+  source = "git::https://github.com/googleforgames/agones.git//install/terraform/modules/gke-autopilot/?ref=v1.40.0"
 
   cluster = {
     name     = each.key
@@ -90,13 +90,23 @@ resource "google_gke_hub_membership" "membership" {
   depends_on = [google_project_service.project]
 }
 
-resource "google_gke_hub_feature" "mesh" {
-  name     = "servicemesh"
+resource "google_gke_hub_feature" "servicemesh" {
   project  = var.project
+  name     = "servicemesh"
   location = "global"
-  provider = google-beta
 
   depends_on = [google_project_service.project]
+}
+
+resource "google_gke_hub_feature_membership" "mesh-member" {
+  for_each   = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
+  project    = var.project
+  location   = "global"
+  feature    = google_gke_hub_feature.servicemesh.name
+  membership = google_gke_hub_membership.membership[each.key].membership_id
+  mesh {
+    management = "MANAGEMENT_AUTOMATIC"
+  }
 }
 
 resource "google_compute_firewall" "agones-gameservers" {
@@ -112,32 +122,3 @@ resource "google_compute_firewall" "agones-gameservers" {
   target_tags   = ["game-server"]
   source_ranges = ["0.0.0.0/0"]
 }
-
-# Make Skaffold file for Cloud Deploy into each GKE Cluster
-resource "local_file" "agones-skaffold-file" {
-  content = templatefile(
-    "${path.module}/files/agones/skaffold.yaml.tpl", {
-      gke_clusters = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
-  })
-  filename = "${path.module}/${var.platform_directory}/agones/skaffold.yaml"
-}
-
-# Make cluster specific helm value for LB IP
-resource "local_file" "agones-ae-lb-file" {
-  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
-
-  content = templatefile(
-    "${path.module}/files/agones/agones-install.yaml.tpl", {
-      location = each.value.region
-  })
-  filename = "${path.module}/${var.platform_directory}/agones/${each.key}/kustomization.yaml"
-}
-
-# Create agones-system ns manifest as resource referenced by kustomization.yaml
-resource "local_file" "agones-ns-file" {
-  for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
-
-  content  = file("${path.module}/files/agones/agones-system.yaml")
-  filename = "${path.module}/${var.platform_directory}/agones/${each.key}/agones-system.yaml"
-}
-

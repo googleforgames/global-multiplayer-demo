@@ -44,11 +44,6 @@ steps:
     args: [ "build", ".", "-t", "${_OPEN_MATCH_MATCHFUNCTION_IMAGE}" ]
     dir: open-match/matchfunction
     waitFor: [ '-' ]
-  - name: gcr.io/cloud-builders/docker
-    id: open-match-fake-frontend
-    args: [ "build", ".", "-t", "${_OPEN_MATCH_FAKE_FRONTEND_IMAGE}" ]
-    dir: open-match/fake-frontend
-    waitFor: [ '-' ]
 
   #
   # Deployment
@@ -61,7 +56,7 @@ steps:
       --annotations=cloud_build=https://console.cloud.google.com/cloud-build/builds/$BUILD_ID \
       --delivery-pipeline global-game-services \
       --skaffold-file skaffold.yaml \
-      --images ping-discovery=$_PING_IMAGE,profile=$_PROFILE_IMAGE,frontend=$_FRONTEND_IMAGE,open-match-director=$_OPEN_MATCH_DIRECTOR_IMAGE,open-match-matchfunction=$_OPEN_MATCH_MATCHFUNCTION_IMAGE,open-match-fake-frontend=$_OPEN_MATCH_FAKE_FRONTEND_IMAGE \
+      --images ping-discovery=$_PING_IMAGE,profile=$_PROFILE_IMAGE,frontend=$_FRONTEND_IMAGE,open-match-director=$_OPEN_MATCH_DIRECTOR_IMAGE,open-match-matchfunction=$_OPEN_MATCH_MATCHFUNCTION_IMAGE \
       --region us-central1
     automapSubstitutions: true
 
@@ -72,14 +67,12 @@ artifacts:
     - ${_REGISTRY}/frontend
     - ${_REGISTRY}/open-match-director
     - ${_REGISTRY}/open-match-matchfunction
-    - ${_REGISTRY}/open-match-fake-frontend
 substitutions:
   _PING_IMAGE: ${_REGISTRY}/ping-discovery:${BUILD_ID}
   _PROFILE_IMAGE: ${_REGISTRY}/profile:${BUILD_ID}
   _FRONTEND_IMAGE: ${_REGISTRY}/frontend:${BUILD_ID}
   _OPEN_MATCH_DIRECTOR_IMAGE: ${_REGISTRY}/open-match-director:${BUILD_ID}
   _OPEN_MATCH_MATCHFUNCTION_IMAGE: ${_REGISTRY}/open-match-matchfunction:${BUILD_ID}
-  _OPEN_MATCH_FAKE_FRONTEND_IMAGE: ${_REGISTRY}/open-match-fake-frontend:${BUILD_ID}
   _REGISTRY: us-docker.pkg.dev/${PROJECT_ID}/global-game-images
 options:
   dynamic_substitutions: true

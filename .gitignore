@@ -22,18 +22,6 @@ backend.tf
 
 deploy/base/charts/
 
-# Ignore Terraform generated k8s manifest files
-patch-agones-allocator-*.yaml
-
-# Ignore Terraform generated skaffold files
-skaffold-global-game-*.yaml
-platform/agones/skaffold.yaml
-
-# Ignore Terraform generated kustomization files
-**/global-game-*/kustomization.yaml
-**/global-game-*/agones-system.yaml
-platform/open-match/base/kustomization.yaml
-
 # Ignore any tmp files generated
 infrastructure/tmp
 
