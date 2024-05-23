@@ -90,7 +90,7 @@ func (s *MatchFunctionService) makeMatches(profileName, idPrefix string, tickets
 		eval, err := anypb.New(&pb.DefaultEvaluationCriteria{Score: matchScore})
 		if err != nil {
 			log.Printf("Failed to marshal DefaultEvaluationCriteria into anypb: %v", err)
-			return nil, fmt.Errorf("Failed to marshal DefaultEvaluationCriteria into anypb: %w", err)
+			return nil, fmt.Errorf("failed to marshal DefaultEvaluationCriteria into anypb: %w", err)
 		}
 
 		matches = append(matches, &pb.Match{
