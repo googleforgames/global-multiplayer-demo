@@ -205,11 +205,6 @@ delivery pipeline to review the rollout status. Cloud Build will create a Cloud 
 deploys Agones to all of the game server clusters automatically. Agones can be deployed manually to subsequent clusters by clicking on the
 `promote` button within the Pipeline visualization or by running the following gcloud command:
 
-```shell
-## Replace RELEASE_NAME with the unique id generated from the Cloud Build.
-gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=agones-deploy-pipeline --region=us-central1
-```
-
 You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Workloads panel in the GCP Console.
 
 Open Match rollout status can be viewed by navigating to the [global-game-open-match](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/global-game-open-match) delivery pipeline. Since open match is deployed onto a single services GKE cluster, deployments are automatically rolled out with no need for manual promotion.
@@ -271,10 +266,6 @@ deploys the game server Fleet to the global set of Agones Clusters sequentially 
 The Fleet can be deployed manually to the next region in the queue by pressing the
 `promote` button within the Pipeline visualization or by running the following gcloud command:
 
-```shell
-## Replace RELEASE_NAME with the unique build name
-gcloud deploy releases promote --release=RELEASE_NAME --delivery-pipeline=global-game-agones-gameservers --region=us-central1
-```
 #### Retrieve Game Client
 
 The Cloud Build process will build and archive a `Client-${BUILD_ID}.zip` file in the Google Cloud Storage
