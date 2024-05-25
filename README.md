@@ -262,8 +262,6 @@ Once the build process is complete, navigate to the
 [agones-deploy-pipeline](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/global-game-agones-gameservers)
 delivery pipeline to review the rollout status. Cloud Build will create a Cloud Deploy release which automatically
 deploys the game server Fleet to the global set of Agones Clusters sequentially using [Cloud Deploy Automations](https://cloud.google.com/deploy/docs/automation), starting with the `asia-east1` region first, and with a (by default) 300s wait in between each region.
-The Fleet can be deployed manually to the next region in the queue by pressing the
-`promote` button within the Pipeline visualization or by running the following gcloud command:
 
 #### Retrieve Game Client
 
