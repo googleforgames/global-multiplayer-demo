@@ -203,7 +203,6 @@ Navigate to the
 [agones-deploy-pipeline](https://console.cloud.google.com/deploy/delivery-pipelines/us-central1/agones-deploy-pipeline)
 delivery pipeline to review the rollout status. Cloud Build will create a Cloud Deploy release which automatically
 deploys Agones to all of the game server clusters automatically. Agones can be deployed manually to subsequent clusters by clicking on the
-`promote` button within the Pipeline visualization or by running the following gcloud command:
 
 You can monitor the status of the deployment through the Cloud Logging URL returned by the `gcloud builds` command as well as the Kubernetes Engine/Workloads panel in the GCP Console.
 
