@@ -190,7 +190,6 @@ Since OAuth needs a domain to authenticate against, we'll use [sslip.io](https:/
 #### Deploy Platform Components
 Cloud Build will deploy
 
-- Anthos Service Mesh (ASM) to all clusters using the fleet feature API
 - Agones using Cloud Deploy
 - Open Match using Cloud Deploy
 
