@@ -124,6 +124,31 @@ resource "google_clouddeploy_delivery_pipeline" "agones-gke" {
   }
 }
 
+resource "google_clouddeploy_automation" "agones-gke" {
+  name              = "agones-deploy-automation-${each.key}"
+  project           = var.project
+  location          = var.clouddeploy_config.location
+  delivery_pipeline = google_clouddeploy_delivery_pipeline.agones-gke.name
+  service_account   = google_service_account.cloudbuild-sa.email
+  for_each          = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
+
+  description = "Agones Deploy Automation - ${each.key}"
+  selector {
+    targets {
+      id = google_clouddeploy_target.agones-gke[each.key].target_id
+    }
+  }
+
+  suspended = false
+  rules {
+    promote_release_rule {
+      id                    = "promote-release"
+      wait                  = var.clouddeploy_config.pipeline_promotion_wait
+      destination_target_id = "@next"
+    }
+  }
+}
+
 ##### Game Server Pipeline
 
 # Sort as a map of regions, with a list of Cloud Deploy targets within them.
@@ -174,6 +199,31 @@ resource "google_clouddeploy_delivery_pipeline" "gameservers_gke" {
       content {
         target_id = google_clouddeploy_target.agones_regional_targets[stages.key].target_id
       }
+    }
+  }
+}
+
+resource "google_clouddeploy_automation" "gameservers_gke" {
+  name              = "gameserver-deploy-automation-${each.key}"
+  project           = var.project
+  location          = var.clouddeploy_config.location
+  delivery_pipeline = google_clouddeploy_delivery_pipeline.gameservers_gke.name
+  service_account   = google_service_account.cloudbuild-sa.email
+  for_each          = local.targets_by_region
+
+  description = "Gameserver Deploy Automation - ${each.key}"
+  selector {
+    targets {
+      id = google_clouddeploy_target.agones_regional_targets[each.key].target_id
+    }
+  }
+
+  suspended = false
+  rules {
+    promote_release_rule {
+      id                    = "promote-release"
+      wait                  = var.clouddeploy_config.pipeline_promotion_wait
+      destination_target_id = "@next"
     }
   }
 }

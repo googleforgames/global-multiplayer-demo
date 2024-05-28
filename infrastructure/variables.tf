@@ -58,7 +58,8 @@ variable "game_gke_autopilot_clusters" {
 
 variable "clouddeploy_config" {
   type = object({
-    location = string
+    location                = string,
+    pipeline_promotion_wait = string
   })
 }
 

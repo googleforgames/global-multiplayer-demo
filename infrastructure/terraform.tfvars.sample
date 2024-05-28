@@ -33,6 +33,7 @@ services_directory = "../services"              # Relative to Terraform director
 schema_directory   = "../infrastructure/schema" # Relative to Terraform directory
 clouddeploy_config = {
   "location" : "us-central1"
+  "pipeline_promotion_wait" : "300s"
 }
 
 # VPC Regions & associated subnet CIDRs Values
