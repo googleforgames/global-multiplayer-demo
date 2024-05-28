@@ -20,6 +20,7 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"open-match.dev/open-match/pkg/pb"
 )
 
@@ -37,7 +38,8 @@ type MatchFunctionService struct {
 // for pools specified in MatchProfile.
 func Start(queryServiceAddr string, serverPort int, playersPerMatch int) {
 	// Connect to QueryService.
-	conn, err := grpc.Dial(queryServiceAddr, grpc.WithInsecure())
+
+	conn, err := grpc.NewClient(queryServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect to Open Match, got %s", err.Error())
 	}

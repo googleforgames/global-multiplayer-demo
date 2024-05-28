@@ -30,31 +30,6 @@ given set of match player's latencies.
 It does this by providing the `region` HTTP header to an Anthos Service Mesh Allocation Service - where the `region` 
 header will route the allocation request to one of the Agones GKE clusters in that region.
 
-## Fake Frontend
-
-The `openmatch-fake-frontend` deployment generates fake tickets for testing of the Open Match services
-in thie directory. When enabled, the fake frontend will generate a batch of tickets every period. For
-each ticket, the fake frontend waits on an Open Match assignment and then deletes the ticket.
-
-Note that if the Director is tied to a real Agones Fleet, this will generate arbitrary game server
-allocations. You may want to use a game server binary that exits after a specific period of time,
-otherwise, when enabled, the fake frontend will continue to allocate game servers.
-
-The fake frontend is always deployed, but does nothing unless configured:
-
-```shell
-# Edit the `period` and `tickets_per_period` to what you want, e.g. "20s" and "20"
-# The fake frontend will generate `tickets_per_period` tickets every `period`, where
-# period is expressed as a Go Duration (e.g. "20s", "1m", etc.)
-kubectl edit configmap/open-match-fake-frontend
-
-# Restart the deployment to pick up the config
-kubectl rollout restart deployment/open-match-fake-frontend
-
-# Verify load has started
-kubectl logs deployment/open-match-fake-frontend
-```
-
 ## Credit
 
 This integration is based on the [Open Match Matchmaker 101 tutorial](https://open-match.dev/site/docs/tutorials/matchmaker101/frontend/) [(source)](https://github.com/googleforgames/open-match/tree/release-1.7/tutorials).

@@ -16,6 +16,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -24,6 +25,7 @@ import (
 
 	allocation "github.com/googleforgames/global-multiplayer-demo/services/open-match/director/agones/swagger"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"open-match.dev/open-match/pkg/pb"
 )
 
@@ -52,7 +54,7 @@ func main() {
 	ctx := context.Background()
 
 	// Connect to Open Match Backend.
-	conn, err := grpc.Dial(omBackendEndpoint, grpc.WithInsecure())
+	conn, err := grpc.NewClient(omBackendEndpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect to Open Match Backend, got %s", err.Error())
 	}
@@ -137,10 +139,9 @@ func fetch(be pb.BackendServiceClient, p *pb.MatchProfile) ([]*pb.Match, error) 
 func assignMatch(ctx context.Context, be pb.BackendServiceClient, aas *allocation.APIClient, match *pb.Match) {
 	aar, _, err := aas.AllocationServiceApi.Allocate(ctx, allocation.AllocationAllocationRequest{Namespace: gameNamespace})
 	if err != nil {
-		if swErr, ok := err.(allocation.GenericSwaggerError); ok {
+		var swErr allocation.GenericSwaggerError
+		if errors.As(err, &swErr) {
 			log.Printf("Could not allocate game server from Agones for match %s: %s: %s", match.GetMatchId(), swErr.Error(), swErr.Body())
-		} else {
-			log.Printf("Could not allocate game server from Agones for match %s (generic error): %v", match.GetMatchId(), err)
 		}
 		return
 	}
@@ -160,7 +161,7 @@ func assignMatch(ctx context.Context, be pb.BackendServiceClient, aas *allocatio
 }
 
 func assignConnToTickets(be pb.BackendServiceClient, conn string, tickets []*pb.Ticket) error {
-	ticketIDs := []string{}
+	var ticketIDs []string
 	for _, t := range tickets {
 		ticketIDs = append(ticketIDs, t.Id)
 	}

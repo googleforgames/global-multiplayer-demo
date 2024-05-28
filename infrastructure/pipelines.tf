@@ -96,6 +96,10 @@ resource "google_clouddeploy_target" "agones-gke" {
   project          = var.project
   require_approval = false
 
+  deploy_parameters = {
+    "agones.allocator.labels.region" = each.value.region
+  }
+
   depends_on = [google_project_service.project]
 }
 
@@ -115,7 +119,6 @@ resource "google_clouddeploy_delivery_pipeline" "agones-gke" {
       for_each = merge(var.game_gke_standard_clusters, var.game_gke_autopilot_clusters)
       content {
         target_id = google_clouddeploy_target.agones-gke[stages.key].target_id
-        profiles  = [stages.key]
       }
     }
   }
