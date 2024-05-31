@@ -31,12 +31,12 @@ around the globe.
 
 ### Top Level Folders
 
-| Folder                             | Description                                                                                                                                                                                                                                                                                   |
-|------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [infrastructure](./infrastructure) | This contains all the Terraform scripts and resources to create the infrastructure that the project relies on. It is worth noting that the Terraform scripts will generate configuration files that are used by Cloud Deploy and Kubernetes in both the `platform` and `services` directories |
-| [platform](./platform)             | The `platform` directory contains the Cloud Build and Cloud Deploy scripts to set up the application platforms, such as Open Match and Agones, on the infrastructure that the `infrastructure` folder provisions.                                                                             |
-| [services](./services)             | Contains the code for all the backend services that Droid Shooter requires, and Cloud Build and Cloud Deploy scripts to build and deploy these services to their appropriate hosting and storage infrastructure.                                                                              |
-| [game](./game)                     | The code for the game launcher, client and server, as well as Cloud Build, Cloud Deploy and Agones configurations for building and hosting the dedicated game servers                                                                                                                         |
+| Folder                             | Description                                                                                                                                                                                                       |
+|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [infrastructure](./infrastructure) | This contains all the Terraform scripts and resources to create the infrastructure that the project relies on.                                                                                                    |
+| [platform](./platform)             | The `platform` directory contains the Cloud Build and Cloud Deploy scripts to set up the application platforms, such as Open Match and Agones, on the infrastructure that the `infrastructure` folder provisions. |
+| [services](./services)             | Contains the code for all the backend services that Droid Shooter requires, and Cloud Build and Cloud Deploy scripts to build and deploy these services to their appropriate hosting and storage infrastructure.  |
+| [game](./game)                     | The code for the game launcher, client and server, as well as Cloud Build, Cloud Deploy and Agones configurations for building and hosting the dedicated game servers                                             |
 
 ### System Components
 
@@ -409,6 +409,11 @@ If you hit this issue, it may be that you are building on a different host platf
 installation of Unreal may have a unique GUID. To solve, click: More Options > Convert in-place.
 
 The project should open as normal now.
+
+## Demos featuring Global Scale Multiplayer Game Demo
+
+* [Google Developer Summit: Creating a Global-scale Game with Google Cloud (Video, GDC 2024)](https://gdcvault.com/play/1034844/Google-Developer-Summit-Creating-a)
+* [Accelerate your Multiplayer Game Development with the Global Scale Multiplayer Demo (Blog)](https://cloud.google.com/blog/products/gaming/make-an-online-game-based-on-this-cloud-gaming-demo)
 
 ## Licence
 
