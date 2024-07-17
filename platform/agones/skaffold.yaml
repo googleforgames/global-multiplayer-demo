@@ -23,7 +23,7 @@ manifests:
         namespace: agones-system
         repo:  https://agones.dev/chart/stable
         remoteChart: agones
-        version: 1.40.0
+        version: 1.42.0
         setValues:
           agones.crds.cleanupOnDelete: false
           agones.allocator.disableMTLS: true
