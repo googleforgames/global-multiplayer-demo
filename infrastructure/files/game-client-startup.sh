@@ -93,7 +93,7 @@ sudo touch /opt/game-client/init.lock
 project=$(curl http://metadata.google.internal/computeMetadata/v1/project/project-id -H Metadata-Flavor:Google)
 storage_bucket="gs://$project-release-artifacts"
 
-sudo gsutil cp "$storage_bucket/update-client.sh" /opt/game-client/update-client.sh
+sudo gcloud storage cp "$storage_bucket/update-client.sh" /opt/game-client/update-client.sh
 sudo chmod o+x /opt/game-client/update-client.sh
 
 # Rebooting to disable GSP Firmware because Nvidia says so.

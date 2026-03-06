@@ -267,7 +267,7 @@ deploys the game server Fleet to the global set of Agones Clusters sequentially 
 The Cloud Build process will build and archive a `Client-${BUILD_ID}.zip` file in the Google Cloud Storage
 Bucket `gs://${PROJECT_ID}-release-artifacts`.
 
-Use the [Cloud Storage Browser](https://console.cloud.google.com/storage/browser/) or `gsutil` to download
+Use the [Cloud Storage Browser](https://console.cloud.google.com/storage/browser/) or `gcloud storage` to download
 the file and `unzip` it locally.
 
 Run `launcher` to run the Game Launcher, and see [Playing The Game](#playing-the-game) for details on how to play the

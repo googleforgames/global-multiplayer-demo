@@ -22,10 +22,10 @@ set -euxo pipefail
 
 project=$(curl http://metadata.google.internal/computeMetadata/v1/project/project-id -H Metadata-Flavor:Google)
 storage_bucket="gs://$project-release-artifacts"
-latest_client=$(gsutil ls -l "$storage_bucket/*.zip" | sort -k 2 -r | head -n 2 | tail -n 1 | awk '{print $3}')
+latest_client=$(gcloud storage ls --long "$storage_bucket/*.zip" | sort -k 2 -r | head -n 2 | tail -n 1 | awk '{print $3}')
 
 mkdir -p ~/Desktop/Client || true
 
-gsutil cp "$latest_client" ~/Desktop/Client/Client.zip
+gcloud storage cp "$latest_client" ~/Desktop/Client/Client.zip
 cd ~/Desktop/Client/
 unzip Client.zip
